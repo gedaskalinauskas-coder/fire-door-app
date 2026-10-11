@@ -274,7 +274,7 @@ async function buildPDF(){
   const p=PDFDoc(),s=S.survey,X=p.M,CW=p.W-2*p.M;
   p.rect(0,0,p.W,70,RED);p.text(X,30,'SafeBuilt Solutions Ltd',18,true,[1,1,1]);p.text(X,50,pt('Fire Door Inspection Report – East London'),11,false,[1,1,1]);
   p.y=86;
-  if(S.isSample){p.rect(X,p.y,CW,22,[1,.97,.88]);p.text(X+8,p.y+15,pt('SAMPLE DATA – example survey for demonstration only'),10,true,[.5,.35,0]);p.y+=30}
+  
   const kv=[['Site / building',s.site],['Address',s.address],['Client',s.client],['Inspector',s.inspector],['Survey date',s.date],['Survey reference',s.ref]];
   for(const [k,v] of kv){const ls=wrapT(v||'—',10,CW-130);p.ensure(ls.length*13+4);p.text(X,p.y+11,k,10,true,SOFT);ls.forEach((l,i)=>p.text(X+130,p.y+11+i*13,l,10));p.y+=ls.length*13+5}
   p.y+=6;const cnt=counts();const bw=(CW-24)/4;
@@ -316,7 +316,7 @@ async function buildPDF(){
 function counts(){const c={total:S.doors.length,pass:0,fail:0,none:0};S.doors.forEach(d=>{const s=status(d);s==='pass'?c.pass++:s==='fail'?c.fail++:c.none++});return c}
 async function reportMarkup(mode){
   const s=S.survey,c=counts();let h=`<div class="report"><div class="rh"><h1>Fire Door Inspection Report</h1><p>SafeBuilt Solutions Ltd · Fire door contractor, East London</p></div>`;
-  if(S.isSample)h+=`<div class="samp">SAMPLE DATA – example survey for demonstration only.</div>`;
+  
   h+=`<table class="kv">${[['Site / building',s.site],['Address',s.address],['Client',s.client],['Inspector',s.inspector],['Survey date',s.date],['Survey reference',s.ref]].map(([k,v])=>`<tr><th>${k}</th><td>${esc(v||'—')}</td></tr>`).join('')}</table>`;
   h+=`<div class="rc"><div><b>${c.total}</b>Total</div><div class="p"><b>${c.pass}</b>Pass</div><div class="x"><b>${c.fail}</b>Fail</div><div><b>${c.none}</b>Not inspected</div></div>`;
   h+=`<h2>Door schedule</h2><div class="schedwrap"><table class="sched"><thead><tr><th>Ref</th><th>Location</th><th>Status</th><th>Key issues</th><th>Action</th><th>Priority</th></tr></thead><tbody>`;
@@ -381,7 +381,7 @@ async function loadSample(){
 }
 
 /* ---------- views ---------- */
-function setNav(v){document.querySelectorAll('nav.bottom a').forEach(a=>a.classList.toggle('on',a.dataset.v===v));$('#sampleTag').hidden=!S.isSample}
+function setNav(v){document.querySelectorAll('nav.bottom a').forEach(a=>a.classList.toggle('on',a.dataset.v===v));$('#sampleTag').hidden=true}
 function field(lbl,k,v,ph,src,type){return `<label class="f">${lbl}<input type="${type||'text'}" data-${src||'d'}="${k}" value="${esc(v)}" placeholder="${esc(ph||'')}" autocomplete="off"></label>`}
 function sel(lbl,k,opts,v){return `<label class="f">${lbl}<select data-d="${k}"><option value="">Select…</option>${opts.map(o=>{const [val,t]=Array.isArray(o)?o:[o,o];return `<option value="${esc(val)}"${val===v?' selected':''}>${esc(t)}</option>`}).join('')}</select></label>`}
 function seg(attr,opts,val,cls){return `<div class="seg" ${attr}>${opts.map(([v,t])=>`<button type="button" data-v="${esc(v)}" class="${val===v?'on '+(cls||v):''}">${t}</button>`).join('')}</div>`}
