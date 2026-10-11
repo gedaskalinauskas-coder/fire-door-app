@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#b71c1c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Fire Doors">
+<title>SafeBuilt Solutions – Fire Door Inspection</title>
+<style>
+:root{--red:#c62828;--green:#2e7d32;--grey:#8a8f98;--bg:#f2f3f6;--ink:#1d2330;--brand:#b71c1c}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font:16px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+header.top{position:sticky;top:0;z-index:5;background:var(--brand);color:#fff;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.brand b{display:block;font-size:17px;letter-spacing:.01em}.brand span{font-size:13px;opacity:.9}
+.tag{background:#ffeb3b;color:#000;font-size:11px;font-weight:800;padding:4px 8px;border-radius:4px;white-space:nowrap}
+main{padding:12px 12px calc(96px + env(safe-area-inset-bottom));max-width:820px;margin:0 auto}
+nav.bottom{position:fixed;bottom:0;left:0;right:0;display:flex;background:#fff;border-top:1px solid #ddd;padding-bottom:env(safe-area-inset-bottom);z-index:5}
+nav.bottom a{flex:1;text-align:center;padding:16px 0;font-weight:700;color:#555;text-decoration:none;min-height:56px}
+nav.bottom a.on{color:var(--brand);box-shadow:inset 0 3px 0 var(--brand)}
+.card{background:#fff;border-radius:12px;padding:14px;margin:0 0 12px;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+h2{font-size:18px;margin:0 0 10px}
+label.f{display:block;margin:0 0 12px;font-size:13px;color:#555;font-weight:600}
+input[type=text],input[type=date],select,textarea{display:block;width:100%;font-size:16px;padding:12px;border:1px solid #c9ccd3;border-radius:8px;margin-top:4px;background:#fff;color:inherit;min-height:48px;font-family:inherit;-webkit-appearance:none;appearance:none}
+select{background-image:linear-gradient(45deg,transparent 50%,#666 50%),linear-gradient(135deg,#666 50%,transparent 50%);background-position:calc(100% - 20px) 21px,calc(100% - 15px) 21px;background-size:5px 5px;background-repeat:no-repeat;padding-right:34px}
+textarea{min-height:84px;resize:vertical}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:48px;padding:10px 16px;border-radius:10px;border:1px solid #c9ccd3;background:#fff;font-size:16px;font-weight:600;color:var(--ink);text-decoration:none;cursor:pointer;font-family:inherit;text-align:center}
+.btn:active{transform:scale(.98)}
+.btn.primary{background:var(--brand);color:#fff;border-color:var(--brand)}
+.btn.dark{background:var(--ink);color:#fff;border-color:var(--ink)}
+.btn.block{display:flex;width:100%}
+.btn.danger{color:var(--red);border-color:var(--red)}
+.btn.sm{min-height:40px;padding:6px 10px;font-size:14px}
+.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1}
+.seg{display:flex;gap:6px;margin-top:8px}
+.seg button{flex:1;min-height:50px;border:1px solid #c9ccd3;background:#fff;border-radius:8px;font-size:15px;font-weight:700;color:#444;font-family:inherit;padding:4px}
+.seg button.on.pass{background:var(--green);color:#fff;border-color:var(--green)}
+.seg button.on.fail{background:var(--red);color:#fff;border-color:var(--red)}
+.seg button.on.na{background:#607d8b;color:#fff;border-color:#607d8b}
+.seg button.on.sel{background:var(--ink);color:#fff;border-color:var(--ink)}
+.ck{padding:14px 0;border-top:1px solid #eee}
+.ck b{display:block}
+.hint{font-size:13px;color:#666;margin:3px 0 0}
+.ck input{margin-top:8px;min-height:44px;padding:10px;font-size:15px}
+.badge{display:inline-block;padding:5px 10px;border-radius:999px;font-size:12px;font-weight:800;letter-spacing:.03em;color:#fff;background:var(--grey);white-space:nowrap}
+.badge.pass{background:var(--green)}.badge.fail{background:var(--red)}
+.doors{list-style:none;margin:0 0 12px;padding:0}
+.door-row{display:flex;justify-content:space-between;align-items:center;gap:10px;background:#fff;border-radius:12px;padding:14px;margin-bottom:10px;color:inherit;text-decoration:none;box-shadow:0 1px 2px rgba(0,0,0,.08);border-left:7px solid var(--grey);min-height:76px}
+.door-row.pass{border-left-color:var(--green)}.door-row.fail{border-left-color:var(--red)}
+.door-row b{font-size:17px}
+.door-row small{display:block;color:#666;font-size:13px}
+.counts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.counts div{background:#fff;border-radius:10px;padding:10px 4px;text-align:center;font-size:12px;color:#555;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.counts b{display:block;font-size:24px;color:var(--ink)}
+.counts .p b{color:var(--green)}.counts .x b{color:var(--red)}
+.banner{background:#fff8e1;border:1px solid #ffe082}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:12px 0}
+.mi{border:1px solid #e0e0e0;border-radius:10px;overflow:hidden;background:#fafafa}
+.mi img,.mi video{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;background:#222}
+.mname{font-size:12px;padding:6px 8px;word-break:break-all;color:#444}
+.mbtns{display:flex;gap:6px;padding:0 6px 6px}.mbtns .btn{flex:1;padding:4px 6px}
+.uploads{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.uploads label.btn{position:relative;overflow:hidden;font-size:14px;flex-direction:column;gap:2px;min-height:64px;padding:6px}
+.uploads label.btn span.i{font-size:22px;line-height:1}
+.uploads input{position:absolute;left:0;top:0;opacity:0;width:1px;height:1px}
+.bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px}
+.muted{color:#666;font-size:14px}
+#toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:8px;font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:9;max-width:90vw;text-align:center}
+#toast.show{opacity:1}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.actions .wide{grid-column:1/-1}
+details>summary{font-weight:700;font-size:17px;min-height:36px;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center}
+details>summary::-webkit-details-marker{display:none}
+details>summary::after{content:"▾";color:#888}
+details[open]>summary{margin-bottom:10px}
+.empty{text-align:center;color:#666;padding:24px}
+.busy{position:fixed;inset:0;background:rgba(255,255,255,.6);display:none;align-items:center;justify-content:center;z-index:20;font-weight:700}
+.busy.show{display:flex}
+@media print{
+  header.top,nav.bottom,.noprint,#toast{display:none!important}
+  body{background:#fff}
+  main{padding:0;max-width:none}
+  .report{padding:0!important;box-shadow:none!important}
+  .report .dd{break-inside:avoid}
+  .report .schedwrap{overflow:visible!important}
+  @page{size:A4;margin:12mm}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><b>SafeBuilt Solutions Ltd</b><span>Fire Door Inspection</span></div>
+  <span id="sampleTag" class="tag" hidden>SAMPLE DATA</span>
+</header>
+<main id="app"><p class="empty">Loading…</p></main>
+<nav class="bottom"><a href="#/list" data-v="list">🚪 Doors</a><a href="#/summary" data-v="summary">📄 Report</a></nav>
+<div id="toast"></div>
+<div class="busy" id="busy">Preparing file…</div>
+<script>
+"use strict";
+/* ---------- constants ---------- */
+const LS='sbs_firedoor_v1';
+const CHECKS=[
+ ['leaf','Door leaf condition','No significant damage, holes, splits, delamination or warping; no unauthorised alterations.'],
+ ['frame','Frame condition & fixing','Frame secure to structure and undamaged; gap between frame and wall properly fire-stopped/sealed.'],
+ ['gaps','Leaf-to-frame gaps','Guidance: typically 2–4 mm (commonly 3 mm ±1) at head, hinge and lock sides and between leaves of double doors. Manufacturer data / BS 8214 take precedence.'],
+ ['threshold','Threshold (bottom) gap','Guidance: up to ~10 mm for FD30 doors without smoke control (check certification); ~3 mm where smoke seals are required (FD30S/FD60S) unless a drop seal is fitted.'],
+ ['intumescent','Intumescent strips','Present, continuous, correct size, intact – not painted over, damaged or missing sections.'],
+ ['smoke','Smoke seals','Present and intact where required (S-rated doors); brush/fin not damaged, missing or painted over.'],
+ ['hinges','Hinges','Minimum 3 hinges, secure, no missing, incorrect or damaged screws, CE/UKCA marked, no excessive wear.'],
+ ['selfclose','Self-closing device','Fitted and closes the door fully from any angle of opening into the latch (required on flat entrance and communal fire doors).'],
+ ['latch','Latching','Door latches positively when closed by the closer; no binding on frame or floor.'],
+ ['closer','Door closer condition & adjustment','No oil leaks or damage; closing/latch speed correctly adjusted; arm and fixings secure.'],
+ ['signage','Fire safety signage','“Fire door keep shut” (communal doors) or “Fire door keep locked” (risers/cupboards) present and legible.'],
+ ['glazing','Glazing & beads (if present)','Fire-rated glass (marked), intact, beads secure, correct intumescent glazing system.'],
+ ['ironmongery','Ironmongery','Handles, locks, letter plates, spy holes etc. fire-rated, secure and not compromising the door.'],
+ ['holdopen','Hold-open devices (if fitted)','Hold-open/free-swing devices linked to the fire alarm and release on activation; door then closes and latches.'],
+ ['cert','Certification label / plug','Third-party certification label or plug present (usually top or hinge edge); note scheme/number if visible.']
+];
+const TYPES=[['communal','Communal'],['flat','Flat entrance'],['riser','Riser'],['plant','Plant room'],['stair','Stair core']];
+const RATINGS=['FD30','FD30S','FD60','FD60S','Unknown'];
+const LEAFS=['Single','Double','Leaf and a half'];
+const ACTIONS=['Repair','Adjust','Replace'];
+const PRIS=['Urgent','Within 3 months','Advisory'];
+const GUIDANCE='Gap and seal figures are typical guidance only – BS 8214:2016 and the door manufacturer’s certification data take precedence. Under the Fire Safety (England) Regulations 2022, responsible persons in multi-occupied residential buildings over 11 m must undertake quarterly checks of communal fire doors and use best endeavours to check flat entrance doors annually. This is a visual, non-destructive inspection and does not certify fire performance.';
+const REPORT_CSS=`.report{font:13px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:#1d2330;background:#fff;padding:16px;border-radius:12px;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.report .rh{background:#b71c1c;color:#fff;padding:14px 16px;border-radius:8px;margin-bottom:12px}.report .rh h1{margin:0;font-size:20px}.report .rh p{margin:2px 0 0;opacity:.95}
+.report h2{font-size:16px;margin:18px 0 6px;border-bottom:2px solid #b71c1c;padding-bottom:3px}
+.report .samp{background:#fff8e1;border:1px solid #ffe082;padding:8px 10px;border-radius:6px;margin:8px 0;font-weight:600}
+.report table{width:100%;border-collapse:collapse;margin:6px 0}.report th,.report td{border:1px solid #ddd;padding:6px;text-align:left;vertical-align:top}.report th{background:#f3f3f3}
+.report .kv th{width:34%}
+.report .rc{display:flex;gap:8px;margin:10px 0}.report .rc div{flex:1;border:1px solid #ddd;border-radius:8px;text-align:center;padding:8px;font-size:12px}.report .rc b{display:block;font-size:22px}
+.report .rc .p b{color:#2e7d32}.report .rc .x b{color:#c62828}
+.report .st{display:inline-block;font-weight:800;color:#fff;padding:2px 8px;border-radius:999px;background:#8a8f98;font-size:11px;white-space:nowrap}.report .st.pass{background:#2e7d32}.report .st.fail{background:#c62828}
+.report .schedwrap{overflow-x:auto}.report .sched{font-size:12px;min-width:520px}
+.report .dd{border:1px solid #ddd;border-radius:8px;padding:10px;margin:12px 0;page-break-inside:avoid;break-inside:avoid}
+.report .dd h3{margin:0 0 4px;font-size:16px;display:flex;justify-content:space-between;gap:8px;align-items:center}
+.report .meta{color:#555;margin:0 0 6px}
+.report .cl{font-size:12px}.report .cl td:nth-child(2){white-space:nowrap}
+.report .r-pass{color:#2e7d32;font-weight:700}.report .r-fail{color:#c62828;font-weight:700}.report .r-na{color:#607d8b}.report .r-{color:#999}
+.report .thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-top:8px}
+.report .thumbs figure{margin:0}.report .thumbs img,.report .thumbs video{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:6px;border:1px solid #ddd;display:block;background:#222}
+.report .thumbs .vid{aspect-ratio:4/3;border-radius:6px;background:#263238;color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;font-size:12px;padding:6px}
+.report .thumbs figcaption{font-size:11px;color:#555;word-break:break-all}
+.report .gn{font-size:11px;color:#555;margin-top:16px;border-top:1px solid #ddd;padding-top:8px}
+.report a{color:inherit}`;
+
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s);
+const app=$('#app');
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const pad=n=>String(n).padStart(2,'0');
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())};
+const safe=s=>String(s||'').trim().replace(/[^A-Za-z0-9._-]+/g,'-').replace(/^-+|-+$/g,'')||'file';
+const typeLabel=t=>(TYPES.find(x=>x[0]===t)||['',t||'—'])[1];
+const stLabel=s=>s==='pass'?'PASS':s==='fail'?'FAIL':'NOT INSPECTED';
+const rLabel=r=>r==='pass'?'Pass':r==='fail'?'Fail':r==='na'?'N/A':'–';
+let S=null;
+function save(){try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){toast('Could not save: '+e.message)}}
+let tt;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2600)}
+function busy(on,msg){const b=$('#busy');b.textContent=msg||'Preparing file…';b.classList.toggle('show',!!on)}
+const doorById=id=>S.doors.find(d=>d.id===id);
+function cur(){const h=location.hash.split('/');return h[1]==='door'?doorById(h[2]):null}
+const ck=(d,k)=>d.checks[k]||(d.checks[k]={r:'',c:''});
+function suggest(d){const v=CHECKS.map(c=>(d.checks[c[0]]||{}).r||'');if(v.includes('fail'))return 'fail';if(v.every(x=>x==='pass'||x==='na'))return 'pass';return ''}
+function status(d){return d.manual&&d.overall?d.overall:suggest(d)}
+function failed(d){return CHECKS.filter(c=>(d.checks[c[0]]||{}).r==='fail')}
+function keyIssues(d){const t=(d.issues||'').trim();if(t)return t;const f=failed(d);if(f.length)return f.map(c=>c[1]).join('; ');return status(d)==='pass'?'None':'—'}
+const EXT={'image/jpeg':'jpg','image/jpg':'jpg','image/png':'png','image/heic':'heic','image/heif':'heif','image/webp':'webp','image/gif':'gif','video/mp4':'mp4','video/quicktime':'mov','video/webm':'webm','video/3gpp':'3gp','video/x-m4v':'m4v'};
+function extOf(f){if(EXT[f.type])return EXT[f.type];const m=/\.([A-Za-z0-9]{1,5})$/.exec(f.name||'');return m?m[1].toLowerCase():'bin'}
+function mediaName(d,m){const list=d.media.filter(x=>x.kind===m.kind);return safe(d.ref||'Door')+'_'+m.kind+'-'+(list.indexOf(m)+1)+'.'+m.ext}
+function baseName(){return safe(S.survey.ref||'fire-door-survey')}
+
+/* ---------- IndexedDB media store ---------- */
+let dbp;
+function db(){return dbp||(dbp=new Promise((res,rej)=>{const r=indexedDB.open('sbs_firedoor_media',1);r.onupgradeneeded=()=>r.result.createObjectStore('media',{keyPath:'id'});r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}))}
+async function idb(mode,fn){const d=await db();return new Promise((res,rej)=>{const tx=d.transaction('media',mode);const r=fn(tx.objectStore('media'));tx.oncomplete=()=>res(r&&r.result);tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error)})}
+const putMedia=rec=>idb('readwrite',s=>s.put(rec));
+const getMedia=id=>idb('readonly',s=>s.get(id));
+const delMedia=id=>idb('readwrite',s=>s.delete(id));
+const clearMedia=()=>idb('readwrite',s=>s.clear());
+const URLS={};
+async function mediaBlob(id){const r=await getMedia(id);return r?new Blob([r.data],{type:r.type}):null}
+async function mediaURL(id){if(URLS[id])return URLS[id];const b=await mediaBlob(id);if(!b)return '';return URLS[id]=URL.createObjectURL(b)}
+async function hydrate(root){for(const el of root.querySelectorAll('[data-mid]')){const u=await mediaURL(el.dataset.mid);if(!u){el.replaceWith(Object.assign(document.createElement('div'),{className:'vid',textContent:'File missing on this device'}));continue}el.src=el.tagName==='VIDEO'?u+'#t=0.1':u}}
+
+/* ---------- save / share a file (works on iOS Safari) ---------- */
+const isIOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+async function saveBlob(blob,name){
+  if(isIOS&&navigator.canShare&&window.File){
+    try{const f=new File([blob],name,{type:blob.type||'application/octet-stream'});
+      if(navigator.canShare({files:[f]})){await navigator.share({files:[f],title:name});return}
+    }catch(e){if(e&&e.name==='AbortError')return;/* fall through to anchor download */}
+  }
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');
+  a.href=url;a.download=name;a.rel='noopener';a.style.display='none';document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),60000);toast('Downloading '+name);
+}
+
+/* ---------- image thumbnails (JPEG) for PDF / HTML export ---------- */
+const TH={};
+async function thumbFor(id,max){max=max||900;const key=id+':'+max;if(TH[key]!==undefined)return TH[key];
+  try{const b=await mediaBlob(id);if(!b)return TH[key]=null;const u=URL.createObjectURL(b);
+    const img=new Image();await new Promise((res,rej)=>{img.onload=res;img.onerror=rej;img.src=u});
+    const k=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight));const w=Math.max(1,Math.round(img.naturalWidth*k)),h=Math.max(1,Math.round(img.naturalHeight*k));
+    const c=document.createElement('canvas');c.width=w;c.height=h;const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,w,h);g.drawImage(img,0,0,w,h);URL.revokeObjectURL(u);
+    const dataURL=c.toDataURL('image/jpeg',.82);const bin=atob(dataURL.split(',')[1]);const bytes=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+    return TH[key]={url:dataURL,bytes,w,h};
+  }catch(e){return TH[key]=null}
+}
+
+/* ---------- minimal ZIP writer (store, no compression) ---------- */
+const CRCT=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+function crc32(u){let c=0xFFFFFFFF;for(let i=0;i<u.length;i++)c=CRCT[(c^u[i])&255]^(c>>>8);return (c^0xFFFFFFFF)>>>0}
+function makeZip(files){
+  const te=new TextEncoder(),parts=[],central=[];let off=0;const d=new Date();
+  const time=(d.getHours()<<11)|(d.getMinutes()<<5)|(d.getSeconds()>>1),date=((d.getFullYear()-1980)<<9)|((d.getMonth()+1)<<5)|d.getDate();
+  for(const f of files){const nm=te.encode(f.name),data=f.data,crc=crc32(data),sz=data.length;
+    const h=new DataView(new ArrayBuffer(30));h.setUint32(0,0x04034b50,true);h.setUint16(4,20,true);h.setUint16(6,0x0800,true);h.setUint16(8,0,true);h.setUint16(10,time,true);h.setUint16(12,date,true);h.setUint32(14,crc,true);h.setUint32(18,sz,true);h.setUint32(22,sz,true);h.setUint16(26,nm.length,true);h.setUint16(28,0,true);
+    parts.push(h.buffer,nm,data);
+    const c=new DataView(new ArrayBuffer(46));c.setUint32(0,0x02014b50,true);c.setUint16(4,20,true);c.setUint16(6,20,true);c.setUint16(8,0x0800,true);c.setUint16(10,0,true);c.setUint16(12,time,true);c.setUint16(14,date,true);c.setUint32(16,crc,true);c.setUint32(20,sz,true);c.setUint32(24,sz,true);c.setUint16(28,nm.length,true);c.setUint32(42,off,true);
+    central.push(c.buffer,nm);off+=30+nm.length+sz;}
+  const cd=central.reduce((a,b)=>a+b.byteLength,0);const e=new DataView(new ArrayBuffer(22));
+  e.setUint32(0,0x06054b50,true);e.setUint16(8,files.length,true);e.setUint16(10,files.length,true);e.setUint32(12,cd,true);e.setUint32(16,off,true);
+  return new Blob([...parts,...central,e.buffer],{type:'application/zip'});
+}
+
+/* ---------- minimal PDF writer (Helvetica + embedded JPEGs) ---------- */
+const HW=[278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584];
+const WIN={'–':'\x96','—':'\x97','‘':'\x91','’':'\x92','“':'\x93','”':'\x94','•':'\x95','…':'\x85','€':'\x80','✔':'v','✖':'x','≤':'<=','≥':'>=','±':'\xb1'};
+function pt(s){let o='';for(const ch of String(s==null?'':s)){if(WIN[ch]!==undefined)o+=WIN[ch];else{const c=ch.codePointAt(0);o+=(c<256&&c!==9)?ch:(c===9?' ':'?')}}return o}
+function tw(s,size,bold){let w=0;for(let i=0;i<s.length;i++){const c=s.charCodeAt(i);w+=(c>=32&&c<=126)?HW[c-32]:556}return w*size/1000*(bold?1.07:1)}
+function wrapT(s,size,maxW,bold){const out=[];for(const para of pt(s).split('\n')){let line='';for(const word of para.split(/ +/)){if(!word)continue;const t=line?line+' '+word:word;if(tw(t,size,bold)<=maxW){line=t;continue}if(line)out.push(line);let w=word;while(tw(w,size,bold)>maxW&&w.length>1){let k=w.length;while(k>1&&tw(w.slice(0,k),size,bold)>maxW)k--;out.push(w.slice(0,k));w=w.slice(k)}line=w}out.push(line)}return out}
+function PDFDoc(){
+  const W=595.28,H=841.89,M=40,pages=[],images=[];let ops;
+  const pe=s=>s.replace(/\\/g,'\\\\').replace(/\(/g,'\\(').replace(/\)/g,'\\)').replace(/\r|\n/g,' ');
+  const f=n=>(+n).toFixed(2);
+  const P={W,H,M,y:0,
+    page(){ops=[];pages.push(ops);P.y=M;},
+    ensure(h){if(P.y+h>H-M-14)P.page()},
+    text(x,y,s,size,bold,col){col=col||[0,0,0];ops.push(`BT ${col.map(f).join(' ')} rg /${bold?'F2':'F1'} ${size} Tf ${f(x)} ${f(H-y)} Td (${pe(s)}) Tj ET`)},
+    rect(x,y,w,h,col){ops.push(`${col.map(f).join(' ')} rg ${f(x)} ${f(H-y-h)} ${f(w)} ${f(h)} re f`)},
+    box(x,y,w,h,col){ops.push(`${(col||[.8,.8,.8]).map(f).join(' ')} RG 0.6 w ${f(x)} ${f(H-y-h)} ${f(w)} ${f(h)} re S`)},
+    line(x1,y1,x2,y2,col,w){ops.push(`${(col||[.8,.8,.8]).map(f).join(' ')} RG ${w||.6} w ${f(x1)} ${f(H-y1)} m ${f(x2)} ${f(H-y2)} l S`)},
+    image(img,x,y,w,h){let i=images.indexOf(img);if(i<0){images.push(img);i=images.length-1}ops.push(`q ${f(w)} 0 0 ${f(h)} ${f(x)} ${f(H-y-h)} cm /Im${i} Do Q`)},
+    para(s,x,maxW,size,bold,col,lh){const ls=wrapT(s,size,maxW,bold);lh=lh||size*1.3;for(const l of ls){P.ensure(lh);P.text(x,P.y+size,l,size,bold,col);P.y+=lh}},
+    footer(fn){pages.forEach((o,i)=>{ops=o;fn(i+1,pages.length)})},
+    build(){
+      const enc=s=>{const a=new Uint8Array(s.length);for(let i=0;i<s.length;i++)a[i]=s.charCodeAt(i)&255;return a};
+      const objs=[];const nI=images.length,fp=5+nI;
+      objs[1]=['<< /Type /Catalog /Pages 2 0 R >>'];
+      objs[2]=[`<< /Type /Pages /Kids [${pages.map((_,i)=>(fp+2*i)+' 0 R').join(' ')}] /Count ${pages.length} >>`];
+      objs[3]=['<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>'];
+      objs[4]=['<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>'];
+      images.forEach((im,i)=>{objs[5+i]=[`<< /Type /XObject /Subtype /Image /Width ${im.w} /Height ${im.h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${im.bytes.length} >>\nstream\n`,im.bytes,'\nendstream']});
+      const xo=images.map((_,i)=>`/Im${i} ${5+i} 0 R`).join(' ');
+      pages.forEach((o,i)=>{const c=o.join('\n');
+        objs[fp+2*i]=[`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${W} ${H}] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> /XObject << ${xo} >> >> /Contents ${fp+2*i+1} 0 R >>`];
+        objs[fp+2*i+1]=[`<< /Length ${c.length} >>\nstream\n`,c,'\nendstream']});
+      const out=[];let len=0;const push=p=>{const u=typeof p==='string'?enc(p):p;out.push(u);len+=u.length};
+      push('%PDF-1.4\n%\xe2\xe3\xcf\xd3\n');const offs=[];
+      for(let k=1;k<objs.length;k++){offs[k]=len;push(k+' 0 obj\n');objs[k].forEach(push);push('\nendobj\n')}
+      const xref=len;let x='xref\n0 '+objs.length+'\n0000000000 65535 f \n';for(let k=1;k<objs.length;k++)x+=String(offs[k]).padStart(10,'0')+' 00000 n \n';
+      push(x+'trailer\n<< /Size '+objs.length+' /Root 1 0 R >>\nstartxref\n'+xref+'\n%%EOF\n');
+      return new Blob(out,{type:'application/pdf'});
+    }};
+  P.page();return P;
+}
+const RED=[.718,.11,.11],GREEN=[.18,.49,.196],GREY=[.54,.56,.6],INK=[.11,.14,.19],SOFT=[.4,.4,.4];
+const stCol=s=>s==='pass'?GREEN:s==='fail'?RED:GREY;
+async function buildPDF(){
+  const p=PDFDoc(),s=S.survey,X=p.M,CW=p.W-2*p.M;
+  p.rect(0,0,p.W,70,RED);p.text(X,30,'SafeBuilt Solutions Ltd',18,true,[1,1,1]);p.text(X,50,pt('Fire Door Inspection Report – East London'),11,false,[1,1,1]);
+  p.y=86;
+  if(S.isSample){p.rect(X,p.y,CW,22,[1,.97,.88]);p.text(X+8,p.y+15,pt('SAMPLE DATA – example survey for demonstration only'),10,true,[.5,.35,0]);p.y+=30}
+  const kv=[['Site / building',s.site],['Address',s.address],['Client',s.client],['Inspector',s.inspector],['Survey date',s.date],['Survey reference',s.ref]];
+  for(const [k,v] of kv){const ls=wrapT(v||'—',10,CW-130);p.ensure(ls.length*13+4);p.text(X,p.y+11,k,10,true,SOFT);ls.forEach((l,i)=>p.text(X+130,p.y+11+i*13,l,10));p.y+=ls.length*13+5}
+  p.y+=6;const cnt=counts();const bw=(CW-24)/4;
+  [['Total doors',cnt.total,INK],['Pass',cnt.pass,GREEN],['Fail',cnt.fail,RED],['Not inspected',cnt.none,GREY]].forEach(([l,n,c],i)=>{const bx=X+i*(bw+8);p.box(bx,p.y,bw,46);p.text(bx+10,p.y+24,String(n),20,true,c);p.text(bx+10,p.y+39,l,9,false,SOFT)});
+  p.y+=60;
+  p.text(X,p.y+14,'Door schedule',14,true,INK);p.y+=22;
+  const cols=[['Ref',52],['Location',118],['Status',62],['Key issues',158],['Action',55],['Priority',70]];
+  const head=()=>{p.rect(X,p.y,CW,18,[.93,.93,.93]);let cx=X;cols.forEach(([t,w])=>{p.text(cx+4,p.y+12.5,t,9,true);cx+=w});p.y+=18};
+  head();
+  for(const d of S.doors){const st=status(d);const cells=[d.ref,d.location,null,keyIssues(d),d.action||'—',d.priority||'—'];
+    const wr=cells.map((c,i)=>c===null?[stLabel(st)]:wrapT(c||'—',8.5,cols[i][1]-8));const h=Math.max(...wr.map(w=>w.length))*11+8;
+    if(p.y+h>p.H-p.M-14){p.page();head()}
+    let cx=X;wr.forEach((ls,i)=>{if(i===2){p.rect(cx+3,p.y+4,cols[i][1]-6,13,stCol(st));p.text(cx+6,p.y+13.5,st?stLabel(st):'NOT INSP.',7.5,true,[1,1,1])}else ls.forEach((l,j)=>p.text(cx+4,p.y+12+j*11,l,8.5,i===0));cx+=cols[i][1]});
+    p.line(X,p.y+h,X+CW,p.y+h);p.y+=h}
+  p.y+=14;p.ensure(40);p.text(X,p.y+14,'Door details',14,true,INK);p.y+=24;
+  for(const d of S.doors){const st=status(d);p.ensure(80);
+    p.rect(X,p.y,CW,24,[.95,.95,.96]);p.rect(X,p.y,5,24,stCol(st));p.text(X+12,p.y+16,pt((d.ref||'Door')+' – '+(d.location||'')).slice(0,80),11.5,true);
+    p.rect(X+CW-88,p.y+5,82,14,stCol(st));p.text(X+CW-82,p.y+15,stLabel(st),8,true,[1,1,1]);p.y+=30;
+    p.para(`Type: ${typeLabel(d.type)}   |   Rating: ${d.rating||'—'}   |   Leaf: ${d.leaf||'—'}`,X,CW,9.5,false,SOFT);p.y+=3;
+    for(const c of CHECKS){const o=d.checks[c[0]]||{};const r=o.r||'';const col=r==='pass'?GREEN:r==='fail'?RED:SOFT;
+      const cl=wrapT(o.c||'',8.5,CW-215);const h=Math.max(1,cl.length)*11+3;p.ensure(h);
+      p.text(X+4,p.y+9,pt(c[1]),8.5,false);p.text(X+170,p.y+9,rLabel(r),8.5,true,col);cl.forEach((l,i)=>{if(l)p.text(X+215,p.y+9+i*11,l,8.5,false,SOFT)});p.y+=h}
+    p.y+=4;
+    for(const [k,v] of [['Issues found',d.issues],['Recommended action',d.action],['Priority',d.priority],['Notes',d.notes]]){if(!v)continue;const ls=wrapT(v,9.5,CW-120);p.ensure(ls.length*12+4);p.text(X+4,p.y+10,k,9.5,true);ls.forEach((l,i)=>p.text(X+120,p.y+10+i*12,l,9.5));p.y+=ls.length*12+4}
+    const photos=d.media.filter(m=>m.kind==='photo'),vids=d.media.filter(m=>m.kind==='video');
+    if(photos.length){p.y+=4;const tw_=(CW-24)/4;let col=0;
+      for(const m of photos){const t=await thumbFor(m.id,700);if(!t)continue;const th=tw_*t.h/t.w>tw_*0.9?tw_*0.9:tw_*t.h/t.w;const iw=th*t.w/t.h;
+        if(col===0)p.ensure(tw_*0.9+16);p.image(t,X+col*(tw_+8),p.y,iw,th);p.text(X+col*(tw_+8),p.y+tw_*0.9+10,pt(mediaName(d,m)),7,false,SOFT);
+        col++;if(col===4){col=0;p.y+=tw_*0.9+16}}
+      if(col)p.y+=tw_*0.9+16}
+    if(vids.length)p.para('Video: '+vids.map(m=>mediaName(d,m)).join(', ')+' (original files in ZIP download)',X+4,CW-8,8.5,false,SOFT);
+    p.y+=12}
+  p.ensure(60);p.line(X,p.y,X+CW,p.y);p.y+=6;p.para(GUIDANCE,X,CW,8,false,SOFT,10.5);
+  p.footer((i,n)=>{p.text(p.M,p.H-22,pt(`SafeBuilt Solutions Ltd  ·  ${s.ref||''}  ·  ${s.site||''}`).slice(0,95),8,false,GREY);p.text(p.W-p.M-60,p.H-22,`Page ${i} of ${n}`,8,false,GREY)});
+  return p.build();
+}
+
+/* ---------- report markup (in-app, standalone HTML, ZIP) ---------- */
+function counts(){const c={total:S.doors.length,pass:0,fail:0,none:0};S.doors.forEach(d=>{const s=status(d);s==='pass'?c.pass++:s==='fail'?c.fail++:c.none++});return c}
+async function reportMarkup(mode){
+  const s=S.survey,c=counts();let h=`<div class="report"><div class="rh"><h1>Fire Door Inspection Report</h1><p>SafeBuilt Solutions Ltd · Fire door contractor, East London</p></div>`;
+  if(S.isSample)h+=`<div class="samp">SAMPLE DATA – example survey for demonstration only.</div>`;
+  h+=`<table class="kv">${[['Site / building',s.site],['Address',s.address],['Client',s.client],['Inspector',s.inspector],['Survey date',s.date],['Survey reference',s.ref]].map(([k,v])=>`<tr><th>${k}</th><td>${esc(v||'—')}</td></tr>`).join('')}</table>`;
+  h+=`<div class="rc"><div><b>${c.total}</b>Total</div><div class="p"><b>${c.pass}</b>Pass</div><div class="x"><b>${c.fail}</b>Fail</div><div><b>${c.none}</b>Not inspected</div></div>`;
+  h+=`<h2>Door schedule</h2><div class="schedwrap"><table class="sched"><thead><tr><th>Ref</th><th>Location</th><th>Status</th><th>Key issues</th><th>Action</th><th>Priority</th></tr></thead><tbody>`;
+  for(const d of S.doors){const st=status(d);h+=`<tr><td><b>${esc(d.ref)}</b></td><td>${esc(d.location)}</td><td><span class="st ${st}">${stLabel(st)}</span></td><td>${esc(keyIssues(d))}</td><td>${esc(d.action||'—')}</td><td>${esc(d.priority||'—')}</td></tr>`}
+  h+=`</tbody></table></div><h2>Door details</h2>`;
+  for(const d of S.doors){const st=status(d);
+    h+=`<section class="dd"><h3><span>${esc(d.ref)} – ${esc(d.location)}</span><span class="st ${st}">${stLabel(st)}</span></h3><p class="meta">${esc(typeLabel(d.type))} · ${esc(d.rating||'—')} · ${esc(d.leaf||'—')}</p>`;
+    h+=`<table class="cl"><thead><tr><th>Check</th><th>Result</th><th>Comment</th></tr></thead><tbody>${CHECKS.map(k=>{const o=d.checks[k[0]]||{};return `<tr><td>${esc(k[1])}</td><td class="r-${o.r||''}">${rLabel(o.r)}</td><td>${esc(o.c||'')}</td></tr>`}).join('')}</tbody></table>`;
+    h+=`<table class="kv">${[['Issues found',d.issues],['Recommended action',d.action],['Priority',d.priority],['Notes',d.notes]].map(([k,v])=>`<tr><th>${k}</th><td>${esc(v||'—').replace(/\n/g,'<br>')}</td></tr>`).join('')}</table>`;
+    if(d.media.length){h+='<div class="thumbs">';for(const m of d.media){const n=mediaName(d,m);let inner;
+      if(mode==='app')inner=m.kind==='video'?`<video data-mid="${m.id}" controls playsinline muted preload="metadata"></video>`:`<img data-mid="${m.id}" alt="${esc(n)}">`;
+      else if(m.kind==='video')inner=`<div class="vid">▶ Video<br>${esc(n)}<br>${mode==='zip'?'(click to open)':'(original in ZIP download)'}</div>`;
+      else{const t=await thumbFor(m.id,900);inner=t?`<img src="${t.url}" alt="${esc(n)}">`:`<div class="vid">${esc(n)}</div>`}
+      if(mode==='zip')inner=`<a href="media/${encodeURIComponent(n)}">${inner}</a>`;
+      h+=`<figure>${inner}<figcaption>${esc(n)}</figcaption></figure>`}h+='</div>'}
+    h+='</section>'}
+  h+=`<p class="gn">${esc(GUIDANCE)}<br>Report generated ${esc(new Date().toLocaleString('en-GB'))} · SafeBuilt Solutions Ltd.</p></div>`;
+  return h;
+}
+async function reportHTMLFile(mode){const body=await reportMarkup(mode);
+  return `<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fire Door Report ${esc(S.survey.ref||'')}</title><style>body{margin:0;background:#f2f3f6;padding:12px}.report{max-width:900px;margin:0 auto}@media print{body{background:#fff;padding:0}.report{box-shadow:none}}${REPORT_CSS}</style></head><body>${body}</body></html>`}
+
+/* ---------- sample data ---------- */
+async function sampleImg(ref,title,kind){
+  const c=document.createElement('canvas');c.width=800;c.height=600;const g=c.getContext('2d');
+  g.fillStyle='#d8d2c4';g.fillRect(0,0,800,600);g.fillStyle='#8f8f8f';g.fillRect(0,505,800,95);
+  g.fillStyle='#f4f4f4';g.fillRect(240,50,320,460);
+  const gap=kind==='gap'?22:10;g.fillStyle=kind==='riser'?'#7c8a99':'#b9875c';g.fillRect(256,50+gap+6,288,450-gap-10);
+  if(kind==='double'||kind==='gap'||kind==='seal'){g.strokeStyle='#6d4c33';g.lineWidth=3;g.beginPath();g.moveTo(400,62+gap);g.lineTo(400,500);g.stroke()}
+  g.fillStyle='#4a4a4a';g.fillRect(kind==='gap'||kind==='seal'?380:505,290,12,54);
+  if(kind!=='riser'){g.fillStyle='#1565c0';g.beginPath();g.arc(kind==='gap'||kind==='seal'?330:400,190,46,0,7);g.fill();g.fillStyle='#fff';g.font='bold 13px Arial';g.textAlign='center';const sx=kind==='gap'||kind==='seal'?330:400;g.fillText('FIRE DOOR',sx,186);g.fillText('KEEP SHUT',sx,203)}
+  g.fillStyle='#777';g.fillRect(270,64+gap,90,16);
+  const ring=(x,y,rx,ry)=>{g.strokeStyle='#e53935';g.lineWidth=7;g.beginPath();g.ellipse(x,y,rx,ry,0,0,7);g.stroke()};
+  if(kind==='gap'){ring(470,64,70,30);g.fillStyle='#e53935';g.font='bold 30px Arial';g.textAlign='left';g.fillText('6 mm',590,74)}
+  if(kind==='seal')ring(400,300,26,150);
+  if(kind==='closer'){ring(315,72,70,34);g.fillStyle='#e53935';g.font='bold 26px Arial';g.textAlign='left';g.fillText('Not latching',570,300)}
+  if(kind==='strip')ring(256,170,24,90);
+  if(kind==='riser'){ring(400,190,90,60);g.fillStyle='#e53935';g.font='bold 60px Arial';g.textAlign='center';g.fillText('?',400,212)}
+  if(kind==='ok'){g.strokeStyle='#2e7d32';g.lineWidth=16;g.beginPath();g.moveTo(600,120);g.lineTo(640,160);g.lineTo(720,70);g.stroke()}
+  g.fillStyle='rgba(0,0,0,.72)';g.fillRect(0,530,800,70);g.fillStyle='#fff';g.textAlign='left';g.font='bold 24px Arial';g.fillText(ref+': '+title,16,560);
+  g.font='15px Arial';g.fillStyle='#ffeb3b';g.fillText('SAMPLE PLACEHOLDER IMAGE – not a real photo',16,586);
+  g.fillStyle='#ffeb3b';g.fillRect(0,0,120,34);g.fillStyle='#000';g.font='bold 18px Arial';g.fillText('SAMPLE',18,24);
+  return new Promise(r=>c.toBlob(r,'image/jpeg',.85));
+}
+function mkChecks(over,na){const o={};CHECKS.forEach(c=>o[c[0]]={r:(na||[]).includes(c[0])?'na':'pass',c:''});for(const k in over)o[k]=over[k];return o}
+async function loadSample(){
+  await clearMedia().catch(()=>{});Object.keys(URLS).forEach(k=>{URL.revokeObjectURL(URLS[k]);delete URLS[k]});Object.keys(TH).forEach(k=>delete TH[k]);
+  const D=(ref,location,type,rating,leaf,checks,x)=>Object.assign({id:uid(),ref,location,type,rating,leaf,checks,overall:'',manual:false,issues:'',action:'',priority:'',notes:'',media:[]},x||{});
+  S={isSample:true,survey:{site:'Marlowe Court (SAMPLE)',address:'1–48 Example Road, Stratford, London E15 0XX',client:'Example Housing Association (sample)',inspector:'Gedas – SafeBuilt Solutions Ltd',date:today(),ref:'SBS-FD-2026-0001'},doors:[
+    D('Door-01','Ground floor communal entrance lobby','communal','FD30S','Double',mkChecks({gaps:{r:'fail',c:'Head gap 6 mm at meeting stiles (sides 3 mm).'},smoke:{r:'fail',c:'Smoke seal missing on meeting stile of active leaf (~1.2 m).'},glazing:{r:'pass',c:'Vision panels marked Pyroguard, beads secure.'}},['holdopen']),
+      {issues:'6 mm head gap at meeting stiles exceeds 2–4 mm guidance; smoke seal missing on meeting stile.',action:'Adjust',priority:'Within 3 months',notes:'Re-hang/adjust leaves to reduce head gap, then fit matching intumescent/smoke seal to meeting stile.'}),
+    D('Door-02','First floor communal lobby','communal','FD30S','Single',mkChecks({gaps:{r:'pass',c:'3 mm all round.'},threshold:{r:'pass',c:'3 mm.'}},['glazing','holdopen']),{notes:'Door in good condition. Re-inspect at next quarterly check.'}),
+    D('Door-03','Ground floor stair core (Stair A)','stair','FD30S','Single',mkChecks({intumescent:{r:'fail',c:'Intumescent strip damaged/missing approx. 300 mm at hinge-side head.'},selfclose:{r:'fail',c:'Closes but does not engage latch from less than ~30°.'},latch:{r:'fail',c:'Does not latch unaided.'},closer:{r:'fail',c:'Latch speed valve needs adjustment; arm fixings loose.'}},['glazing','holdopen']),
+      {issues:'Closer not pulling door into latch; intumescent strip damaged at hinge-side head.',action:'Repair',priority:'Urgent',notes:'Escape route door – adjust/replace closer and replace damaged intumescent strip as priority.'}),
+    D('Door-04','Second floor riser cupboard (electrical)','riser','FD30','Single',mkChecks({signage:{r:'fail',c:'No “Fire door keep locked” sign on outer face.'},threshold:{r:'pass',c:'8 mm – within guidance for FD30 non-smoke door.'},latch:{r:'pass',c:'Locked with budget lock.'}},['smoke','selfclose','closer','glazing','holdopen']),
+      {issues:'Missing “Fire door keep locked” signage.',action:'Repair',priority:'Within 3 months',notes:'Fit mandatory “Fire door keep locked” sign. Riser kept locked so self-closer not required.'}),
+    D('Door-05','Flat 7 entrance door (first floor)','flat','FD30S','Single',mkChecks({ironmongery:{r:'pass',c:'Fire-rated letter plate with intumescent liner; spy hole fitted.'},cert:{r:'pass',c:'Certification plug on hinge edge (third-party scheme).'}},['glazing','holdopen']),{notes:'Resident informed of annual flat entrance door check.'})
+  ]};
+  const pics={'Door-01':[['Head gap 6 mm','gap'],['Missing smoke seal','seal']],'Door-02':[['Door in good order','ok']],'Door-03':[['Closer not latching','closer'],['Damaged intumescent strip','strip']],'Door-04':[['No keep locked sign','riser']],'Door-05':[['Flat door in good order','ok']]};
+  for(const d of S.doors){for(const [t,k] of pics[d.ref]){const b=await sampleImg(d.ref,t,k);const id=uid();await putMedia({id,type:'image/jpeg',data:await b.arrayBuffer()});d.media.push({id,kind:'photo',type:'image/jpeg',ext:'jpg',caption:t})}}
+  save();
+}
+
+/* ---------- views ---------- */
+function setNav(v){document.querySelectorAll('nav.bottom a').forEach(a=>a.classList.toggle('on',a.dataset.v===v));$('#sampleTag').hidden=!S.isSample}
+function field(lbl,k,v,ph,src,type){return `<label class="f">${lbl}<input type="${type||'text'}" data-${src||'d'}="${k}" value="${esc(v)}" placeholder="${esc(ph||'')}" autocomplete="off"></label>`}
+function sel(lbl,k,opts,v){return `<label class="f">${lbl}<select data-d="${k}"><option value="">Select…</option>${opts.map(o=>{const [val,t]=Array.isArray(o)?o:[o,o];return `<option value="${esc(val)}"${val===v?' selected':''}>${esc(t)}</option>`}).join('')}</select></label>`}
+function seg(attr,opts,val,cls){return `<div class="seg" ${attr}>${opts.map(([v,t])=>`<button type="button" data-v="${esc(v)}" class="${val===v?'on '+(cls||v):''}">${t}</button>`).join('')}</div>`}
+function paintSeg(el,val,cls){el.querySelectorAll('button').forEach(b=>b.className=b.dataset.v===val?'on '+(cls||b.dataset.v):'')}
+
+function renderList(){setNav('list');const s=S.survey,c=counts();
+  app.innerHTML=`${S.isSample?`<section class="card banner"><b>Sample data loaded.</b> <span class="muted">This is an example 5-door survey to show how the app works. Edit it, or start a blank survey.</span><div class="row" style="margin-top:10px"><button class="btn sm" data-act="blank">Start blank survey</button></div></section>`:''}
+  <details class="card" id="survey" ${S.doors.length?'':'open'}><summary>Survey details <span class="muted">${esc(s.ref||'')}</span></summary>
+   ${field('Site / building name','site',s.site,'e.g. Marlowe Court','s')}${field('Address','address',s.address,'Street, town, postcode','s')}${field('Client','client',s.client,'','s')}
+   ${field('Inspector','inspector',s.inspector,'','s')}${field('Survey date','date',s.date,'','s','date')}${field('Survey reference','ref',s.ref,'e.g. SBS-FD-2026-0001','s')}
+  </details>
+  <div class="counts"><div><b>${c.total}</b>Doors</div><div class="p"><b>${c.pass}</b>Pass</div><div class="x"><b>${c.fail}</b>Fail</div><div><b>${c.none}</b>Not insp.</div></div>
+  <ul class="doors">${S.doors.map(d=>{const st=status(d);return `<li><a class="door-row ${st}" href="#/door/${d.id}"><div><b>${esc(d.ref||'(no ref)')}</b><small>${esc(d.location||'No location')}</small><small>${esc(typeLabel(d.type))} · ${esc(d.rating||'—')}${d.media.length?' · 📷 '+d.media.length:''}</small></div><span class="badge ${st}">${stLabel(st)}</span></a></li>`}).join('')||'<li class="empty">No doors yet – tap “Add door”.</li>'}</ul>
+  <button class="btn primary block" data-act="add">＋ Add door</button>`;
+}
+function checkItem(d,c){const o=d.checks[c[0]]||{};return `<div class="ck"><b>${esc(c[1])}</b><p class="hint">${esc(c[2])}</p>${seg(`data-ck="${c[0]}"`,[['pass','✔ Pass'],['fail','✖ Fail'],['na','N/A']],o.r||'')}<input type="text" data-cc="${c[0]}" value="${esc(o.c||'')}" placeholder="Comment (optional)"></div>`}
+function overallHTML(d){const sg=suggest(d),st=status(d),nf=failed(d).length,nu=CHECKS.filter(c=>!(d.checks[c[0]]||{}).r).length;
+  return `<h2>Overall result</h2><p class="hint">Suggested: <span class="badge ${sg}">${stLabel(sg)}</span> ${nf?nf+' item(s) failed':nu?nu+' item(s) not yet checked':'all items Pass / N/A'}</p>
+  ${seg('data-ov=""',[['pass','✔ PASS'],['fail','✖ FAIL']],st)}
+  ${d.manual?`<p class="hint">${d.overall!==sg?'<b>Manual override</b> – differs from suggestion. ':'Set manually. '}<button type="button" class="btn sm" data-act="unoverride">Use suggestion</button></p>`:'<p class="hint">Follows checklist automatically – tap to override.</p>'}`}
+function renderDoor(id){setNav('list');const d=doorById(id),i=S.doors.indexOf(d),n=S.doors.length,prev=S.doors[i-1],next=S.doors[i+1];
+  app.innerHTML=`<div class="bar"><a class="btn" href="#/list">‹ Doors</a><span class="muted">Door ${i+1} of ${n}</span><span id="dbadge" class="badge ${status(d)}">${stLabel(status(d))}</span></div>
+  <section class="card"><h2>Door details</h2>${field('Door reference','ref',d.ref,'e.g. Door-06')}${field('Location','location',d.location,'e.g. Ground floor communal lobby')}
+   ${sel('Door type','type',TYPES,d.type)}${sel('Fire rating','rating',RATINGS,d.rating)}${sel('Door leaf type','leaf',LEAFS,d.leaf)}</section>
+  <section class="card"><h2>Checklist</h2><p class="hint">Based on Fire Safety (England) Regulations 2022 guidance, BS 8214 and FDIS-style checks. Tap again to clear.</p>
+   <div class="row" style="margin:10px 0 0"><button type="button" class="btn sm" data-act="allpass">Set unanswered to Pass</button></div>
+   ${CHECKS.map(c=>checkItem(d,c)).join('')}</section>
+  <section class="card" id="overall">${overallHTML(d)}</section>
+  <section class="card"><h2>Issues & action</h2>
+   <label class="f">Issues found<textarea id="issues" data-d="issues" placeholder="Summary of defects">${esc(d.issues)}</textarea></label>
+   <button type="button" class="btn sm" data-act="fillissues" style="margin:-4px 0 12px">Fill from failed items</button>
+   <label class="f">Recommended action${seg('data-da="action"',ACTIONS.map(a=>[a,a]),d.action,'sel')}</label>
+   <label class="f">Priority${seg('data-da="priority"',PRIS.map(a=>[a,a]),d.priority,'sel')}</label>
+   <label class="f">Notes<textarea data-d="notes" placeholder="Any other notes">${esc(d.notes)}</textarea></label></section>
+  <section class="card"><h2>Photos & video</h2>
+   <div class="uploads"><label class="btn"><span class="i">📷</span>Take photo<input type="file" accept="image/*" capture="environment"></label><label class="btn"><span class="i">🎥</span>Record video<input type="file" accept="video/*" capture="environment"></label><label class="btn"><span class="i">🖼️</span>From library<input type="file" accept="image/*,video/*" multiple></label></div>
+   <div id="media" class="grid"></div>
+   <button type="button" class="btn block" data-act="zipdoor">⬇ Download all media (ZIP)</button></section>
+  <div class="bar">${prev?`<a class="btn" href="#/door/${prev.id}">‹ ${esc(prev.ref)}</a>`:'<span></span>'}${next?`<a class="btn" href="#/door/${next.id}">${esc(next.ref)} ›</a>`:`<a class="btn primary" href="#/summary">Report ›</a>`}</div>
+  <button type="button" class="btn danger block" data-act="deldoor">Delete this door</button>`;
+  renderMedia(d);
+}
+function renderMedia(d){const el=$('#media');if(!el)return;
+  el.innerHTML=d.media.length?d.media.map(m=>`<div class="mi">${m.kind==='video'?`<video data-mid="${m.id}" controls playsinline muted preload="metadata"></video>`:`<img data-mid="${m.id}" alt="">`}<div class="mname">${esc(mediaName(d,m))}</div><div class="mbtns"><button type="button" class="btn sm" data-act="dlmedia" data-id="${m.id}">⬇ Download</button><button type="button" class="btn sm danger" data-act="delmedia" data-id="${m.id}" aria-label="Delete">🗑</button></div></div>`).join(''):'<p class="muted" style="grid-column:1/-1">No photos or videos yet.</p>';
+  hydrate(el)}
+async function renderSummary(){setNav('summary');
+  app.innerHTML=`<div class="actions noprint">
+   <button class="btn primary wide" data-act="pdf">⬇ Download report (PDF)</button>
+   <button class="btn" data-act="print">🖨 Print / Save as PDF</button><button class="btn" data-act="html">⬇ Report (HTML)</button>
+   <button class="btn dark wide" data-act="zipall">⬇ Download all files (ZIP)</button>
+   <button class="btn sm" data-act="json">Export JSON</button><button class="btn sm danger" data-act="reset">Reset to sample data</button></div>
+   <div id="report"></div>`;
+  $('#report').innerHTML=await reportMarkup('app');hydrate($('#report'))}
+function route(){if(!S)return;const h=location.hash.replace(/^#\/?/,'').split('/');
+  if(h[0]==='door'&&doorById(h[1]))renderDoor(h[1]);else if(h[0]==='summary')renderSummary();else renderList();window.scrollTo(0,0)}
+
+/* ---------- actions ---------- */
+async function addFiles(d,files){busy(true,'Saving…');let n=0;
+  try{for(const f of files){const kind=(f.type||'').startsWith('video')||/\.(mov|mp4|webm|3gp|m4v)$/i.test(f.name)?'video':'photo';const id=uid();
+    await putMedia({id,type:f.type||'application/octet-stream',data:await f.arrayBuffer(),orig:f.name});d.media.push({id,kind,type:f.type,ext:extOf(f),orig:f.name});n++}
+  }catch(e){toast('Could not store file: '+(e.message||e.name))}
+  save();busy(false);renderMedia(d);if(n)toast(n+' file(s) added')}
+async function doorFiles(d,prefix){const out=[];for(const m of d.media){const b=await mediaBlob(m.id);if(b)out.push({name:(prefix||'')+mediaName(d,m),data:new Uint8Array(await b.arrayBuffer())})}return out}
+const u8=async b=>new Uint8Array(await b.arrayBuffer());
+const ACT={
+  async add(){const n=S.doors.length+1;const d={id:uid(),ref:'Door-'+pad(n),location:'',type:'',rating:'',leaf:'Single',checks:{},overall:'',manual:false,issues:'',action:'',priority:'',notes:'',media:[]};S.doors.push(d);save();location.hash='#/door/'+d.id},
+  async blank(){if(!confirm('Start a new blank survey? This deletes the sample doors and photos on this device.'))return;await clearMedia();S={isSample:false,survey:{site:'',address:'',client:'',inspector:'Gedas – SafeBuilt Solutions Ltd',date:today(),ref:''},doors:[]};save();route();toast('Blank survey started')},
+  async reset(){if(!confirm('Reset to sample data? All current doors, photos and videos on this device will be deleted.'))return;busy(true,'Loading sample…');await loadSample();busy(false);location.hash='#/list';route();toast('Sample data restored')},
+  allpass(b,d){CHECKS.forEach(c=>{const o=ck(d,c[0]);if(!o.r)o.r='pass'});save();renderDoor(d.id)},
+  fillissues(b,d){const t=failed(d).map(c=>{const o=d.checks[c[0]];return c[1]+(o.c?': '+o.c:'')}).join('\n');d.issues=t;$('#issues').value=t;save();if(!t)toast('No failed items')},
+  unoverride(b,d){d.manual=false;d.overall='';save();refreshOverall(d)},
+  async deldoor(b,d){if(!confirm('Delete '+(d.ref||'this door')+' and its media?'))return;for(const m of d.media)await delMedia(m.id);S.doors.splice(S.doors.indexOf(d),1);save();location.hash='#/list'},
+  async dlmedia(b,d){const m=d.media.find(x=>x.id===b.dataset.id);const bl=await mediaBlob(m.id);if(!bl)return toast('File missing');await saveBlob(bl,mediaName(d,m))},
+  async delmedia(b,d){const m=d.media.find(x=>x.id===b.dataset.id);if(!confirm('Delete '+mediaName(d,m)+'?'))return;await delMedia(m.id);d.media.splice(d.media.indexOf(m),1);save();renderMedia(d)},
+  async zipdoor(b,d){if(!d.media.length)return toast('No media for this door');busy(true);const z=makeZip(await doorFiles(d));busy(false);await saveBlob(z,safe(d.ref)+'_media.zip')},
+  async pdf(){busy(true,'Building PDF…');try{const p=await buildPDF();busy(false);await saveBlob(p,baseName()+'_report.pdf')}catch(e){busy(false);toast('PDF failed: '+e.message+' – use Print / Save as PDF')}},
+  print(){window.print()},
+  async html(){busy(true);const h=await reportHTMLFile('html');busy(false);await saveBlob(new Blob([h],{type:'text/html'}),baseName()+'_report.html')},
+  async zipall(){busy(true,'Building ZIP…');try{const te=new TextEncoder();const files=[{name:'report.pdf',data:await u8(await buildPDF())},{name:'report.html',data:te.encode(await reportHTMLFile('zip'))},{name:'survey-data.json',data:te.encode(exportJSON())}];
+    for(const d of S.doors)files.push(...await doorFiles(d,'media/'));const z=makeZip(files);busy(false);await saveBlob(z,baseName()+'_all-files.zip')}catch(e){busy(false);toast('ZIP failed: '+e.message)}},
+  async json(){await saveBlob(new Blob([exportJSON()],{type:'application/json'}),baseName()+'_data.json')}
+};
+function exportJSON(){return JSON.stringify({app:'SafeBuilt Solutions fire door inspection',exported:new Date().toISOString(),sample:!!S.isSample,survey:S.survey,
+  doors:S.doors.map(d=>({...d,status:status(d),suggested:suggest(d),checks:CHECKS.map(c=>({key:c[0],item:c[1],result:(d.checks[c[0]]||{}).r||'',comment:(d.checks[c[0]]||{}).c||''})),media:d.media.map(m=>({file:mediaName(d,m),kind:m.kind,type:m.type,original:m.orig||m.caption||''}))}))},null,2)}
+function refreshOverall(d){const o=$('#overall');if(o)o.innerHTML=overallHTML(d);const b=$('#dbadge');if(b){const s=status(d);b.className='badge '+s;b.textContent=stLabel(s)}}
+
+app.addEventListener('input',e=>{const t=e.target;
+  if(t.dataset.s!==undefined){S.survey[t.dataset.s]=t.value;save();return}
+  const d=cur();if(!d)return;
+  if(t.dataset.d){d[t.dataset.d]=t.value;save();if(t.dataset.d==='ref')renderMedia(d)}
+  else if(t.dataset.cc){ck(d,t.dataset.cc).c=t.value;save()}});
+app.addEventListener('change',e=>{const t=e.target;if(t.type==='file'&&t.files&&t.files.length){const d=cur();addFiles(d,[...t.files]).then(()=>{t.value=''})}});
+app.addEventListener('click',async e=>{
+  const sb=e.target.closest('.seg button');
+  if(sb){e.preventDefault();const g=sb.parentElement,d=cur(),v=sb.dataset.v;if(!d)return;
+    if(g.dataset.ck){const o=ck(d,g.dataset.ck);o.r=o.r===v?'':v;paintSeg(g,o.r);save();refreshOverall(d)}
+    else if(g.dataset.ov!==undefined){d.manual=true;d.overall=v;save();refreshOverall(d)}
+    else if(g.dataset.da){d[g.dataset.da]=d[g.dataset.da]===v?'':v;paintSeg(g,d[g.dataset.da],'sel');save()}
+    return}
+  const b=e.target.closest('[data-act]');if(!b||!ACT[b.dataset.act])return;e.preventDefault();
+  try{await ACT[b.dataset.act](b,cur())}catch(err){busy(false);toast('Error: '+(err.message||err))}});
+window.addEventListener('hashchange',route);
+
+(async function init(){
+  const st=document.createElement('style');st.textContent=REPORT_CSS;document.head.appendChild(st);
+  try{const raw=localStorage.getItem(LS);if(raw)S=JSON.parse(raw)}catch(e){}
+  if(!S||!S.survey){try{await loadSample()}catch(e){S={isSample:false,survey:{date:today()},doors:[]};toast('Storage unavailable: '+e.message)}}
+  if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
+  route();
+})();
+</script>
+</body>
+</html>
