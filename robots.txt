@@ -2,3 +2,5 @@ User-agent: *
 Disallow: /records/
 Disallow: /fire-door-app/records/
 Disallow: /fire-door-app/door.html
+
+Sitemap: https://gedaskalinauskas-coder.github.io/fire-door-app/sitemap.xml
