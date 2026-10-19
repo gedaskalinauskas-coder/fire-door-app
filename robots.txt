@@ -1,0 +1,4 @@
+User-agent: *
+Disallow: /records/
+Disallow: /fire-door-app/records/
+Disallow: /fire-door-app/door.html

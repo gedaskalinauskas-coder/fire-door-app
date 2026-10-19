@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow,noarchive,noimageindex">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#b71c1c">
+<title>Fire door record – SafeBuilt Solutions Ltd</title>
+<style>
+:root{--red:#c62828;--green:#2e7d32;--grey:#78808a;--amber:#ef6c00;--ink:#1d2330;--brand:#b71c1c;--bg:#f2f3f6}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:var(--brand);color:#fff;padding:calc(12px + env(safe-area-inset-top)) 16px 12px;display:flex;align-items:center;gap:12px}
+header .logo{width:38px;height:38px;border-radius:8px;background:#fff;color:var(--brand);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:15px;letter-spacing:-.02em;flex:none}
+header b{display:block;font-size:17px}header span{font-size:13px;opacity:.92}
+main{max-width:640px;margin:0 auto;padding:12px 12px calc(28px + env(safe-area-inset-bottom))}
+.card{background:#fff;border-radius:14px;padding:16px;margin:0 0 12px;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.hero{border-top:6px solid var(--grey)}.hero.pass{border-top-color:var(--green)}.hero.fail{border-top-color:var(--red)}
+.kicker{font-size:12px;font-weight:800;letter-spacing:.08em;color:var(--brand);text-transform:uppercase;margin:0 0 6px}
+h1{font-size:26px;margin:0;line-height:1.15}h2{font-size:17px;margin:0 0 10px}
+.loc{font-size:17px;margin:4px 0 2px}.site{color:#555;margin:0;font-size:14px}
+.badge{display:inline-block;padding:7px 14px;border-radius:999px;font-weight:800;font-size:14px;letter-spacing:.04em;color:#fff;background:var(--grey);margin:12px 0 0}
+.badge.pass{background:var(--green)}.badge.fail{background:var(--red)}
+.chip{display:inline-block;margin-left:6px;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:800;color:#fff;vertical-align:1px}
+.chip.over{background:var(--red)}.chip.soon{background:var(--amber)}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0 0}
+.facts div{background:#f6f7f9;border-radius:10px;padding:10px}.facts small{display:block;color:#666;font-size:12px;font-weight:600}.facts b{font-size:16px}
+.facts .due b{color:var(--brand)}
+dl{margin:0;display:grid;grid-template-columns:38% 1fr;gap:8px 10px;font-size:15px}dt{color:#666;font-weight:600}dd{margin:0;word-break:break-word}
+.issues{white-space:pre-wrap;margin:0}.muted{color:#666;font-size:14px}
+.gal{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.gal button{padding:0;border:0;background:#222;border-radius:10px;overflow:hidden;cursor:zoom-in;aspect-ratio:4/3}
+.gal img{width:100%;height:100%;object-fit:cover;display:block}
+.nophoto{background:#f6f7f9;border:1px dashed #c9ccd3;border-radius:10px;padding:16px;text-align:center;color:#555}
+table.cl{width:100%;border-collapse:collapse;font-size:14px}table.cl td{border-top:1px solid #eee;padding:7px 4px;vertical-align:top}
+.r-pass{color:var(--green);font-weight:700}.r-fail{color:var(--red);font-weight:700}.r-na{color:#607d8b}
+details>summary{font-weight:700;font-size:17px;cursor:pointer}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.btn{display:flex;align-items:center;justify-content:center;min-height:50px;border-radius:10px;font-weight:700;font-size:16px;text-decoration:none;border:1px solid #c9ccd3;color:var(--ink);background:#fff;text-align:center;padding:8px}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}.btn.wide{grid-column:1/-1}
+.fine{font-size:12px;color:#666;margin:4px 4px 0}
+#lb{position:fixed;inset:0;background:rgba(0,0,0,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+#lb[hidden]{display:none}#lb img{max-width:100%;max-height:78vh;object-fit:contain}
+#lb p{color:#fff;font-size:14px;margin:8px 12px;text-align:center}
+#lb .nav{display:flex;gap:10px}#lb button{min-height:46px;min-width:90px;border-radius:10px;border:1px solid #777;background:#222;color:#fff;font-size:16px;font-weight:700}
+.load{text-align:center;color:#666;padding:40px 0}
+</style>
+</head>
+<body>
+<header><div class="logo">SBS</div><div><b>SafeBuilt Solutions Ltd</b><span>Fire door record</span></div></header>
+<main id="m"><p class="load">Loading door record…</p></main>
+<div id="lb" hidden><img alt=""><p id="lbc"></p><div class="nav"><button id="lbp">‹ Prev</button><button id="lbx">✕ Close</button><button id="lbn">Next ›</button></div></div>
+<script>
+"use strict";
+/* Public, read-only door record. No login, no editing, no survey data needed. */
+const CO={name:'SafeBuilt Solutions Ltd',tel:'07412 089093',email:'office@safebuiltsolutions.co.uk'};
+const TYPES={communal:'Communal',flat:'Flat entrance',riser:'Riser',plant:'Plant room',stair:'Stair core'};
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const str=v=>v==null?'':String(v);
+const esc=s=>str(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const iso=s=>/^\d{4}-\d{2}-\d{2}$/.test(str(s));
+const fmtD=s=>{if(!iso(s))return str(s)||'—';const [y,m,d]=s.split('-').map(Number);return d+' '+MON[m-1]+' '+y};
+const pad=n=>String(n).padStart(2,'0');
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())};
+const stLabel=s=>s==='pass'?'PASS':s==='fail'?'FAIL':'NOT INSPECTED';
+const rLabel=r=>r==='pass'?'Pass':r==='fail'?'Fail':r==='na'?'N/A':'–';
+const q=new URLSearchParams(location.search);
+const id=str(q.get('id')).trim();
+const okId=/^[A-Za-z0-9][A-Za-z0-9-]{4,90}$/.test(id);
+const m=document.getElementById('m');
+
+function snapshot(){try{const s=q.get('d');if(!s)return null;let b=s.replace(/-/g,'+').replace(/_/g,'/');while(b.length%4)b+='=';
+  const bin=atob(b),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);
+  const o=JSON.parse(new TextDecoder().decode(u));return o&&typeof o==='object'?o:null}catch(e){return null}}
+function fromSnap(o){return {source:'snapshot',id,survey:{site:o.s,address:o.a,ref:o.sr,date:o.d,inspector:o.in},
+  door:{ref:o.r,location:o.l,type:o.t,rating:o.f,status:o.st==='P'?'pass':o.st==='F'?'fail':'',nextDue:o.n,keyIssues:o.k},photos:[]}}
+
+function render(R){const s=R.survey||{},d=R.door||{},st=['pass','fail'].includes(d.status)?d.status:'';
+  const due=str(d.nextDue),t=today();let dueChip='';
+  if(iso(due)){if(due<t)dueChip='<span class="chip over">OVERDUE</span>';else{const days=(new Date(due)-new Date(t))/864e5;if(days<=30)dueChip='<span class="chip soon">DUE SOON</span>'}}
+  const photos=(Array.isArray(R.photos)?R.photos:[]).filter(p=>p&&/^[A-Za-z0-9._-]+\.(jpe?g|png|webp)$/i.test(str(p.file)));
+  const purl=p=>'records/'+encodeURIComponent(id)+'/'+encodeURIComponent(p.file);
+  const typeL=TYPES[d.type]||d.typeLabel||d.type||'—';
+  let h=`<section class="card hero ${st}"><p class="kicker">Fire door</p><h1>${esc(d.ref||'Fire door')}</h1>
+   <p class="loc">${esc(d.location||'')}</p><p class="site">${esc(s.site||'')}</p>
+   <span class="badge ${st}">${stLabel(st)}</span>
+   <div class="facts"><div><small>Inspected</small><b>${esc(fmtD(s.date))}</b></div><div class="due"><small>Next inspection due</small><b>${esc(fmtD(due))}</b>${dueChip}</div>
+   <div><small>Fire rating</small><b>${esc(d.rating||'—')}</b></div><div><small>Door type</small><b>${esc(typeL)}</b></div></div></section>`;
+  h+=`<section class="card"><h2>Key issues</h2><p class="issues">${esc(d.keyIssues||'—')}</p>${d.action||d.priority?`<p class="muted" style="margin:10px 0 0">Recommended action: <b>${esc(d.action||'—')}</b>${d.priority?` · Priority: <b>${esc(d.priority)}</b>`:''}</p>`:''}</section>`;
+  h+=`<section class="card"><h2>Photos</h2>${photos.length?`<div class="gal">${photos.map((p,i)=>`<button type="button" data-i="${i}" aria-label="Enlarge photo ${i+1}"><img loading="lazy" src="${purl(p)}" alt="${esc(p.caption||'Door photo '+(i+1))}"></button>`).join('')}</div><p class="muted" style="margin:8px 0 0">Tap a photo to enlarge.</p>`
+     :`<div class="nophoto">${R.source==='snapshot'?'<b>Photos not yet published</b><br><span class="muted">The full record with photos will appear here once SafeBuilt publishes it.</span>':'<b>No photos for this door</b>'}</div>`}</section>`;
+  h+=`<section class="card"><h2>Door details</h2><dl>
+   <dt>Door ID</dt><dd>${esc(id||'—')}</dd><dt>Site</dt><dd>${esc(s.site||'—')}</dd><dt>Address</dt><dd>${esc(s.address||'—')}</dd>
+   <dt>Location</dt><dd>${esc(d.location||'—')}</dd>${d.leaf?`<dt>Leaf</dt><dd>${esc(d.leaf)}</dd>`:''}<dt>Survey ref.</dt><dd>${esc(s.ref||'—')}</dd><dt>Inspector</dt><dd>${esc(s.inspector||'—')}</dd></dl></section>`;
+  if(Array.isArray(d.checks)&&d.checks.length)h+=`<details class="card"><summary>Inspection checklist</summary><table class="cl">${d.checks.map(c=>`<tr><td>${esc(c.item)}${c.comment?`<br><span class="muted">${esc(c.comment)}</span>`:''}</td><td class="r-${esc(c.result)}">${rLabel(c.result)}</td></tr>`).join('')}</table></details>`;
+  const subj=encodeURIComponent('Fire door '+(d.ref||'')+' – '+(s.site||'')+' ('+id+')');
+  h+=`<section class="card"><h2>Inspected by SafeBuilt Solutions Ltd</h2><p class="muted" style="margin:0">Fire door inspection, repair and maintenance.<br>Tel ${CO.tel} · ${CO.email}</p>
+   <div class="btns"><a class="btn primary" href="tel:+447412089093">📞 Call</a><a class="btn" href="mailto:${CO.email}?subject=${subj}">✉️ Email</a><span id="appbtn" class="wide" style="display:contents"></span></div></section>`;
+  h+=`<p class="fine">${R.source==='snapshot'?'Summary stored in the QR code at the time of inspection':'Published inspection record'} – this shows the door as found on ${esc(fmtD(s.date))} and does not update by itself. Visual, non-destructive inspection; it does not certify fire performance. If the door is damaged or does not close properly, report it to the building manager.</p>`;
+  m.innerHTML=h;
+  /* if this phone holds the survey in the SafeBuilt app, offer to open the full door */
+  try{const S=JSON.parse(localStorage.getItem('sbs_firedoor_v1')||'null');const ld=S&&Array.isArray(S.doors)&&S.doors.find(x=>x&&x.pid===id);
+    if(ld)document.getElementById('appbtn').innerHTML=`<a class="btn wide" href="index.html#/door/${encodeURIComponent(ld.id)}">Open full door in the app</a>`}catch(e){}
+  const lb=document.getElementById('lb'),li=lb.querySelector('img'),lc=document.getElementById('lbc');let cur=0;
+  const show=i=>{cur=(i+photos.length)%photos.length;li.src=purl(photos[cur]);lc.textContent=(photos[cur].caption?photos[cur].caption+' · ':'')+'Photo '+(cur+1)+' of '+photos.length;lb.hidden=false};
+  m.querySelectorAll('.gal button').forEach(b=>b.onclick=()=>show(+b.dataset.i));
+  document.getElementById('lbx').onclick=()=>{lb.hidden=true};document.getElementById('lbp').onclick=()=>show(cur-1);document.getElementById('lbn').onclick=()=>show(cur+1);
+  li.onclick=()=>{lb.hidden=true};document.getElementById('lbp').hidden=document.getElementById('lbn').hidden=photos.length<2;
+  document.addEventListener('keydown',e=>{if(lb.hidden)return;if(e.key==='Escape')lb.hidden=true;if(e.key==='ArrowLeft')show(cur-1);if(e.key==='ArrowRight')show(cur+1)});
+  document.title=(d.ref?d.ref+' – ':'')+'Fire door record – SafeBuilt Solutions Ltd';
+}
+function renderErr(){m.innerHTML=`<section class="card"><h2>Door record not found</h2><p>This QR code or link could not be read. Please contact SafeBuilt Solutions Ltd and quote the Door ID printed on the label.</p>
+  <div class="btns"><a class="btn primary" href="tel:+447412089093">📞 ${CO.tel}</a><a class="btn" href="mailto:${CO.email}">✉️ Email</a></div></section>`}
+(async function(){let rec=null;
+  if(okId){try{const r=await fetch('records/'+encodeURIComponent(id)+'/record.json',{cache:'no-store'});if(r.ok){const j=await r.json();if(j&&j.id===id&&j.door)rec=j}}catch(e){}}
+  const sn=snapshot();
+  if(rec){rec.source='published';render(rec)}else if(sn&&okId){render(fromSnap(sn))}else renderErr()})();
+</script>
+</body>
+</html>
