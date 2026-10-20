@@ -341,7 +341,12 @@ const slug=s=>String(s||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toL
 function rnd(n){const A='abcdefghjkmnpqrstuvwxyz23456789',b=new Uint8Array(n);crypto.getRandomValues(b);let o='';for(const x of b)o+=A[x%A.length];return o}
 /* stable, unguessable public door ID – created once, stored on the door, never changes */
 function doorId(d){if(!d.pid){const a=slug(S.survey.site||S.survey.ref).slice(0,24).replace(/-+$/,'')||'site',b=slug(d.ref).slice(0,16).replace(/-+$/,'')||'door';d.pid=a+'-'+b+'-'+rnd(8);save()}return d.pid}
-function ensureIds(){S.doors.forEach(doorId)}
+/* permanent short tag number (6 digits), assigned once, never changes; unique within this app's data */
+function tagNo(d){if(!d.tag){let n=+(localStorage.getItem('sbs_tag_ctr')||0)||0;S.doors.forEach(x=>{const v=parseInt(x.tag,10);if(v>n)n=v});
+  const used=new Set(S.doors.map(x=>x.tag).filter(Boolean));do{n++}while(used.has(String(n).padStart(6,'0')));d.tag=String(n).padStart(6,'0');
+  try{localStorage.setItem('sbs_tag_ctr',String(n))}catch(e){}save()}return d.tag}
+const tagLabel=d=>'SB '+tagNo(d);
+function ensureIds(){S.doors.forEach(d=>{doorId(d);tagNo(d)})}
 const recordURL=d=>PUBLIC_URL+'?id='+encodeURIComponent(doorId(d));
 function b64u(str){const b=new TextEncoder().encode(str);let s='';for(const x of b)s+=String.fromCharCode(x);return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}
 const clip=(s,n)=>{s=String(s||'').replace(/\s+/g,' ').trim();if(n<=0)return '';return s.length>n?s.slice(0,n-1).trimEnd()+'…':s};
@@ -359,6 +364,27 @@ async function logoJPG(){if(LOGO_JPG!==undefined)return LOGO_JPG;
     for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);return LOGO_JPG={bytes,w,h}}catch(e){return LOGO_JPG=null}}
 const MM=72/25.4;
 const L7163={name:'Avery L7163 (14 per sheet)',cols:2,rows:7,w:99.1,h:38.1,top:15.15,left:4.65,px:101.6,py:38.1,per:14};
+/* Avery L7160 / J8160: 21 per A4, 3 x 7, 63.5 x 38.1 mm, top 15.15, left 7.25, pitch 66.04 x 38.1 */
+const L7160={name:'Avery L7160 (21 per sheet)',cols:3,rows:7,w:63.5,h:38.1,top:15.15,left:7.25,px:66.04,py:38.1,per:21};
+const SHEET=st=>st==='tag'?L7160:L7163;
+/* rounded-rectangle path in PDF coords (y down input) */
+function rrPath(p,x,y,w,h,r){const H=p.H,k=.5523*r,f=v=>v.toFixed(2),X1=x,X2=x+w,Y1=H-y,Y2=H-y-h;
+  return `${f(X1+r)} ${f(Y1)} m ${f(X2-r)} ${f(Y1)} l ${f(X2-r+k)} ${f(Y1)} ${f(X2)} ${f(Y1-r+k)} ${f(X2)} ${f(Y1-r)} c ${f(X2)} ${f(Y2+r)} l ${f(X2)} ${f(Y2+r-k)} ${f(X2-r+k)} ${f(Y2)} ${f(X2-r)} ${f(Y2)} c ${f(X1+r)} ${f(Y2)} l ${f(X1+r-k)} ${f(Y2)} ${f(X1)} ${f(Y2+r-k)} ${f(X1)} ${f(Y2+r)} c ${f(X1)} ${f(Y1-r)} l ${f(X1)} ${f(Y1-r+k)} ${f(X1+r-k)} ${f(Y1)} ${f(X1+r)} ${f(Y1)} c h`}
+function drawTag(p,ox,oy,d,logo){const m=v=>v*MM,G=L7160,Q=doorQR(d),W=[1,1,1],c=v=>v.map(x=>x.toFixed(3)).join(' ');
+  /* thin black rounded border inset 1.5 mm */
+  p.raw(`${c(LB.black)} RG 0.7 w ${rrPath(p,ox+m(1.5),oy+m(1.5),m(G.w-3),m(G.h-3),m(2.5))} S`);
+  /* QR 24 mm, >= 2.3 mm (4 modules) white quiet zone inside the border */
+  const qs=m(24),qx=ox+m(3.9),qy=oy+m(3.4);drawQR(p,Q.q,qx,qy,qs);
+  const tn=pt(tagLabel(d)),ts=8.6;p.text(qx+(qs-tw(tn,ts,true))/2,oy+m(33.4),tn,ts,true,LB.black);
+  /* solid black rounded block on the right */
+  const bx=ox+m(30.4),by=oy+m(3),bw=ox+m(G.w-3)-bx,bh=m(G.h-6),cx=bx+bw/2,ctr=(t,sz,b,col,y)=>p.text(cx-tw(t,sz,b)/2,y,t,sz,b,col);
+  p.raw(`${c(LB.black)} rg ${rrPath(p,bx,by,bw,bh,m(2))} f`);
+  if(logo){const lw=bw-m(4),lh=lw*logo.h/logo.w;p.image(logo,bx+m(2),by+m(1.2),lw,lh)}else ctr('SafeBuilt',9,true,LB.yellow,by+m(6));
+  ctr('FIRE DOOR',10.5,true,LB.yellow,by+m(13.6));ctr('KEEP SHUT',6.4,true,W,by+m(16.6));
+  ctr(fitT(d.ref||'Door',10,bw-m(3),true),10,true,W,by+m(22.6));
+  p.rect(bx+m(4),by+m(24.6),bw-m(8),m(.8),LB.pink);
+  ctr(pt(CO.tel),7,true,W,by+m(29.6));
+}
 function drawQR(p,q,x,y,size){const n=q.getModuleCount(),s=size/n,ops=[];
   for(let r=0;r<n;r++){let c=0;while(c<n){if(q.isDark(r,c)){let e=c;while(e<n&&q.isDark(r,e))e++;ops.push(c+' '+r+' '+(e-c)+' 1.02 re');c=e}else c++}}
   p.raw('q 0 0 0 rg '+s.toFixed(5)+' 0 0 '+(-s).toFixed(5)+' '+x.toFixed(3)+' '+(p.H-y).toFixed(3)+' cm\n'+ops.join('\n')+'\nf Q')}
@@ -388,12 +414,16 @@ function drawLabel(p,ox,oy,d,logo,mode){const pre=mode!=='after';const m=v=>v*MM
   const ft=pt('Scan for door record \x95 '+CO.tel);p.text(tx,fy,ft,6.6,true,LB.ink);
   const av=TW-tw(ft,6.6,true)-m(2.5);if(av>m(8)){const ids=fitT('ID '+Q.id,4.2,av);p.text(tr-tw(ids,4.2),fy,ids,4.2,false,[.55,.55,.55])}
 }
-async function buildLabels(doors,start,mode){const p=PDFDoc(),G=L7163;let slot=Math.max(0,Math.min(G.per-1,(start||1)-1));
+async function buildLabels(doors,start,mode,style){const p=PDFDoc(),G=SHEET(style);let slot=Math.max(0,Math.min(G.per-1,(start||1)-1));
   ensureIds();const logo=await logoJPG();
-  for(const d of doors){if(slot>=G.per){p.page();slot=0}const c=slot%G.cols,r=Math.floor(slot/G.cols);drawLabel(p,(G.left+c*G.px)*MM,(G.top+r*G.py)*MM,d,logo,mode);slot++}
+  for(const d of doors){if(slot>=G.per){p.page();slot=0}const c=slot%G.cols,r=Math.floor(slot/G.cols);(style==='tag'?drawTag(p,(G.left+c*G.px)*MM,(G.top+r*G.py)*MM,d,logo):drawLabel(p,(G.left+c*G.px)*MM,(G.top+r*G.py)*MM,d,logo,mode));slot++}
   return p.build()}
 function modeSelect(id){return `<label class="f">Label type<select id="${id}"><option value="before">Before inspection (no dates)</option><option value="after">After inspection (with dates)</option></select></label>`}
-function posSelect(id){return `<label class="f">Start at label position<select id="${id}">${Array.from({length:14},(_,i)=>`<option value="${i+1}">${i+1}${i===0?' (top left)':i===1?' (top right)':''}</option>`).join('')}</select></label>`}
+const posOpts=G=>Array.from({length:G.per},(_,i)=>`<option value="${i+1}">${i+1}${i===0?' (top left)':i===G.cols-1?' (top right)':''}</option>`).join('');
+function posSelect(id){return `<label class="f">Start at label position<select id="${id}">${posOpts(L7163)}</select></label>`}
+function styleSelect(id,pos,mode){return `<label class="f">Label style<select id="${id}" onchange="styleChg(this.value,'${pos}','${mode}')"><option value="std">Standard (99 x 38 mm)</option><option value="tag">Compact tag (63.5 x 38.1 mm)</option></select></label>`}
+function styleChg(v,pos,mode){const G=SHEET(v),ps=$('#'+pos),ms=$('#'+mode);if(ps){const o=+ps.value||1;ps.innerHTML=posOpts(G);ps.value=String(Math.min(o,G.per))}
+  if(ms){ms.disabled=v==='tag';ms.closest('label').style.opacity=v==='tag'?.5:1}const h=$('#'+pos+'hint');if(h)h.innerHTML=v==='tag'?'Sheet: <b>'+L7160.name+'</b> – 63.5 × 38.1 mm (also J8160). Compact permanent tag: QR, tag number, door ref, phone – no dates.':h.dataset.std}
 const PRINT_TIP='Print at 100% / Actual size, not Fit to page';
 const qrTipHTML=`<p class="qrtip"><b>Print tip:</b> ${PRINT_TIP}. Print a test on plain paper first and hold it behind a label sheet to check it lines up.</p>`;
 
@@ -480,8 +510,8 @@ function renderList(){setNav('list');const s=S.survey,c=counts();
   </details>
   <div class="row" style="margin-bottom:12px"><button class="btn" data-act="qrpanel" title="${PRINT_TIP}">🏷 QR labels</button></div>
   <section class="card" id="qrpanel" hidden><h2>QR door labels</h2>
-   <p class="hint">Sheet: <b>${L7163.name}</b> – 99.1 × 38.1 mm labels (also fits J8163 and other L7163-size sheets). One label per door: ${c.total} door${c.total===1?'':'s'} = ${Math.max(1,Math.ceil(c.total/14))} sheet${c.total>14?'s':''}.</p>
-   ${modeSelect('qrmode')}${posSelect('qrstart')}
+   <p class="hint" id="qrstarthint" data-std="Sheet: <b>${L7163.name}</b> – 99.1 × 38.1 mm labels.">Sheet: <b>${L7163.name}</b> – 99.1 × 38.1 mm labels (also fits J8163 and other L7163-size sheets). One label per door: ${c.total} door${c.total===1?'':'s'} = ${Math.max(1,Math.ceil(c.total/14))} sheet${c.total>14?'s':''}.</p>
+   ${styleSelect('qrstyle','qrstart','qrmode')}${modeSelect('qrmode')}${posSelect('qrstart')}
    <button class="btn primary block" data-act="labels" title="${PRINT_TIP}">⬇ Download label sheet (PDF)</button>
    ${qrTipHTML}
    <p class="hint">Each door has a fixed Door ID that never changes, so you can print labels before inspecting and the QR still matches later. Scanning the QR opens the door record online.</p></section>
@@ -518,10 +548,10 @@ function renderDoor(id){setNav('list');const d=doorById(id),i=S.doors.indexOf(d)
    <div id="media" class="grid"></div>
    <button type="button" class="btn block" data-act="zipdoor">⬇ Download all media (ZIP)</button></section>
   <section class="card"><h2>QR door label</h2>
-   <p class="hint">Door ID: ${d.pid?`<code class="did">${esc(d.pid)}</code>`:'assigned when you first make this door’s label'}</p>
-   ${modeSelect('qrmode1')}${posSelect('qrstart1')}
+   <p class="hint">Door ID: ${d.pid?`<code class="did">${esc(d.pid)}</code>`:'assigned when you first make this door’s label'}${d.tag?` · Tag no. <b>SB ${esc(d.tag)}</b>`:''}</p>
+   ${styleSelect('qrstyle1','qrstart1','qrmode1')}${modeSelect('qrmode1')}${posSelect('qrstart1')}
    <div class="row"><button type="button" class="btn primary" data-act="labeldoor" title="${PRINT_TIP}">⬇ Label for this door (PDF)</button><button type="button" class="btn" data-act="previewrec">👁 Preview record</button></div>
-   <p class="hint">${L7163.name}. Prints this door’s label at the chosen position, so you can use up part-used sheets.</p>
+   <p class="hint" id="qrstart1hint" data-std="${L7163.name}. Prints this door’s label at the chosen position.">${L7163.name}. Prints this door’s label at the chosen position, so you can use up part-used sheets.</p>
    ${qrTipHTML}</section>
   <div class="bar">${prev?`<a class="btn" href="#/door/${prev.id}">‹ ${esc(prev.ref)}</a>`:'<span></span>'}${next?`<a class="btn" href="#/door/${next.id}">${esc(next.ref)} ›</a>`:`<a class="btn primary" href="#/summary">Report ›</a>`}</div>
   <button type="button" class="btn danger block" data-act="deldoor">Delete this door</button>`;
@@ -552,9 +582,9 @@ const u8=async b=>new Uint8Array(await b.arrayBuffer());
 const ACT={
   addmany(){const n=Math.max(1,Math.min(200,parseInt(($('#mcount')||{}).value,10)||0)),st=String(($('#mstart')||{}).value||'Door-01').trim();
     const mt=st.match(/^(.*?)(\d+)$/),pre=mt?mt[1]:(st?st+'-':'Door-'),n0=mt?parseInt(mt[2],10):1,w=mt?mt[2].length:2;
-    for(let i=0;i<n;i++){const d={id:uid(),ref:pre+String(n0+i).padStart(w,'0'),location:'',type:'',rating:'',leaf:'Single',checks:{},overall:'',manual:false,issues:'',action:'',priority:'',notes:'',media:[]};S.doors.push(d);doorId(d)}
+    for(let i=0;i<n;i++){const d={id:uid(),ref:pre+String(n0+i).padStart(w,'0'),location:'',type:'',rating:'',leaf:'Single',checks:{},overall:'',manual:false,issues:'',action:'',priority:'',notes:'',media:[]};S.doors.push(d);doorId(d);tagNo(d)}
     save();route();toast(n+' door'+(n>1?'s':'')+' added')},
-  async add(){const n=S.doors.length+1;const d={id:uid(),ref:'Door-'+pad(n),location:'',type:'',rating:'',leaf:'Single',checks:{},overall:'',manual:false,issues:'',action:'',priority:'',notes:'',media:[]};S.doors.push(d);doorId(d);save();location.hash='#/door/'+d.id},
+  async add(){const n=S.doors.length+1;const d={id:uid(),ref:'Door-'+pad(n),location:'',type:'',rating:'',leaf:'Single',checks:{},overall:'',manual:false,issues:'',action:'',priority:'',notes:'',media:[]};S.doors.push(d);doorId(d);tagNo(d);save();location.hash='#/door/'+d.id},
   async blank(){if(!confirm('Start a new blank survey? This deletes the sample doors and photos on this device.'))return;await clearMedia();S={isSample:false,survey:{site:'',address:'',client:'',inspector:'Gedas – SafeBuilt Solutions Ltd',date:today(),ref:''},doors:[]};save();route();toast('Blank survey started')},
   async reset(){if(!confirm('Reset to sample data? All current doors, photos and videos on this device will be deleted.'))return;busy(true,'Loading sample…');await loadSample();busy(false);location.hash='#/list';route();toast('Sample data restored')},
   allpass(b,d){CHECKS.forEach(c=>{const o=ck(d,c[0]);if(!o.r)o.r='pass'});save();renderDoor(d.id)},
@@ -570,13 +600,13 @@ const ACT={
   async zipall(){busy(true,'Building ZIP…');try{const te=new TextEncoder();const files=[{name:'report.pdf',data:await u8(await buildPDF())},{name:'report.html',data:te.encode(await reportHTMLFile('zip'))},{name:'survey-data.json',data:te.encode(exportJSON())}];
     for(const d of S.doors)files.push(...await doorFiles(d,'media/'));const z=makeZip(files);busy(false);await saveBlob(z,baseName()+'_all-files.zip')}catch(e){busy(false);toast('ZIP failed: '+e.message)}},
   qrpanel(){const el=$('#qrpanel');if(el){el.hidden=!el.hidden;if(!el.hidden)el.scrollIntoView({behavior:'smooth',block:'start'})}},
-  async labels(){if(!S.doors.length)return toast('Add a door first');busy(true,'Building labels…');try{const st=+($('#qrstart')||{}).value||1;const p=await buildLabels(S.doors,st,($('#qrmode')||{}).value||'before');busy(false);await saveBlob(p,baseName()+'_QR-labels_L7163.pdf')}catch(e){busy(false);toast('Labels failed: '+e.message)}},
-  async labeldoor(b,d){busy(true,'Building label…');try{const st=+($('#qrstart1')||{}).value||1;const p=await buildLabels([d],st,($('#qrmode1')||{}).value||'before');busy(false);await saveBlob(p,safe(d.ref||'Door')+'_QR-label_L7163.pdf')}catch(e){busy(false);toast('Label failed: '+e.message)}},
+  async labels(){if(!S.doors.length)return toast('Add a door first');busy(true,'Building labels…');try{const st=+($('#qrstart')||{}).value||1;const p=await buildLabels(S.doors,st,($('#qrmode')||{}).value||'before',($('#qrstyle')||{}).value||'std');busy(false);await saveBlob(p,baseName()+'_QR-labels_'+((($('#qrstyle')||{}).value==='tag')?'L7160':'L7163')+'.pdf')}catch(e){busy(false);toast('Labels failed: '+e.message)}},
+  async labeldoor(b,d){busy(true,'Building label…');try{const st=+($('#qrstart1')||{}).value||1;const p=await buildLabels([d],st,($('#qrmode1')||{}).value||'before',($('#qrstyle1')||{}).value||'std');busy(false);await saveBlob(p,safe(d.ref||'Door')+'_QR-label_'+((($('#qrstyle1')||{}).value==='tag')?'L7160':'L7163')+'.pdf')}catch(e){busy(false);toast('Label failed: '+e.message)}},
   previewrec(b,d){const u=doorQR(d).url.replace(PUBLIC_URL,'door.html');window.open(u,'_blank')||(location.href=u)},
   async json(){await saveBlob(new Blob([exportJSON()],{type:'application/json'}),baseName()+'_data.json')}
 };
 function exportJSON(){ensureIds();return JSON.stringify({app:'SafeBuilt Solutions fire door inspection',exported:new Date().toISOString(),sample:!!S.isSample,survey:S.survey,
-  doors:S.doors.map(d=>({...d,doorId:d.pid,recordUrl:recordURL(d),typeLabel:typeLabel(d.type),inspected:inspDate(),nextDue:nextDue(d),keyIssues:keyIssues(d),status:status(d),suggested:suggest(d),checks:CHECKS.map(c=>({key:c[0],item:c[1],result:(d.checks[c[0]]||{}).r||'',comment:(d.checks[c[0]]||{}).c||''})),media:d.media.map(m=>({file:mediaName(d,m),kind:m.kind,type:m.type,original:m.orig||m.caption||'',caption:m.caption||''}))}))},null,2)}
+  doors:S.doors.map(d=>({...d,doorId:d.pid,tagNo:d.tag,recordUrl:recordURL(d),typeLabel:typeLabel(d.type),inspected:inspDate(),nextDue:nextDue(d),keyIssues:keyIssues(d),status:status(d),suggested:suggest(d),checks:CHECKS.map(c=>({key:c[0],item:c[1],result:(d.checks[c[0]]||{}).r||'',comment:(d.checks[c[0]]||{}).c||''})),media:d.media.map(m=>({file:mediaName(d,m),kind:m.kind,type:m.type,original:m.orig||m.caption||'',caption:m.caption||''}))}))},null,2)}
 function refreshOverall(d){const o=$('#overall');if(o)o.innerHTML=overallHTML(d);const b=$('#dbadge');if(b){const s=status(d);b.className='badge '+s;b.textContent=stLabel(s)}}
 
 app.addEventListener('input',e=>{const t=e.target;

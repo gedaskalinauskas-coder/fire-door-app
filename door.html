@@ -94,7 +94,7 @@ function render(R){const s=R.survey||{},d=R.door||{},st=['pass','fail'].includes
   h+=`<section class="card"><h2>Photos</h2>${photos.length?`<div class="gal">${photos.map((p,i)=>`<button type="button" data-i="${i}" aria-label="Enlarge photo ${i+1}"><img loading="lazy" src="${purl(p)}" alt="${esc(p.caption||'Door photo '+(i+1))}"></button>`).join('')}</div><p class="muted" style="margin:8px 0 0">Tap a photo to enlarge.</p>`
      :`<div class="nophoto">${R.source==='snapshot'?'<b>Photos not yet published</b><br><span class="muted">The full record with photos will appear here once SafeBuilt publishes it.</span>':'<b>No photos for this door</b>'}</div>`}</section>`;
   h+=`<section class="card"><h2>Door details</h2><dl>
-   <dt>Door ID</dt><dd>${esc(id||'—')}</dd><dt>Site</dt><dd>${esc(s.site||'—')}</dd><dt>Address</dt><dd>${esc(s.address||'—')}</dd>
+   <dt>Door ID</dt><dd>${esc(id||'—')}</dd>${d.tagNo?`<dt>Tag no.</dt><dd>SB ${esc(d.tagNo)}</dd>`:''}<dt>Site</dt><dd>${esc(s.site||'—')}</dd><dt>Address</dt><dd>${esc(s.address||'—')}</dd>
    <dt>Location</dt><dd>${esc(d.location||'—')}</dd>${d.leaf?`<dt>Leaf</dt><dd>${esc(d.leaf)}</dd>`:''}<dt>Survey ref.</dt><dd>${esc(s.ref||'—')}</dd><dt>Inspector</dt><dd>${esc(s.inspector||'—')}</dd></dl></section>`;
   if(Array.isArray(d.checks)&&d.checks.length)h+=`<details class="card"><summary>Inspection checklist</summary><table class="cl">${d.checks.map(c=>`<tr><td>${esc(c.item)}${c.comment?`<br><span class="muted">${esc(c.comment)}</span>`:''}</td><td class="r-${esc(c.result)}">${rLabel(c.result)}</td></tr>`).join('')}</table></details>`;
   const subj=encodeURIComponent('Fire door '+(d.ref||'')+' – '+(s.site||'')+' ('+id+')');
