@@ -69,8 +69,9 @@ const today=()=>{const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+
 const stLabel=s=>s==='pass'?'PASS':s==='fail'?'FAIL':'NOT INSPECTED';
 const rLabel=r=>r==='pass'?'Pass':r==='fail'?'Fail':r==='na'?'N/A':'–';
 const q=new URLSearchParams(location.search);
-const id=str(q.get('id')).trim();
-const okId=/^[A-Za-z0-9][A-Za-z0-9-]{4,90}$/.test(id);
+let id=str(q.get('id')).trim();
+const tid=str(q.get('t')).trim().toLowerCase(),okTid=/^sb\d{6}-[a-z0-9]{6}$/.test(tid),tagNoT=okTid?tid.slice(2,8):'';
+let okId=/^[A-Za-z0-9][A-Za-z0-9-]{4,90}$/.test(id);
 const m=document.getElementById('m');
 
 function snapshot(){try{const s=q.get('d');if(!s)return null;let b=s.replace(/-/g,'+').replace(/_/g,'/');while(b.length%4)b+='=';
@@ -121,7 +122,15 @@ function renderPending(){m.innerHTML=`<section class="card hero"><p class="kicke
   <div class="btns"><a class="btn primary" href="tel:+447412089093">📞 ${CO.tel}</a><a class="btn" href="mailto:${CO.email}?subject=${encodeURIComponent('Fire door record '+id)}">✉️ Email</a><span id="appbtn" class="wide" style="display:contents"></span></div></section>`;
   try{const S=JSON.parse(localStorage.getItem('sbs_firedoor_v1')||'null');const ld=S&&Array.isArray(S.doors)&&S.doors.find(x=>x&&x.pid===id);
     if(ld)document.getElementById('appbtn').innerHTML=`<a class="btn wide" href="index.html#/door/${encodeURIComponent(ld.id)}">Open full door in the app</a>`}catch(e){}}
+function renderTagPending(){let S=null;try{S=JSON.parse(localStorage.getItem('sbs_firedoor_v1')||'null')}catch(e){}
+  const ld=S&&Array.isArray(S.doors)&&S.doors.find(x=>x&&x.tagId===tid);
+  m.innerHTML=`<section class="card hero"><p class="kicker">SafeBuilt asset tag</p><h1>SB ${esc(tagNoT)}</h1>
+  <p class="loc">${ld?'This tag is linked to <b>'+esc(ld.ref||'a door')+'</b>. Its online record will appear here once it is published.':'Tag not yet assigned to a door.'}</p>
+  <div class="btns">${ld?`<a class="btn primary wide" href="index.html#/door/${encodeURIComponent(ld.id)}">Open door in the app</a>`:S&&Array.isArray(S.doors)?`<a class="btn primary wide" href="index.html#/tag/${encodeURIComponent(tid)}">Assign this tag to a door</a>`:''}
+  <a class="btn" href="tel:+447412089093">📞 ${CO.tel}</a><a class="btn" href="mailto:${CO.email}?subject=${encodeURIComponent('Asset tag SB '+tagNoT)}">✉️ Email</a></div></section>`}
 (async function(){let rec=null;
+  if(okTid&&!id){try{const r=await fetch('records/tags/'+encodeURIComponent(tid)+'.json',{cache:'no-store'});if(r.ok){const j=await r.json();if(j&&typeof j.id==='string'){id=j.id;okId=/^[A-Za-z0-9][A-Za-z0-9-]{4,90}$/.test(id)}}}catch(e){}
+    if(!okId)return renderTagPending()}
   if(okId){try{const r=await fetch('records/'+encodeURIComponent(id)+'/record.json',{cache:'no-store'});if(r.ok){const j=await r.json();if(j&&j.id===id&&j.door)rec=j}}catch(e){}}
   const sn=snapshot();
   if(rec){rec.source='published';render(rec)}else if(sn&&okId){render(fromSnap(sn))}else if(okId)renderPending();else renderErr()})();
