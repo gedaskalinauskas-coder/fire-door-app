@@ -345,45 +345,50 @@ function ensureIds(){S.doors.forEach(doorId)}
 const recordURL=d=>PUBLIC_URL+'?id='+encodeURIComponent(doorId(d));
 function b64u(str){const b=new TextEncoder().encode(str);let s='';for(const x of b)s+=String.fromCharCode(x);return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}
 const clip=(s,n)=>{s=String(s||'').replace(/\s+/g,' ').trim();if(n<=0)return '';return s.length>n?s.slice(0,n-1).trimEnd()+'…':s};
-/* compact snapshot carried inside the QR – used if the published record is not online yet */
-function snapshot(d,k,a){const s=S.survey,st=status(d);const o={v:1,s:s.site,a:clip(s.address,a),r:d.ref,l:clip(d.location,70),t:d.type,f:d.rating,st:st==='pass'?'P':st==='fail'?'F':'',d:inspDate(),n:nextDue(d),sr:s.ref,in:String(s.inspector||'').replace(/\s*[–-]\s*SafeBuilt Solutions Ltd\.?\s*$/i,''),k:clip(keyIssues(d),k),c:CO.tel};
-  for(const x in o)if(o[x]===''||o[x]==null)delete o[x];return o}
-const QR_MAXV=18; /* keep QR at version <=18 (89 modules => ~0.34 mm modules at 30 mm) so phones scan it easily */
+/* QR encodes only the short, stable door URL (records/<id>/record.json is the source of truth).
+   Older labels carried a long &d= snapshot; door.html still reads those. Short URL => QR version ~5-7 at EC M. */
 const QRC={};
-function doorQR(d){const id=doorId(d);let last;
-  for(const [k,a] of [[300,120],[240,100],[180,80],[140,60],[110,40],[80,0],[50,0],[25,0],[0,0]]){
-    const url=recordURL(d)+'&d='+b64u(JSON.stringify(snapshot(d,k,a)));
-    if(QRC[url])return QRC[url];
-    const q=qrcode(0,'M');q.addData(url);q.make();const v=(q.getModuleCount()-17)/4;last={url,q,v,k,id};
-    if(v<=QR_MAXV)break}
-  return QRC[last.url]=last}
+function doorQR(d){const id=doorId(d),url=recordURL(d);if(QRC[url])return QRC[url];
+  const q=qrcode(0,'M');q.addData(url);q.make();return QRC[url]={url,q,v:(q.getModuleCount()-17)/4,id}}
+/* SafeBuilt wordmark on the label header colour, as JPEG for the PDF writer */
+let LOGO_JPG;
+async function logoJPG(){if(LOGO_JPG!==undefined)return LOGO_JPG;
+  try{const img=new Image();await new Promise((res,rej)=>{img.onload=res;img.onerror=rej;img.src=LOGO_SRC});
+    const w=img.naturalWidth,h=img.naturalHeight,c=document.createElement('canvas');c.width=w;c.height=h;const g=c.getContext('2d');
+    g.fillStyle='#141414';g.fillRect(0,0,w,h);g.drawImage(img,0,0);const u=c.toDataURL('image/jpeg',.92),bin=atob(u.split(',')[1]),bytes=new Uint8Array(bin.length);
+    for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);return LOGO_JPG={bytes,w,h}}catch(e){return LOGO_JPG=null}}
 const MM=72/25.4;
 const L7163={name:'Avery L7163 (14 per sheet)',cols:2,rows:7,w:99.1,h:38.1,top:15.15,left:4.65,px:101.6,py:38.1,per:14};
 function drawQR(p,q,x,y,size){const n=q.getModuleCount(),s=size/n,ops=[];
   for(let r=0;r<n;r++){let c=0;while(c<n){if(q.isDark(r,c)){let e=c;while(e<n&&q.isDark(r,e))e++;ops.push(c+' '+r+' '+(e-c)+' 1.02 re');c=e}else c++}}
   p.raw('q 0 0 0 rg '+s.toFixed(5)+' 0 0 '+(-s).toFixed(5)+' '+x.toFixed(3)+' '+(p.H-y).toFixed(3)+' cm\n'+ops.join('\n')+'\nf Q')}
 function fitT(s,size,maxW,bold){s=pt(s);if(tw(s,size,bold)<=maxW)return s;while(s.length>1&&tw(s+'\x85',size,bold)>maxW)s=s.slice(0,-1);return s.replace(/\s+$/,'')+'\x85'}
-function drawLabel(p,ox,oy,d){const m=v=>v*MM,s=S.survey,Q=doorQR(d),W=[1,1,1];
-  /* QR: 30 mm square on the left, vertically centred; >=3 mm from the label edges */
-  const qs=m(30),qx=ox+m(3.2),qy=oy+(m(L7163.h)-qs)/2;drawQR(p,Q.q,qx,qy,qs);
-  const tx=ox+m(36.2),tr=ox+m(L7163.w-3),TW=tr-tx;let y=oy+m(3);
-  p.rect(tx,y,TW,m(6.4),RED);p.text(tx+m(1.8),y+m(4.6),'FIRE DOOR',12.5,true,W);
-  const co=pt(CO.name);p.text(tr-m(1.8)-tw(co,6.6,true),y+m(4.3),co,6.6,true,W);y+=m(6.4);
-  const rt=pt(d.rating||'Rating: —'),cw=tw(rt,8.5,true)+8;y+=12;
-  p.box(tr-cw,y-9.6,cw,11.4,RED);p.text(tr-cw+4,y-1.8,rt,8.5,true,RED);
-  p.text(tx,y,fitT(d.ref||'Door',11,TW-cw-6,true),11,true,INK);
-  let ll=wrapT(d.location||'Location not recorded',7.5,TW);if(ll.length>2)ll=[ll[0],fitT(ll.slice(1).join(' '),7.5,TW)];
-  const g=(2-ll.length)*8.6/4-.2;
-  ll.forEach((l,i)=>{y+=i?8.6:9.4;p.text(tx,y,l,7.5,false,INK)});
-  y+=8.5+g;p.text(tx,y,fitT('Site: '+(s.site||'—'),7,TW),7,false,SOFT);
-  y+=8.5+g;p.text(tx,y,pt('Inspected: '+fmtD(inspDate())),7,false,INK);
-  y+=8.6+g;p.text(tx,y,fitT('Next inspection due: '+fmtD(nextDue(d)),7.5,TW,true),7.5,true,RED);
-  y+=8.6+g;p.text(tx,y,fitT('Tel '+CO.tel+'  ·  Scan QR for door record',6.6,TW,true),6.6,true,INK);
-  p.text(tx,oy+m(L7163.h-2.7),fitT('Door ID: '+Q.id,5.6,TW),5.6,false,SOFT);
+const LB={black:[.078,.078,.078],yellow:[.863,.792,.11],pink:[.898,.2,.463],ink:[.08,.08,.08],soft:[.38,.38,.38]};
+function drawLabel(p,ox,oy,d,logo){const m=v=>v*MM,s=S.survey,Q=doorQR(d),W=[1,1,1],G=L7163;
+  /* QR 29 mm, left, vertically centred; 3 mm from the label edge + white quiet zone around it */
+  const qs=m(29),qx=ox+m(3),qy=oy+(m(G.h)-qs)/2;drawQR(p,Q.q,qx,qy,qs);
+  const tx=ox+m(35.6),tr=ox+m(G.w-2.2),TW=tr-tx;
+  /* slim black header strip: wordmark + FIRE DOOR - KEEP SHUT, yellow accent line */
+  const hy=oy+m(2.2),hh=m(6.6);p.rect(tx,hy,TW,hh,LB.black);p.rect(tx,hy+hh,TW,m(.7),LB.yellow);
+  let lw=0;if(logo){const lh=hh-m(1.2);lw=lh*logo.w/logo.h;p.image(logo,tx+m(1),hy+m(.6),lw,lh)}else{const co='SafeBuilt';lw=tw(co,8,true);p.text(tx+m(1.2),hy+m(4.5),co,8,true,LB.yellow)}
+  const kt='FIRE DOOR \x96 KEEP SHUT',ks=tw(kt,7.6,true)<=TW-lw-m(4)?7.6:6.6;p.text(tr-m(1.4)-tw(kt,ks,true),hy+m(4.4),kt,ks,true,W);
+  /* door ref + rating chip */
+  let y=hy+hh+m(.7)+m(5.1);const rt=pt(d.rating||'Rating \x97'),rs=8.5,cw=tw(rt,rs,true)+m(2.6),ch=m(4.4);
+  p.rect(tr-cw,y-m(3.7),cw,ch,LB.yellow);p.text(tr-cw+m(1.3),y-m(.45),rt,rs,true,LB.black);
+  p.text(tx,y,fitT(d.ref||'Door',13,TW-cw-m(2),true),13,true,LB.ink);
+  /* location: max 2 lines */
+  let ll=wrapT(d.location||'Location not recorded',7.4,TW);if(ll.length>2)ll=[ll[0],fitT(ll.slice(1).join(' '),7.4,TW)];
+  ll.forEach((l,i)=>{y+=i?8.2:9.6;p.text(tx,y,l,7.4,false,LB.ink)});if(ll.length<2)y+=4;
+  y+=9.4;p.text(tx,y,fitT('Site: '+(s.site||'\x97'),6.8,TW),6.8,false,LB.soft);
+  y+=9.6;const il='Inspected '+fmtD(inspDate()),iw=tw(il,6.8);p.text(tx,y,pt(il),6.8,false,LB.ink);
+  const nd=fitT('Next due '+fmtD(nextDue(d)),7.4,TW-iw-m(3),true);p.text(tr-tw(nd,7.4,true),y,nd,7.4,true,LB.pink);
+  const fy=oy+m(G.h-2.4);p.line(tx,fy-m(3.3),tr,fy-m(3.3),[.82,.82,.82],.4);
+  const ft=pt('Scan for door record \x95 '+CO.tel);p.text(tx,fy,ft,6.6,true,LB.ink);
+  const av=TW-tw(ft,6.6,true)-m(2.5);if(av>m(8)){const ids=fitT('ID '+Q.id,4.2,av);p.text(tr-tw(ids,4.2),fy,ids,4.2,false,[.55,.55,.55])}
 }
-function buildLabels(doors,start){const p=PDFDoc(),G=L7163;let slot=Math.max(0,Math.min(G.per-1,(start||1)-1));
-  ensureIds();
-  for(const d of doors){if(slot>=G.per){p.page();slot=0}const c=slot%G.cols,r=Math.floor(slot/G.cols);drawLabel(p,(G.left+c*G.px)*MM,(G.top+r*G.py)*MM,d);slot++}
+async function buildLabels(doors,start){const p=PDFDoc(),G=L7163;let slot=Math.max(0,Math.min(G.per-1,(start||1)-1));
+  ensureIds();const logo=await logoJPG();
+  for(const d of doors){if(slot>=G.per){p.page();slot=0}const c=slot%G.cols,r=Math.floor(slot/G.cols);drawLabel(p,(G.left+c*G.px)*MM,(G.top+r*G.py)*MM,d,logo);slot++}
   return p.build()}
 function posSelect(id){return `<label class="f">Start at label position<select id="${id}">${Array.from({length:14},(_,i)=>`<option value="${i+1}">${i+1}${i===0?' (top left)':i===1?' (top right)':''}</option>`).join('')}</select></label>`}
 const PRINT_TIP='Print at 100% / Actual size, not Fit to page';
@@ -553,8 +558,8 @@ const ACT={
   async zipall(){busy(true,'Building ZIP…');try{const te=new TextEncoder();const files=[{name:'report.pdf',data:await u8(await buildPDF())},{name:'report.html',data:te.encode(await reportHTMLFile('zip'))},{name:'survey-data.json',data:te.encode(exportJSON())}];
     for(const d of S.doors)files.push(...await doorFiles(d,'media/'));const z=makeZip(files);busy(false);await saveBlob(z,baseName()+'_all-files.zip')}catch(e){busy(false);toast('ZIP failed: '+e.message)}},
   qrpanel(){const el=$('#qrpanel');if(el){el.hidden=!el.hidden;if(!el.hidden)el.scrollIntoView({behavior:'smooth',block:'start'})}},
-  async labels(){if(!S.doors.length)return toast('Add a door first');busy(true,'Building labels…');try{const st=+($('#qrstart')||{}).value||1;const p=buildLabels(S.doors,st);busy(false);await saveBlob(p,baseName()+'_QR-labels_L7163.pdf')}catch(e){busy(false);toast('Labels failed: '+e.message)}},
-  async labeldoor(b,d){busy(true,'Building label…');try{const st=+($('#qrstart1')||{}).value||1;const p=buildLabels([d],st);busy(false);await saveBlob(p,safe(d.ref||'Door')+'_QR-label_L7163.pdf')}catch(e){busy(false);toast('Label failed: '+e.message)}},
+  async labels(){if(!S.doors.length)return toast('Add a door first');busy(true,'Building labels…');try{const st=+($('#qrstart')||{}).value||1;const p=await buildLabels(S.doors,st);busy(false);await saveBlob(p,baseName()+'_QR-labels_L7163.pdf')}catch(e){busy(false);toast('Labels failed: '+e.message)}},
+  async labeldoor(b,d){busy(true,'Building label…');try{const st=+($('#qrstart1')||{}).value||1;const p=await buildLabels([d],st);busy(false);await saveBlob(p,safe(d.ref||'Door')+'_QR-label_L7163.pdf')}catch(e){busy(false);toast('Label failed: '+e.message)}},
   previewrec(b,d){const u=doorQR(d).url.replace(PUBLIC_URL,'door.html');window.open(u,'_blank')||(location.href=u)},
   async json(){await saveBlob(new Blob([exportJSON()],{type:'application/json'}),baseName()+'_data.json')}
 };

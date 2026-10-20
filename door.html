@@ -115,10 +115,16 @@ function render(R){const s=R.survey||{},d=R.door||{},st=['pass','fail'].includes
 }
 function renderErr(){m.innerHTML=`<section class="card"><h2>Door record not found</h2><p>This QR code or link could not be read. Please contact SafeBuilt Solutions Ltd and quote the Door ID printed on the label.</p>
   <div class="btns"><a class="btn primary" href="tel:+447412089093">📞 ${CO.tel}</a><a class="btn" href="mailto:${CO.email}">✉️ Email</a></div></section>`}
+function renderPending(){m.innerHTML=`<section class="card hero"><p class="kicker">Fire door</p><h1>Record not yet published</h1>
+  <p class="loc">This door has been surveyed by SafeBuilt Solutions Ltd. Its online record will appear here once it is published.</p>
+  <p class="muted">Door ID: <b>${esc(id)}</b></p>
+  <div class="btns"><a class="btn primary" href="tel:+447412089093">📞 ${CO.tel}</a><a class="btn" href="mailto:${CO.email}?subject=${encodeURIComponent('Fire door record '+id)}">✉️ Email</a><span id="appbtn" class="wide" style="display:contents"></span></div></section>`;
+  try{const S=JSON.parse(localStorage.getItem('sbs_firedoor_v1')||'null');const ld=S&&Array.isArray(S.doors)&&S.doors.find(x=>x&&x.pid===id);
+    if(ld)document.getElementById('appbtn').innerHTML=`<a class="btn wide" href="index.html#/door/${encodeURIComponent(ld.id)}">Open full door in the app</a>`}catch(e){}}
 (async function(){let rec=null;
   if(okId){try{const r=await fetch('records/'+encodeURIComponent(id)+'/record.json',{cache:'no-store'});if(r.ok){const j=await r.json();if(j&&j.id===id&&j.door)rec=j}}catch(e){}}
   const sn=snapshot();
-  if(rec){rec.source='published';render(rec)}else if(sn&&okId){render(fromSnap(sn))}else renderErr()})();
+  if(rec){rec.source='published';render(rec)}else if(sn&&okId){render(fromSnap(sn))}else if(okId)renderPending();else renderErr()})();
 </script>
 </body>
 </html>
