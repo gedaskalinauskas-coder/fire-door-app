@@ -364,7 +364,7 @@ function drawQR(p,q,x,y,size){const n=q.getModuleCount(),s=size/n,ops=[];
   p.raw('q 0 0 0 rg '+s.toFixed(5)+' 0 0 '+(-s).toFixed(5)+' '+x.toFixed(3)+' '+(p.H-y).toFixed(3)+' cm\n'+ops.join('\n')+'\nf Q')}
 function fitT(s,size,maxW,bold){s=pt(s);if(tw(s,size,bold)<=maxW)return s;while(s.length>1&&tw(s+'\x85',size,bold)>maxW)s=s.slice(0,-1);return s.replace(/\s+$/,'')+'\x85'}
 const LB={black:[.078,.078,.078],yellow:[.863,.792,.11],pink:[.898,.2,.463],ink:[.08,.08,.08],soft:[.38,.38,.38]};
-function drawLabel(p,ox,oy,d,logo){const m=v=>v*MM,s=S.survey,Q=doorQR(d),W=[1,1,1],G=L7163;
+function drawLabel(p,ox,oy,d,logo,mode){const pre=mode!=='after';const m=v=>v*MM,s=S.survey,Q=doorQR(d),W=[1,1,1],G=L7163;
   /* QR 29 mm, left, vertically centred; 3 mm from the label edge + white quiet zone around it */
   const qs=m(29),qx=ox+m(3),qy=oy+(m(G.h)-qs)/2;drawQR(p,Q.q,qx,qy,qs);
   const tx=ox+m(35.6),tr=ox+m(G.w-2.2),TW=tr-tx;
@@ -373,23 +373,26 @@ function drawLabel(p,ox,oy,d,logo){const m=v=>v*MM,s=S.survey,Q=doorQR(d),W=[1,1
   let lw=0;if(logo){const lh=hh-m(1.2);lw=lh*logo.w/logo.h;p.image(logo,tx+m(1),hy+m(.6),lw,lh)}else{const co='SafeBuilt';lw=tw(co,8,true);p.text(tx+m(1.2),hy+m(4.5),co,8,true,LB.yellow)}
   const kt='FIRE DOOR \x96 KEEP SHUT',ks=tw(kt,7.6,true)<=TW-lw-m(4)?7.6:6.6;p.text(tr-m(1.4)-tw(kt,ks,true),hy+m(4.4),kt,ks,true,W);
   /* door ref + rating chip */
-  let y=hy+hh+m(.7)+m(5.1);const rt=pt(d.rating||'Rating \x97'),rs=8.5,cw=tw(rt,rs,true)+m(2.6),ch=m(4.4);
-  p.rect(tr-cw,y-m(3.7),cw,ch,LB.yellow);p.text(tr-cw+m(1.3),y-m(.45),rt,rs,true,LB.black);
+  let y=hy+hh+m(.7)+m(5.1);const rs=8.5,ch=m(4.4);let cw;
+  if(d.rating){const rt=pt(d.rating);cw=tw(rt,rs,true)+m(2.6);p.rect(tr-cw,y-m(3.7),cw,ch,LB.yellow);p.text(tr-cw+m(1.3),y-m(.45),rt,rs,true,LB.black)}
+  else{cw=m(15);p.box(tr-cw,y-m(3.7),cw,ch,LB.black);p.text(tr-cw+m(1.3),y-m(.45),'FD',rs,true,LB.black)} /* blank chip: write the rating in */
   p.text(tx,y,fitT(d.ref||'Door',13,TW-cw-m(2),true),13,true,LB.ink);
   /* location: max 2 lines */
   let ll=wrapT(d.location||'Location not recorded',7.4,TW);if(ll.length>2)ll=[ll[0],fitT(ll.slice(1).join(' '),7.4,TW)];
   ll.forEach((l,i)=>{y+=i?8.2:9.6;p.text(tx,y,l,7.4,false,LB.ink)});if(ll.length<2)y+=4;
   y+=9.4;p.text(tx,y,fitT('Site: '+(s.site||'\x97'),6.8,TW),6.8,false,LB.soft);
-  y+=9.6;const il='Inspected '+fmtD(inspDate()),iw=tw(il,6.8);p.text(tx,y,pt(il),6.8,false,LB.ink);
-  const nd=fitT('Next due '+fmtD(nextDue(d)),7.4,TW-iw-m(3),true);p.text(tr-tw(nd,7.4,true),y,nd,7.4,true,LB.pink);
+  y+=9.6;if(pre){const nl='Next inspection due:';p.text(tx,y,nl,7.4,true,LB.ink);p.line(tx+tw(nl,7.4,true)+m(1.5),y+m(.4),tr,y+m(.4),LB.ink,.5)}
+  else{const il='Inspected '+fmtD(inspDate()),iw=tw(il,6.8);p.text(tx,y,pt(il),6.8,false,LB.ink);
+  const nd=fitT('Next due '+fmtD(nextDue(d)),7.4,TW-iw-m(3),true);p.text(tr-tw(nd,7.4,true),y,nd,7.4,true,LB.pink)}
   const fy=oy+m(G.h-2.4);p.line(tx,fy-m(3.3),tr,fy-m(3.3),[.82,.82,.82],.4);
   const ft=pt('Scan for door record \x95 '+CO.tel);p.text(tx,fy,ft,6.6,true,LB.ink);
   const av=TW-tw(ft,6.6,true)-m(2.5);if(av>m(8)){const ids=fitT('ID '+Q.id,4.2,av);p.text(tr-tw(ids,4.2),fy,ids,4.2,false,[.55,.55,.55])}
 }
-async function buildLabels(doors,start){const p=PDFDoc(),G=L7163;let slot=Math.max(0,Math.min(G.per-1,(start||1)-1));
+async function buildLabels(doors,start,mode){const p=PDFDoc(),G=L7163;let slot=Math.max(0,Math.min(G.per-1,(start||1)-1));
   ensureIds();const logo=await logoJPG();
-  for(const d of doors){if(slot>=G.per){p.page();slot=0}const c=slot%G.cols,r=Math.floor(slot/G.cols);drawLabel(p,(G.left+c*G.px)*MM,(G.top+r*G.py)*MM,d,logo);slot++}
+  for(const d of doors){if(slot>=G.per){p.page();slot=0}const c=slot%G.cols,r=Math.floor(slot/G.cols);drawLabel(p,(G.left+c*G.px)*MM,(G.top+r*G.py)*MM,d,logo,mode);slot++}
   return p.build()}
+function modeSelect(id){return `<label class="f">Label type<select id="${id}"><option value="before">Before inspection (no dates)</option><option value="after">After inspection (with dates)</option></select></label>`}
 function posSelect(id){return `<label class="f">Start at label position<select id="${id}">${Array.from({length:14},(_,i)=>`<option value="${i+1}">${i+1}${i===0?' (top left)':i===1?' (top right)':''}</option>`).join('')}</select></label>`}
 const PRINT_TIP='Print at 100% / Actual size, not Fit to page';
 const qrTipHTML=`<p class="qrtip"><b>Print tip:</b> ${PRINT_TIP}. Print a test on plain paper first and hold it behind a label sheet to check it lines up.</p>`;
@@ -478,13 +481,18 @@ function renderList(){setNav('list');const s=S.survey,c=counts();
   <div class="row" style="margin-bottom:12px"><button class="btn" data-act="qrpanel" title="${PRINT_TIP}">🏷 QR labels</button></div>
   <section class="card" id="qrpanel" hidden><h2>QR door labels</h2>
    <p class="hint">Sheet: <b>${L7163.name}</b> – 99.1 × 38.1 mm labels (also fits J8163 and other L7163-size sheets). One label per door: ${c.total} door${c.total===1?'':'s'} = ${Math.max(1,Math.ceil(c.total/14))} sheet${c.total>14?'s':''}.</p>
-   ${posSelect('qrstart')}
+   ${modeSelect('qrmode')}${posSelect('qrstart')}
    <button class="btn primary block" data-act="labels" title="${PRINT_TIP}">⬇ Download label sheet (PDF)</button>
    ${qrTipHTML}
-   <p class="hint">Each door gets a fixed Door ID the first time a label is made. Scanning the QR opens the door record online.</p></section>
+   <p class="hint">Each door has a fixed Door ID that never changes, so you can print labels before inspecting and the QR still matches later. Scanning the QR opens the door record online.</p></section>
   <div class="counts"><div><b>${c.total}</b>Doors</div><div class="p"><b>${c.pass}</b>Pass</div><div class="x"><b>${c.fail}</b>Fail</div><div><b>${c.none}</b>Not insp.</div></div>
   <ul class="doors">${S.doors.map(d=>{const st=status(d);return `<li><a class="door-row ${st}" href="#/door/${d.id}"><div><b>${esc(d.ref||'(no ref)')}</b><small>${esc(d.location||'No location')}</small><small>${esc(typeLabel(d.type))} · ${esc(d.rating||'—')}${d.media.length?' · 📷 '+d.media.length:''}</small></div><span class="badge ${st}">${stLabel(st)}</span></a></li>`}).join('')||'<li class="empty">No doors yet – tap “Add door”.</li>'}</ul>
-  <button class="btn primary block" data-act="add">＋ Add door</button>`;
+  <button class="btn primary block" data-act="add">＋ Add door</button>
+  <details class="card" style="margin-top:12px"><summary>Add multiple doors</summary>
+   <div class="row" style="align-items:flex-end;gap:8px"><label class="f" style="flex:1">Number of doors<input id="mcount" type="number" min="1" max="200" value="10" inputmode="numeric"></label>
+   <label class="f" style="flex:1">First door ref<input id="mstart" value="Door-${pad(S.doors.length+1)}" autocomplete="off"></label></div>
+   <button class="btn block" data-act="addmany">＋ Add doors</button>
+   <p class="hint">Adds blank doors (e.g. Door-01 … Door-20), each with its fixed Door ID, ready for “Before inspection” labels. Add locations before printing.</p></details>`;
 }
 function checkItem(d,c){const o=d.checks[c[0]]||{};return `<div class="ck"><b>${esc(c[1])}</b><p class="hint">${esc(c[2])}</p>${seg(`data-ck="${c[0]}"`,[['pass','✔ Pass'],['fail','✖ Fail'],['na','N/A']],o.r||'')}<input type="text" data-cc="${c[0]}" value="${esc(o.c||'')}" placeholder="Comment (optional)"></div>`}
 function overallHTML(d){const sg=suggest(d),st=status(d),nf=failed(d).length,nu=CHECKS.filter(c=>!(d.checks[c[0]]||{}).r).length;
@@ -511,7 +519,7 @@ function renderDoor(id){setNav('list');const d=doorById(id),i=S.doors.indexOf(d)
    <button type="button" class="btn block" data-act="zipdoor">⬇ Download all media (ZIP)</button></section>
   <section class="card"><h2>QR door label</h2>
    <p class="hint">Door ID: ${d.pid?`<code class="did">${esc(d.pid)}</code>`:'assigned when you first make this door’s label'}</p>
-   ${posSelect('qrstart1')}
+   ${modeSelect('qrmode1')}${posSelect('qrstart1')}
    <div class="row"><button type="button" class="btn primary" data-act="labeldoor" title="${PRINT_TIP}">⬇ Label for this door (PDF)</button><button type="button" class="btn" data-act="previewrec">👁 Preview record</button></div>
    <p class="hint">${L7163.name}. Prints this door’s label at the chosen position, so you can use up part-used sheets.</p>
    ${qrTipHTML}</section>
@@ -542,7 +550,11 @@ async function addFiles(d,files){busy(true,'Saving…');let n=0;
 async function doorFiles(d,prefix){const out=[];for(const m of d.media){const b=await mediaBlob(m.id);if(b)out.push({name:(prefix||'')+mediaName(d,m),data:new Uint8Array(await b.arrayBuffer())})}return out}
 const u8=async b=>new Uint8Array(await b.arrayBuffer());
 const ACT={
-  async add(){const n=S.doors.length+1;const d={id:uid(),ref:'Door-'+pad(n),location:'',type:'',rating:'',leaf:'Single',checks:{},overall:'',manual:false,issues:'',action:'',priority:'',notes:'',media:[]};S.doors.push(d);save();location.hash='#/door/'+d.id},
+  addmany(){const n=Math.max(1,Math.min(200,parseInt(($('#mcount')||{}).value,10)||0)),st=String(($('#mstart')||{}).value||'Door-01').trim();
+    const mt=st.match(/^(.*?)(\d+)$/),pre=mt?mt[1]:(st?st+'-':'Door-'),n0=mt?parseInt(mt[2],10):1,w=mt?mt[2].length:2;
+    for(let i=0;i<n;i++){const d={id:uid(),ref:pre+String(n0+i).padStart(w,'0'),location:'',type:'',rating:'',leaf:'Single',checks:{},overall:'',manual:false,issues:'',action:'',priority:'',notes:'',media:[]};S.doors.push(d);doorId(d)}
+    save();route();toast(n+' door'+(n>1?'s':'')+' added')},
+  async add(){const n=S.doors.length+1;const d={id:uid(),ref:'Door-'+pad(n),location:'',type:'',rating:'',leaf:'Single',checks:{},overall:'',manual:false,issues:'',action:'',priority:'',notes:'',media:[]};S.doors.push(d);doorId(d);save();location.hash='#/door/'+d.id},
   async blank(){if(!confirm('Start a new blank survey? This deletes the sample doors and photos on this device.'))return;await clearMedia();S={isSample:false,survey:{site:'',address:'',client:'',inspector:'Gedas – SafeBuilt Solutions Ltd',date:today(),ref:''},doors:[]};save();route();toast('Blank survey started')},
   async reset(){if(!confirm('Reset to sample data? All current doors, photos and videos on this device will be deleted.'))return;busy(true,'Loading sample…');await loadSample();busy(false);location.hash='#/list';route();toast('Sample data restored')},
   allpass(b,d){CHECKS.forEach(c=>{const o=ck(d,c[0]);if(!o.r)o.r='pass'});save();renderDoor(d.id)},
@@ -558,8 +570,8 @@ const ACT={
   async zipall(){busy(true,'Building ZIP…');try{const te=new TextEncoder();const files=[{name:'report.pdf',data:await u8(await buildPDF())},{name:'report.html',data:te.encode(await reportHTMLFile('zip'))},{name:'survey-data.json',data:te.encode(exportJSON())}];
     for(const d of S.doors)files.push(...await doorFiles(d,'media/'));const z=makeZip(files);busy(false);await saveBlob(z,baseName()+'_all-files.zip')}catch(e){busy(false);toast('ZIP failed: '+e.message)}},
   qrpanel(){const el=$('#qrpanel');if(el){el.hidden=!el.hidden;if(!el.hidden)el.scrollIntoView({behavior:'smooth',block:'start'})}},
-  async labels(){if(!S.doors.length)return toast('Add a door first');busy(true,'Building labels…');try{const st=+($('#qrstart')||{}).value||1;const p=await buildLabels(S.doors,st);busy(false);await saveBlob(p,baseName()+'_QR-labels_L7163.pdf')}catch(e){busy(false);toast('Labels failed: '+e.message)}},
-  async labeldoor(b,d){busy(true,'Building label…');try{const st=+($('#qrstart1')||{}).value||1;const p=await buildLabels([d],st);busy(false);await saveBlob(p,safe(d.ref||'Door')+'_QR-label_L7163.pdf')}catch(e){busy(false);toast('Label failed: '+e.message)}},
+  async labels(){if(!S.doors.length)return toast('Add a door first');busy(true,'Building labels…');try{const st=+($('#qrstart')||{}).value||1;const p=await buildLabels(S.doors,st,($('#qrmode')||{}).value||'before');busy(false);await saveBlob(p,baseName()+'_QR-labels_L7163.pdf')}catch(e){busy(false);toast('Labels failed: '+e.message)}},
+  async labeldoor(b,d){busy(true,'Building label…');try{const st=+($('#qrstart1')||{}).value||1;const p=await buildLabels([d],st,($('#qrmode1')||{}).value||'before');busy(false);await saveBlob(p,safe(d.ref||'Door')+'_QR-label_L7163.pdf')}catch(e){busy(false);toast('Label failed: '+e.message)}},
   previewrec(b,d){const u=doorQR(d).url.replace(PUBLIC_URL,'door.html');window.open(u,'_blank')||(location.href=u)},
   async json(){await saveBlob(new Blob([exportJSON()],{type:'application/json'}),baseName()+'_data.json')}
 };
