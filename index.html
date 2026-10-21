@@ -80,6 +80,17 @@ details[open]>summary{margin-bottom:10px}
 .empty{text-align:center;color:#666;padding:24px}
 .busy{position:fixed;inset:0;background:rgba(255,255,255,.6);display:none;align-items:center;justify-content:center;z-index:20;font-weight:700}
 .busy.show{display:flex}
+#fpwrap{-webkit-tap-highlight-color:transparent;position:relative;height:calc(100vh - 290px);min-height:320px;overflow:hidden;background:#e7e8ec;border-radius:12px;touch-action:none;user-select:none;-webkit-user-select:none}
+#fpin{position:absolute;left:0;top:0;transform-origin:0 0}
+#fpimg{display:block;width:100%;height:100%;pointer-events:none}
+.fppin{position:absolute;transform:translate(-50%,-100%) scale(calc(1 / var(--z,1)));transform-origin:50% 100%;cursor:pointer;touch-action:none;-webkit-tap-highlight-color:transparent}
+.fppin span{display:block;min-width:30px;padding:4px 7px;border-radius:14px 14px 14px 3px;background:var(--grey);color:#fff;font:800 12px/1.2 -apple-system,Arial,sans-serif;white-space:nowrap;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.45);text-align:center}
+.fppin.pass span{background:var(--green)}.fppin.fail span{background:var(--red)}.fppin.mv span{outline:3px solid var(--sb-pink)}
+.fpk{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--grey);margin:0 2px 0 6px}.fpk.pass{background:var(--green)}.fpk.fail{background:var(--red)}
+#fpsheet{position:fixed;left:0;right:0;bottom:calc(56px + env(safe-area-inset-bottom));background:#fff;border-top:4px solid var(--sb-yellow);border-radius:14px 14px 0 0;padding:14px;z-index:8;box-shadow:0 -4px 16px rgba(0,0,0,.2);max-width:820px;margin:0 auto}
+.fpx{position:absolute;right:10px;top:8px;border:0;background:none;font-size:22px;padding:6px;cursor:pointer}
+.fpkv{width:100%;border-collapse:collapse;margin:8px 0;font-size:14px}.fpkv th{text-align:left;color:#666;font-weight:600;width:40%;padding:3px 0}.fpkv td{padding:3px 0}
+#fpmode button{min-height:40px;padding:4px 10px;font-size:14px}
 #qrpanel{scroll-margin-top:calc(80px + env(safe-area-inset-top))}
 .qrtip{font-size:13px;color:#5d4037;background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:8px 10px;margin:10px 0 0}
 code.did{font-size:13px;background:#f3f3f3;border-radius:4px;padding:2px 5px;word-break:break-all}
@@ -304,7 +315,7 @@ async function buildPDF(){
     if(p.y+h>p.H-p.M-14){p.page();head()}
     let cx=X;wr.forEach((ls,i)=>{if(i===2){p.rect(cx+3,p.y+4,cols[i][1]-6,13,stCol(st));p.text(cx+6,p.y+13.5,st?stLabel(st):'NOT INSP.',7.5,true,[1,1,1])}else ls.forEach((l,j)=>p.text(cx+4,p.y+12+j*11,l,8.5,i===0));cx+=cols[i][1]});
     p.line(X,p.y+h,X+CW,p.y+h);p.y+=h}
-  p.y+=14;p.ensure(40);p.text(X,p.y+14,'Door details',14,true,INK);p.y+=24;
+  if(plans().some(x=>x.pins.length)){await fpPDF(p);p.page()}else{p.y+=14;p.ensure(40)}p.text(X,p.y+14,'Door details',14,true,INK);p.y+=24;
   for(const d of S.doors){const st=status(d);p.ensure(80);
     p.rect(X,p.y,CW,24,[.95,.95,.96]);p.rect(X,p.y,5,24,stCol(st));p.text(X+12,p.y+16,pt((d.ref||'Door')+' – '+(d.location||'')).slice(0,80),11.5,true);
     p.rect(X+CW-88,p.y+5,82,14,stCol(st));p.text(X+CW-82,p.y+15,stLabel(st),8,true,[1,1,1]);p.y+=30;
@@ -524,7 +535,7 @@ function renderList(){setNav('list');const s=S.survey,c=counts();
    ${field('Site / building name','site',s.site,'e.g. Marlowe Court','s')}${field('Address','address',s.address,'Street, town, postcode','s')}${field('Client','client',s.client,'','s')}
    ${field('Inspector','inspector',s.inspector,'','s')}${field('Survey date','date',s.date,'','s','date')}${field('Survey reference','ref',s.ref,'e.g. SBS-FD-2026-0001','s')}
   </details>
-  <div class="row" style="margin-bottom:12px"><button class="btn" data-act="qrpanel" title="${PRINT_TIP}">🏷 QR labels</button></div>
+  <div class="row" style="margin-bottom:12px"><button class="btn" data-act="qrpanel" title="${PRINT_TIP}">🏷 QR labels</button><a class="btn" href="#/plans">🗺 Floor plans${plans().length?' ('+plans().length+')':''}</a></div>
   <section class="card" id="qrpanel" hidden><h2>QR door labels</h2>
    <p class="hint" id="qrstarthint" data-std="Sheet: <b>${L7163.name}</b> – 99.1 × 38.1 mm labels.">Sheet: <b>${L7163.name}</b> – 99.1 × 38.1 mm labels (also fits J8163 and other L7163-size sheets). One label per door: ${c.total} door${c.total===1?'':'s'} = ${Math.max(1,Math.ceil(c.total/14))} sheet${c.total>14?'s':''}.</p>
    ${styleSelect('qrstyle','qrstart','qrmode')}${modeSelect('qrmode')}${posSelect('qrstart')}
@@ -597,7 +608,7 @@ function renderTagPick(tid){setNav('list');const no=tid.slice(2,8),cur=S.doors.f
    ${cur?`<p>Already linked to <a href="#/door/${cur.id}"><b>${esc(cur.ref)}</b></a>.</p>`:'<p class="hint">Choose the door this tag is fixed to:</p>'}
    <ul class="doors">${S.doors.map(d=>`<li><button type="button" class="btn block" style="justify-content:space-between" data-act="picktag" data-door="${d.id}" data-tid="${tid}"><span><b>${esc(d.ref||'(no ref)')}</b> <small class="muted">${esc(d.location||'')}</small></span><small>${d.tag?'SB '+esc(d.tag):''}</small></button></li>`).join('')||'<li class="empty">No doors yet.</li>'}</ul></section>`}
 function route(){if(!S)return;const h=location.hash.replace(/^#\/?/,'').split('/');
-  if(h[0]==='tag'&&TID_RE.test(h[1]||''))renderTagPick(h[1]);else if(h[0]==='door'&&doorById(h[1]))renderDoor(h[1]);else if(h[0]==='summary')renderSummary();else renderList();window.scrollTo(0,0)}
+  if(h[0]==='tag'&&TID_RE.test(h[1]||''))renderTagPick(h[1]);else if(h[0]==='door'&&doorById(h[1])){renderDoor(h[1]);fpDoorHook(doorById(h[1]))}else if(h[0]==='plans')renderPlans();else if(h[0]==='plan')renderPlan(h[1],h[2]);else if(h[0]==='summary')renderSummary();else renderList();window.scrollTo(0,0)}
 
 /* ---------- actions ---------- */
 async function addFiles(d,files){busy(true,'Saving…');let n=0;
@@ -624,7 +635,7 @@ const ACT={
   allpass(b,d){CHECKS.forEach(c=>{const o=ck(d,c[0]);if(!o.r)o.r='pass'});save();renderDoor(d.id)},
   fillissues(b,d){const t=failed(d).map(c=>{const o=d.checks[c[0]];return c[1]+(o.c?': '+o.c:'')}).join('\n');d.issues=t;$('#issues').value=t;save();if(!t)toast('No failed items')},
   unoverride(b,d){d.manual=false;d.overall='';save();refreshOverall(d)},
-  async deldoor(b,d){if(!confirm('Delete '+(d.ref||'this door')+' and its media?'))return;for(const m of d.media)await delMedia(m.id);S.doors.splice(S.doors.indexOf(d),1);save();location.hash='#/list'},
+  async deldoor(b,d){if(!confirm('Delete '+(d.ref||'this door')+' and its media?'))return;for(const m of d.media)await delMedia(m.id);S.doors.splice(S.doors.indexOf(d),1);fpRemoveDoor(d.id);save();location.hash='#/list'},
   async dlmedia(b,d){const m=d.media.find(x=>x.id===b.dataset.id);const bl=await mediaBlob(m.id);if(!bl)return toast('File missing');await saveBlob(bl,mediaName(d,m))},
   async delmedia(b,d){const m=d.media.find(x=>x.id===b.dataset.id);if(!confirm('Delete '+mediaName(d,m)+'?'))return;await delMedia(m.id);d.media.splice(d.media.indexOf(m),1);save();renderMedia(d)},
   async zipdoor(b,d){if(!d.media.length)return toast('No media for this door');busy(true);const z=makeZip(await doorFiles(d));busy(false);await saveBlob(z,safe(d.ref)+'_media.zip')},
@@ -632,7 +643,7 @@ const ACT={
   print(){window.print()},
   async html(){busy(true);const h=await reportHTMLFile('html');busy(false);await saveBlob(new Blob([h],{type:'text/html'}),baseName()+'_report.html')},
   async zipall(){busy(true,'Building ZIP…');try{const te=new TextEncoder();const files=[{name:'report.pdf',data:await u8(await buildPDF())},{name:'report.html',data:te.encode(await reportHTMLFile('zip'))},{name:'survey-data.json',data:te.encode(exportJSON())}];
-    for(const d of S.doors)files.push(...await doorFiles(d,'media/'));const z=makeZip(files);busy(false);await saveBlob(z,baseName()+'_all-files.zip')}catch(e){busy(false);toast('ZIP failed: '+e.message)}},
+    for(const d of S.doors)files.push(...await doorFiles(d,'media/'));files.push(...await fpFiles());const z=makeZip(files);busy(false);await saveBlob(z,baseName()+'_all-files.zip')}catch(e){busy(false);toast('ZIP failed: '+e.message)}},
   qrpanel(){const el=$('#qrpanel');if(el){el.hidden=!el.hidden;if(!el.hidden)el.scrollIntoView({behavior:'smooth',block:'start'})}},
   async labels(){if(!S.doors.length)return toast('Add a door first');busy(true,'Building labels…');try{const st=+($('#qrstart')||{}).value||1;const p=await buildLabels(S.doors,st,($('#qrmode')||{}).value||'before',($('#qrstyle')||{}).value||'std');busy(false);await saveBlob(p,baseName()+'_QR-labels_'+((($('#qrstyle')||{}).value==='tag')?'L7160':'L7163')+'.pdf')}catch(e){busy(false);toast('Labels failed: '+e.message)}},
   async labeldoor(b,d){busy(true,'Building label…');try{const st=+($('#qrstart1')||{}).value||1;const p=await buildLabels([d],st,($('#qrmode1')||{}).value||'before',($('#qrstyle1')||{}).value||'std');busy(false);await saveBlob(p,safe(d.ref||'Door')+'_QR-label_'+((($('#qrstyle1')||{}).value==='tag')?'L7160':'L7163')+'.pdf')}catch(e){busy(false);toast('Label failed: '+e.message)}},
@@ -640,7 +651,7 @@ const ACT={
   async json(){await saveBlob(new Blob([exportJSON()],{type:'application/json'}),baseName()+'_data.json')}
 };
 function exportJSON(){ensureIds();return JSON.stringify({app:'SafeBuilt Solutions fire door inspection',exported:new Date().toISOString(),sample:!!S.isSample,survey:S.survey,
-  doors:S.doors.map(d=>({...d,doorId:d.pid,tagNo:d.tag||'',tagId:d.tagId||'',recordUrl:recordURL(d),typeLabel:typeLabel(d.type),inspected:inspDate(),nextDue:nextDue(d),keyIssues:keyIssues(d),status:status(d),suggested:suggest(d),checks:CHECKS.map(c=>({key:c[0],item:c[1],result:(d.checks[c[0]]||{}).r||'',comment:(d.checks[c[0]]||{}).c||''})),media:d.media.map(m=>({file:mediaName(d,m),kind:m.kind,type:m.type,original:m.orig||m.caption||'',caption:m.caption||''}))}))},null,2)}
+  doors:S.doors.map(d=>({...d,doorId:d.pid,tagNo:d.tag||'',tagId:d.tagId||'',recordUrl:recordURL(d),typeLabel:typeLabel(d.type),inspected:inspDate(),nextDue:nextDue(d),keyIssues:keyIssues(d),status:status(d),suggested:suggest(d),checks:CHECKS.map(c=>({key:c[0],item:c[1],result:(d.checks[c[0]]||{}).r||'',comment:(d.checks[c[0]]||{}).c||''})),media:d.media.map(m=>({file:mediaName(d,m),kind:m.kind,type:m.type,original:m.orig||m.caption||'',caption:m.caption||''}))})),floorPlans:fpExport()},null,2)}
 function refreshOverall(d){const o=$('#overall');if(o)o.innerHTML=overallHTML(d);const b=$('#dbadge');if(b){const s=status(d);b.className='badge '+s;b.textContent=stLabel(s)}}
 
 app.addEventListener('input',e=>{const t=e.target;
@@ -659,6 +670,118 @@ app.addEventListener('click',async e=>{
   const b=e.target.closest('[data-act]');if(!b||!ACT[b.dataset.act])return;e.preventDefault();
   try{await ACT[b.dataset.act](b,cur())}catch(err){busy(false);toast('Error: '+(err.message||err))}});
 window.addEventListener('hashchange',route);
+/* ---------- floor plans (plan images in IndexedDB 'media' store; plan + pin metadata in S.plans) ---------- */
+const plans=()=>S.plans||(S.plans=[]);
+const planById=id=>plans().find(p=>p.id===id);
+function pinsFor(d){const o=[];plans().forEach(p=>(p.pins||[]).forEach(q=>{if(q.door===d.id)o.push(p)}));return o}
+function stCls(s){return s==='pass'?'pass':s==='fail'?'fail':'none'}
+let PDFJS=null;
+async function pdfFirstPage(file){
+  if(!PDFJS){await new Promise((res,rej)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js';s.onload=res;s.onerror=()=>rej(new Error('Could not load PDF reader (offline?) – use a photo/PNG instead'));document.head.appendChild(s)});
+    PDFJS=window.pdfjsLib;PDFJS.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js'}
+  const doc=await PDFJS.getDocument({data:await file.arrayBuffer()}).promise,pg=await doc.getPage(1);
+  const v0=pg.getViewport({scale:1}),k=Math.min(4,2400/Math.max(v0.width,v0.height)),v=pg.getViewport({scale:k});
+  const c=document.createElement('canvas');c.width=Math.round(v.width);c.height=Math.round(v.height);const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);
+  await pg.render({canvasContext:g,viewport:v}).promise;return c}
+async function planCanvas(file){
+  if(file.type==='application/pdf'||/\.pdf$/i.test(file.name))return pdfFirstPage(file);
+  const u=URL.createObjectURL(file);try{const img=new Image();await new Promise((res,rej)=>{img.onload=res;img.onerror=()=>rej(new Error('Unsupported image – use JPG or PNG'));img.src=u});
+    const k=Math.min(1,2400/Math.max(img.naturalWidth,img.naturalHeight)),c=document.createElement('canvas');c.width=Math.round(img.naturalWidth*k);c.height=Math.round(img.naturalHeight*k);
+    const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);g.drawImage(img,0,0,c.width,c.height);return c}finally{URL.revokeObjectURL(u)}}
+async function addPlan(name,file){busy(true,'Saving plan…');
+  try{const c=await planCanvas(file);const b=await new Promise(r=>c.toBlob(r,'image/jpeg',.8));const id=uid();
+    await putMedia({id,type:'image/jpeg',data:await b.arrayBuffer(),orig:file.name});
+    const p={id:uid(),name:name||('Plan '+(plans().length+1)),mid:id,w:c.width,h:c.height,pins:[],added:today()};plans().push(p);save();busy(false);location.hash='#/plan/'+p.id}
+  catch(e){busy(false);toast('Plan failed: '+(e.message||e))}}
+function renderPlans(){setNav('list');
+  app.innerHTML=`<div class="bar"><a class="btn" href="#/list">‹ Doors</a><b>Floor plans</b><span></span></div>
+  <section class="card"><h2>Add a floor plan</h2><label class="f">Plan name<input type="text" id="fpname" placeholder="e.g. Ground floor" autocomplete="off"></label>
+   <label class="btn primary block" style="position:relative;overflow:hidden">📄 Choose photo, image or PDF<input type="file" id="fpfile" accept="image/jpeg,image/png,image/*,application/pdf,.pdf" style="position:absolute;opacity:0;width:1px;height:1px"></label>
+   <p class="hint">JPG/PNG/photo, or first page of a PDF. Images are reduced to max 2400 px and stored on this device.</p></section>
+  <ul class="doors">${plans().map(p=>`<li class="door-row" style="border-left-color:var(--sb-yellow)"><a href="#/plan/${p.id}" style="flex:1;color:inherit;text-decoration:none"><b>${esc(p.name)}</b><small>${p.pins.length} door${p.pins.length===1?'':'s'} pinned</small></a>
+   <button class="btn sm" data-act="fprename" data-id="${p.id}">Rename</button><button class="btn sm danger" data-act="fpdel" data-id="${p.id}" aria-label="Delete plan">🗑</button></li>`).join('')||'<li class="empty">No floor plans yet.</li>'}</ul>`}
+let FP=null;
+function renderPlan(pid,focus){const p=planById(pid);if(!p)return renderPlans();setNav('list');
+  app.innerHTML=`<div class="bar"><a class="btn sm" href="#/plans">‹ Plans</a><b style="flex:1;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.name)}</b>
+   <div class="seg" id="fpmode" style="margin:0;flex:0 0 auto"><button type="button" data-m="view" class="on sel">View</button><button type="button" data-m="pin">📍 Pin</button></div></div>
+  <p class="hint" id="fphint">Pinch to zoom, drag to pan, tap a pin for details.</p>
+  <div id="fpwrap"><div id="fpin"><img id="fpimg" alt="${esc(p.name)}" draggable="false"><div id="fppins"></div></div></div>
+  <div class="row" style="margin-top:8px"><button class="btn sm" data-act="fpfit">⤢ Fit</button><span class="muted" style="align-self:center">${p.pins.length} pinned · <span class="fpk pass"></span>Pass <span class="fpk fail"></span>Fail <span class="fpk none"></span>Not insp.</span></div>
+  <div id="fpsheet" hidden></div>`;
+  FP={p,mode:'view',z:1,x:0,y:0,moving:null};
+  mediaURL(p.mid).then(u=>{const im=$('#fpimg');if(!im)return;if(!u){$('#fphint').textContent='Plan image missing on this device.';return}im.onload=()=>{fpFit();if(focus){const q=p.pins.find(x=>x.door===focus);if(q){fpCenter(q,2.2);fpPopup(q)}}};im.src=u});
+  fpDrawPins();fpBind()}
+function fpDrawPins(){const el=$('#fppins');if(!el||!FP)return;
+  el.innerHTML=FP.p.pins.map((q,i)=>{const d=doorById(q.door);if(!d)return '';return `<div class="fppin ${stCls(status(d))}${FP.moving===q.door?' mv':''}" data-door="${q.door}" style="left:${q.x*100}%;top:${q.y*100}%"><span>${esc(d.ref||'?')}</span></div>`}).join('')}
+function fpApply(){const i=$('#fpin');if(i){i.style.transform=`translate(${FP.x}px,${FP.y}px) scale(${FP.z})`;i.style.setProperty('--z',FP.z)}}
+function fpFit(){const w=$('#fpwrap'),p=FP.p;if(!w)return;const W=w.clientWidth,H=w.clientHeight;FP.z=Math.min(W/p.w,H/p.h);FP.min=FP.z*.8;FP.x=(W-p.w*FP.z)/2;FP.y=(H-p.h*FP.z)/2;$('#fpin').style.width=p.w+'px';$('#fpin').style.height=p.h+'px';fpApply()}
+function fpCenter(q,mult){const w=$('#fpwrap');FP.z=Math.min(FP.min/0.8*mult,4);FP.x=w.clientWidth/2-q.x*FP.p.w*FP.z;FP.y=w.clientHeight/2-q.y*FP.p.h*FP.z;fpApply()}
+function fpPt(cx,cy){const r=$('#fpwrap').getBoundingClientRect();return {x:Math.min(1,Math.max(0,(cx-r.left-FP.x)/FP.z/FP.p.w)),y:Math.min(1,Math.max(0,(cy-r.top-FP.y)/FP.z/FP.p.h))}}
+function fpBind(){const w=$('#fpwrap');const P=new Map();let g=null;
+  $('#fpmode').onclick=e=>{const b=e.target.closest('button');if(!b)return;FP.mode=b.dataset.m;FP.moving=null;$('#fpmode').querySelectorAll('button').forEach(x=>x.className=x===b?'on sel':'');
+    $('#fphint').textContent=FP.mode==='pin'?'Tap the plan to place a pin, then choose the door. Drag a pin to move it; tap it to delete.':'Pinch to zoom, drag to pan, tap a pin for details.';fpSheet('');fpDrawPins()};
+  w.addEventListener('pointerdown',e=>{w.setPointerCapture(e.pointerId);P.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    const pin=e.target.closest('.fppin');
+    if(P.size===1)g={sx:e.clientX,sy:e.clientY,ox:FP.x,oy:FP.y,t:Date.now(),moved:false,pin:pin&&pin.dataset.door,drag:FP.mode==='pin'&&pin?pin:null};
+    else if(P.size===2){const [a,b]=[...P.values()];g={pinch:true,d:Math.hypot(a.x-b.x,a.y-b.y),z:FP.z,ox:FP.x,oy:FP.y,cx:(a.x+b.x)/2,cy:(a.y+b.y)/2,moved:true}}});
+  w.addEventListener('pointermove',e=>{if(!P.has(e.pointerId)||!g)return;P.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(g.pinch&&P.size===2){const [a,b]=[...P.values()],r=w.getBoundingClientRect();const z=Math.min(6,Math.max(FP.min,g.z*Math.hypot(a.x-b.x,a.y-b.y)/g.d));
+      const cx=g.cx-r.left,cy=g.cy-r.top,nx=(a.x+b.x)/2-r.left,ny=(a.y+b.y)/2-r.top;FP.x=nx-(cx-g.ox)*z/g.z;FP.y=ny-(cy-g.oy)*z/g.z;FP.z=z;fpApply();return}
+    if(g.pinch)return;const dx=e.clientX-g.sx,dy=e.clientY-g.sy;if(Math.hypot(dx,dy)>8)g.moved=true;if(!g.moved)return;
+    if(g.drag){const q=fpPt(e.clientX,e.clientY);g.drag.style.left=q.x*100+'%';g.drag.style.top=q.y*100+'%';g.dq=q}else{FP.x=g.ox+dx;FP.y=g.oy+dy;fpApply()}});
+  const up=e=>{if(!P.has(e.pointerId))return;P.delete(e.pointerId);if(!g)return;const G=g;if(P.size===0)g=null;else return;
+    if(G.drag&&G.dq){const q=FP.p.pins.find(x=>x.door===G.pin);if(q){q.x=+G.dq.x.toFixed(4);q.y=+G.dq.y.toFixed(4);save();toast('Pin moved')}return}
+    if(G.moved)return;FP.tapT=Date.now();
+    if(G.pin){const q=FP.p.pins.find(x=>x.door===G.pin);if(q)fpPopup(q);return}
+    if(FP.moving){const q=FP.p.pins.find(x=>x.door===FP.moving);Object.assign(q,fpRound(fpPt(e.clientX,e.clientY)));FP.moving=null;save();fpDrawPins();toast('Pin moved');return}
+    if(FP.mode==='pin')fpPicker(fpRound(fpPt(e.clientX,e.clientY)));else fpSheet('')};
+  w.addEventListener('pointerup',up);w.addEventListener('pointercancel',up);
+  w.addEventListener('wheel',e=>{e.preventDefault();const r=w.getBoundingClientRect(),cx=e.clientX-r.left,cy=e.clientY-r.top,z=Math.min(6,Math.max(FP.min,FP.z*(e.deltaY<0?1.15:1/1.15)));FP.x=cx-(cx-FP.x)*z/FP.z;FP.y=cy-(cy-FP.y)*z/FP.z;FP.z=z;fpApply()},{passive:false});
+  window.onresize=()=>{if($('#fpwrap')&&FP)fpFit()}}
+document.addEventListener('click',e=>{if(FP&&FP.tapT&&Date.now()-FP.tapT<600&&e.target.closest&&e.target.closest('#fpsheet')){e.stopPropagation();e.preventDefault()}},true);
+const fpRound=q=>({x:+q.x.toFixed(4),y:+q.y.toFixed(4)});
+function fpSheet(h){const s=$('#fpsheet');if(!s)return;s.hidden=!h;s.innerHTML=h?`<button class="fpx" data-act="fpclose" aria-label="Close">✕</button>`+h:''}
+function fpPopup(q){const d=doorById(q.door);if(!d)return;const st=status(d);
+  fpSheet(`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding-right:36px"><b style="font-size:18px">${esc(d.ref||'(no ref)')}</b><span class="badge ${st}">${stLabel(st)}</span></div>
+   <table class="fpkv"><tr><th>Location</th><td>${esc(d.location||'—')}</td></tr><tr><th>Asset tag</th><td>${d.tag?'SB '+esc(d.tag):'Not assigned'}</td></tr><tr><th>Fire rating</th><td>${esc(d.rating||'—')}</td></tr>
+   <tr><th>Result</th><td>${stLabel(st)}${d.priority?' · '+esc(d.priority):''}</td></tr><tr><th>Last inspection</th><td>${st?fmtD(inspDate()):'Not inspected'}</td></tr></table>
+   <a class="btn primary block" href="#/door/${d.id}">Open record</a>
+   ${FP.mode==='pin'?`<div class="row" style="margin-top:8px"><button class="btn sm" data-act="fpmove" data-door="${d.id}">Move pin</button><button class="btn sm danger" data-act="fpunpin" data-door="${d.id}">Delete pin</button></div>`:''}`)}
+function fpPicker(q){FP.pend=q;
+  fpSheet(`<b>Which door is this?</b><input type="text" id="fpq" placeholder="Search ref, location or SB tag" autocomplete="off" style="margin:8px 0">
+   <button class="btn primary block" data-act="fpnew">＋ New door here</button><div id="fplist" style="max-height:38vh;overflow:auto;margin-top:8px"></div>`);
+  const q0=$('#fpq');q0.oninput=fpFilter;fpFilter()}
+function fpFilter(){const t=(($('#fpq')||{}).value||'').trim().toLowerCase(),on=new Set(FP.p.pins.map(x=>x.door)),out=[];
+  for(const d of S.doors){if(t&&!((d.ref||'').toLowerCase().includes(t)||(d.location||'').toLowerCase().includes(t)||(d.tag&&('sb '+d.tag+' sb'+d.tag).includes(t))))continue;out.push(d);if(out.length>=60)break}
+  $('#fplist').innerHTML=out.map(d=>`<button class="btn block sm" style="justify-content:space-between;margin-bottom:6px" data-act="fppick" data-door="${d.id}"><span style="text-align:left"><b>${esc(d.ref||'(no ref)')}</b> <small class="muted">${esc(d.location||'')}</small></span><small>${on.has(d.id)?'📍 move here':d.tag?'SB '+esc(d.tag):''}</small></button>`).join('')+(out.length>=60?'<p class="hint">Showing first 60 – type to narrow.</p>':out.length?'':'<p class="hint">No matching doors.</p>')}
+function fpPlace(d){const ex=FP.p.pins.find(x=>x.door===d.id);if(ex)Object.assign(ex,FP.pend);else FP.p.pins.push({door:d.id,...FP.pend});save();fpSheet('');fpDrawPins();toast((d.ref||'Door')+' pinned')}
+Object.assign(ACT,{
+  fpclose(){fpSheet('');if(FP)FP.moving=null;fpDrawPins()},
+  fpfit(){fpFit()},
+  fppick(b){const d=doorById(b.dataset.door);if(d)fpPlace(d)},
+  fpnew(){const n=S.doors.length+1;const d={id:uid(),ref:'Door-'+pad(n),location:FP.p.name,type:'',rating:'',leaf:'Single',checks:{},overall:'',manual:false,issues:'',action:'',priority:'',notes:'',media:[]};S.doors.push(d);doorId(d);fpPlace(d)},
+  fpmove(b){FP.moving=b.dataset.door;fpSheet('');fpDrawPins();toast('Tap the new position (or drag the pin)')},
+  fpunpin(b){const d=doorById(b.dataset.door);if(!confirm('Remove pin for '+(d?d.ref:'door')+'? The door record is kept.'))return;FP.p.pins=FP.p.pins.filter(x=>x.door!==b.dataset.door);save();fpSheet('');fpDrawPins()},
+  fprename(b){const p=planById(b.dataset.id);const n=prompt('Plan name',p.name);if(n&&n.trim()){p.name=n.trim();save();renderPlans()}},
+  async fpdel(b){const p=planById(b.dataset.id);if(!confirm('Delete floor plan “'+p.name+'” and its '+p.pins.length+' pins? Doors are kept.'))return;await delMedia(p.mid).catch(()=>{});S.plans=plans().filter(x=>x!==p);save();renderPlans()}
+});
+app.addEventListener('change',e=>{const t=e.target;if(t.id==='fpfile'&&t.files&&t.files[0]){e.stopPropagation();const f=t.files[0];addPlan((($('#fpname')||{}).value||'').trim()||f.name.replace(/\.[^.]+$/,''),f).then(()=>{t.value=''})}},true);
+function fpDoorHook(d){const ps=pinsFor(d),bar=app.querySelector('.bar');if(!ps.length||!bar)return;const div=document.createElement('div');div.className='row';div.style.marginBottom='12px';
+  div.innerHTML=ps.map(p=>`<a class="btn primary" href="#/plan/${p.id}/${d.id}">📍 Show on floor plan${ps.length>1?': '+esc(p.name):''}</a>`).join('');bar.after(div)}
+function fpRemoveDoor(id){plans().forEach(p=>p.pins=p.pins.filter(x=>x.door!==id))}
+const fpName=p=>'floorplans/'+safe(p.name)+'_'+p.id+'.jpg';
+async function fpFiles(){const out=[];for(const p of plans()){const b=await mediaBlob(p.mid);if(b)out.push({name:fpName(p),data:new Uint8Array(await b.arrayBuffer())})}return out}
+function fpExport(){return plans().map(p=>({id:p.id,name:p.name,file:fpName(p),width:p.w,height:p.h,pins:p.pins.map((q,i)=>{const d=doorById(q.door)||{};return {n:i+1,door:q.door,doorRef:d.ref||'',doorId:d.pid||'',x:q.x,y:q.y}})}))}
+async function fpPDF(p){const X=p.M,CW=p.W-2*p.M;
+  for(const pl of plans()){if(!pl.pins.length)continue;const t=await thumbFor(pl.mid,1600);if(!t)continue;p.page();
+    p.text(X,p.y+14,pt('Floor plan – '+pl.name),14,true,INK);p.y+=24;
+    const maxH=p.H-p.M-p.y-150,k=Math.min(CW/t.w,maxH/t.h),iw=t.w*k,ih=t.h*k,ix=X+(CW-iw)/2,iy=p.y;p.image(t,ix,iy,iw,ih);p.box(ix,iy,iw,ih);
+    const f=n=>n.toFixed(2);
+    pl.pins.forEach((q,i)=>{const d=doorById(q.door);if(!d)return;const cx=ix+q.x*iw,cy=p.H-(iy+q.y*ih),r=7,c=.5523*r,col=stCol(status(d));
+      p.raw(`${col.map(f).join(' ')} rg 1 1 1 RG 1 w ${f(cx+r)} ${f(cy)} m ${f(cx+r)} ${f(cy+c)} ${f(cx+c)} ${f(cy+r)} ${f(cx)} ${f(cy+r)} c ${f(cx-c)} ${f(cy+r)} ${f(cx-r)} ${f(cy+c)} ${f(cx-r)} ${f(cy)} c ${f(cx-r)} ${f(cy-c)} ${f(cx-c)} ${f(cy-r)} ${f(cx)} ${f(cy-r)} c ${f(cx+c)} ${f(cy-r)} ${f(cx+r)} ${f(cy-c)} ${f(cx+r)} ${f(cy)} c B`);
+      const s=String(i+1),fs=i+1>99?5.5:7;p.text(cx-tw(s,fs,true)/2,iy+q.y*ih+fs*.36,s,fs,true,[1,1,1])});
+    p.y=iy+ih+12;
+    pl.pins.forEach((q,i)=>{const d=doorById(q.door);if(!d)return;const st=status(d);p.ensure(13);p.rect(X,p.y+2,8,8,stCol(st));p.text(X+12,p.y+9.5,pt(`${i+1}. ${d.ref||''} – ${d.location||''}`).slice(0,90),8.5,false);p.text(X+CW-70,p.y+9.5,stLabel(st),8,true,stCol(st));p.y+=12})}}
 
 (async function init(){
   const st=document.createElement('style');st.textContent=REPORT_CSS;document.head.appendChild(st);
