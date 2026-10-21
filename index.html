@@ -28,6 +28,9 @@ label.f{display:block;margin:0 0 12px;font-size:13px;color:#555;font-weight:600}
 input[type=text],input[type=date],select,textarea{display:block;width:100%;font-size:16px;padding:12px;border:1px solid #c9ccd3;border-radius:8px;margin-top:4px;background:#fff;color:inherit;min-height:48px;font-family:inherit;-webkit-appearance:none;appearance:none}
 select{background-image:linear-gradient(45deg,transparent 50%,#666 50%),linear-gradient(135deg,#666 50%,transparent 50%);background-position:calc(100% - 20px) 21px,calc(100% - 15px) 21px;background-size:5px 5px;background-repeat:no-repeat;padding-right:34px}
 textarea{min-height:84px;resize:vertical}
+textarea.sn{min-height:44px;height:44px;overflow:hidden;resize:none;padding:10px;border-left:4px solid #dcca1c}
+.snchk{display:flex;align-items:center;gap:8px;font-size:14px;margin:6px 0 2px;min-height:36px}.snchk input{width:20px;height:20px;accent-color:#141414}
+.dd .sn{border-left:4px solid #dcca1c;background:#fbf8e1;padding:6px 10px;margin:8px 0}.dd .sn b{display:block;font-size:12px}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:48px;padding:10px 16px;border-radius:10px;border:1px solid #c9ccd3;background:#fff;font-size:16px;font-weight:600;color:var(--ink);text-decoration:none;cursor:pointer;font-family:inherit;text-align:center}
 .btn:active{transform:scale(.98)}
 .btn.primary{background:var(--brand);color:#fff;border-color:var(--brand)}
@@ -325,6 +328,7 @@ async function buildPDF(){
       p.text(X+4,p.y+9,pt(c[1]),8.5,false);p.text(X+170,p.y+9,rLabel(r),8.5,true,col);cl.forEach((l,i)=>{if(l)p.text(X+215,p.y+9+i*11,l,8.5,false,SOFT)});p.y+=h}
     p.y+=4;
     for(const [k,v] of [['Issues found',d.issues],['Recommended action',d.action],['Priority',d.priority],['Notes',d.notes]]){if(!v)continue;const ls=wrapT(v,9.5,CW-120);p.ensure(ls.length*12+4);p.text(X+4,p.y+10,k,9.5,true);ls.forEach((l,i)=>p.text(X+120,p.y+10+i*12,l,9.5));p.y+=ls.length*12+4}
+    if(snOn(d)){const ls=wrapT(d.siteNotes.trim(),9.5,CW-16);p.ensure(ls.length*12+22);p.y+=4;p.rect(X,p.y,3,ls.length*12+18,[.863,.792,.11]);p.text(X+10,p.y+10,'Surveyor notes',9.5,true);ls.forEach((l,i)=>p.text(X+10,p.y+23+i*12,l,9.5));p.y+=ls.length*12+22}
     const photos=d.media.filter(m=>m.kind==='photo'),vids=d.media.filter(m=>m.kind==='video');
     if(photos.length){p.y+=4;const tw_=(CW-24)/4;let col=0;
       for(const m of photos){const t=await thumbFor(m.id,700);if(!t)continue;const th=tw_*t.h/t.w>tw_*0.9?tw_*0.9:tw_*t.h/t.w;const iw=th*t.w/t.h;
@@ -468,6 +472,7 @@ async function reportMarkup(mode){
     h+=`<section class="dd"><h3><span>${esc(d.ref)} – ${esc(d.location)}</span><span class="st ${st}">${stLabel(st)}</span></h3><p class="meta">${esc(typeLabel(d.type))} · ${esc(d.rating||'—')} · ${esc(d.leaf||'—')}</p>`;
     h+=`<table class="cl"><thead><tr><th>Check</th><th>Result</th><th>Comment</th></tr></thead><tbody>${CHECKS.map(k=>{const o=d.checks[k[0]]||{};return `<tr><td>${esc(k[1])}</td><td class="r-${o.r||''}">${rLabel(o.r)}</td><td>${esc(o.c||'')}</td></tr>`}).join('')}</tbody></table>`;
     h+=`<table class="kv">${[['Issues found',d.issues],['Recommended action',d.action],['Priority',d.priority],['Notes',d.notes]].map(([k,v])=>`<tr><th>${k}</th><td>${esc(v||'—').replace(/\n/g,'<br>')}</td></tr>`).join('')}</table>`;
+    if(snOn(d))h+=`<div class="sn"><b>Surveyor notes</b>${esc(d.siteNotes.trim()).replace(/\n/g,'<br>')}</div>`;
     if(d.media.length){h+='<div class="thumbs">';for(const m of d.media){const n=mediaName(d,m);let inner;
       if(mode==='app')inner=m.kind==='video'?`<video data-mid="${m.id}" controls playsinline muted preload="metadata"></video>`:`<img data-mid="${m.id}" alt="${esc(n)}">`;
       else if(m.kind==='video')inner=`<div class="vid">▶ Video<br>${esc(n)}<br>${mode==='zip'?'(click to open)':'(original in ZIP download)'}</div>`;
@@ -575,6 +580,9 @@ function renderDoor(id){setNav('list');const d=doorById(id),i=S.doors.indexOf(d)
    <label class="f">Recommended action${seg('data-da="action"',ACTIONS.map(a=>[a,a]),d.action,'sel')}</label>
    <label class="f">Priority${seg('data-da="priority"',PRIS.map(a=>[a,a]),d.priority,'sel')}</label>
    <label class="f">Notes<textarea data-d="notes" placeholder="Any other notes">${esc(d.notes)}</textarea></label></section>
+  <section class="card"><h2>Site notes (scratchpad)</h2>
+   <label class="f">Off-standard requests or on-site observations<textarea class="sn" data-d="siteNotes" placeholder="Quick note…" rows="1">${esc(d.siteNotes||'')}</textarea></label>
+   <label class="snchk"><input type="checkbox" id="snrep"${d.siteNotesInReport===false?'':' checked'}> Include in report (as “Surveyor notes”)</label></section>
   <section class="card"><h2>Photos & video</h2>
    <div class="uploads"><label class="btn"><span class="i">📷</span>Take photo<input type="file" accept="image/*" capture="environment"></label><label class="btn"><span class="i">🎥</span>Record video<input type="file" accept="video/*" capture="environment"></label><label class="btn"><span class="i">🖼️</span>From library<input type="file" accept="image/*,video/*" multiple></label></div>
    <div id="media" class="grid"></div>
@@ -589,7 +597,7 @@ function renderDoor(id){setNav('list');const d=doorById(id),i=S.doors.indexOf(d)
    ${qrTipHTML}</section>
   <div class="bar">${prev?`<a class="btn" href="#/door/${prev.id}">‹ ${esc(prev.ref)}</a>`:'<span></span>'}${next?`<a class="btn" href="#/door/${next.id}">${esc(next.ref)} ›</a>`:`<a class="btn primary" href="#/summary">Report ›</a>`}</div>
   <button type="button" class="btn danger block" data-act="deldoor">Delete this door</button>`;
-  renderMedia(d);
+  renderMedia(d);{const sn=$("textarea.sn");if(sn)snGrow(sn)}
 }
 function renderMedia(d){const el=$('#media');if(!el)return;
   el.innerHTML=d.media.length?d.media.map(m=>`<div class="mi">${m.kind==='video'?`<video data-mid="${m.id}" controls playsinline muted preload="metadata"></video>`:`<img data-mid="${m.id}" alt="">`}<div class="mname">${esc(mediaName(d,m))}</div><div class="mbtns"><button type="button" class="btn sm" data-act="dlmedia" data-id="${m.id}">⬇ Download</button><button type="button" class="btn sm danger" data-act="delmedia" data-id="${m.id}" aria-label="Delete">🗑</button></div></div>`).join(''):'<p class="muted" style="grid-column:1/-1">No photos or videos yet.</p>';
@@ -652,14 +660,16 @@ const ACT={
 };
 function exportJSON(){ensureIds();return JSON.stringify({app:'SafeBuilt Solutions fire door inspection',exported:new Date().toISOString(),sample:!!S.isSample,survey:S.survey,
   doors:S.doors.map(d=>({...d,doorId:d.pid,tagNo:d.tag||'',tagId:d.tagId||'',recordUrl:recordURL(d),typeLabel:typeLabel(d.type),inspected:inspDate(),nextDue:nextDue(d),keyIssues:keyIssues(d),status:status(d),suggested:suggest(d),checks:CHECKS.map(c=>({key:c[0],item:c[1],result:(d.checks[c[0]]||{}).r||'',comment:(d.checks[c[0]]||{}).c||''})),media:d.media.map(m=>({file:mediaName(d,m),kind:m.kind,type:m.type,original:m.orig||m.caption||'',caption:m.caption||''}))})),floorPlans:fpExport()},null,2)}
+function snGrow(t){t.style.height='auto';t.style.height=Math.max(44,t.scrollHeight+2)+'px'}
+function snOn(d){return !!(d.siteNotes&&d.siteNotes.trim())&&d.siteNotesInReport!==false}
 function refreshOverall(d){const o=$('#overall');if(o)o.innerHTML=overallHTML(d);const b=$('#dbadge');if(b){const s=status(d);b.className='badge '+s;b.textContent=stLabel(s)}}
 
 app.addEventListener('input',e=>{const t=e.target;
   if(t.dataset.s!==undefined){S.survey[t.dataset.s]=t.value;save();return}
   const d=cur();if(!d)return;
-  if(t.dataset.d){d[t.dataset.d]=t.value;save();if(t.dataset.d==='ref')renderMedia(d)}
+  if(t.dataset.d){d[t.dataset.d]=t.value;save();if(t.classList.contains('sn'))snGrow(t);if(t.dataset.d==='ref')renderMedia(d)}
   else if(t.dataset.cc){ck(d,t.dataset.cc).c=t.value;save()}});
-app.addEventListener('change',e=>{const t=e.target;if(t.type==='file'&&t.files&&t.files.length){const d=cur();addFiles(d,[...t.files]).then(()=>{t.value=''})}});
+app.addEventListener('change',e=>{const t=e.target;if(t.id==='snrep'){const d=cur();if(d){d.siteNotesInReport=t.checked;save()}return}if(t.type==='file'&&t.files&&t.files.length){const d=cur();addFiles(d,[...t.files]).then(()=>{t.value=''})}});
 app.addEventListener('click',async e=>{
   const sb=e.target.closest('.seg button');
   if(sb){e.preventDefault();const g=sb.parentElement,d=cur(),v=sb.dataset.v;if(!d)return;
