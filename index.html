@@ -45,7 +45,7 @@ textarea.sn{min-height:44px;height:44px;overflow:hidden;resize:none;padding:10px
 .seg button.on.fail{background:var(--red);color:#fff;border-color:var(--red)}
 .seg button.on.na{background:#607d8b;color:#fff;border-color:#607d8b}
 .seg button.on.sel{background:var(--ink);color:#fff;border-color:var(--ink)}
-.gsum{display:flex;align-items:center;gap:8px;flex-wrap:wrap;border:1px solid;border-radius:6px;padding:7px 10px;margin:8px 0;font-weight:700}.gsum .st{display:inline-block;font-weight:800;color:#fff;padding:2px 8px;border-radius:999px;background:#e0a100;font-size:11px}.gsum .st.pass{background:#2e7d32}.gsum .st.fail{background:#c62828}.gdiag{max-width:520px;margin:0 auto}.ggrid{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+.gsum{display:flex;align-items:center;gap:8px;flex-wrap:wrap;border:1px solid;border-radius:6px;padding:7px 10px;margin:8px 0;font-weight:700}.gsum .st{display:inline-block;font-weight:800;color:#fff;padding:2px 8px;border-radius:999px;background:#e0a100;font-size:11px}.gsum .st.pass{background:#2e7d32}.gsum .st.fail{background:#c62828}.gdiag{max-width:520px;margin:0 auto}.ggrid{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}.ggrid .full{grid-column:1/-1}.ghd{font-size:13px;font-weight:800;color:#141414;padding:6px 8px;margin:4px 0 8px;border-radius:6px;background:#f1f1f3;border-left:4px solid #141414;line-height:1.25}.ghd.l2{border-left-color:#e53376}.ghd small{display:block;font-weight:600;color:#666;font-size:11px}.gtype{display:inline-block;font-size:12px;font-weight:700;background:#141414;color:#fff;border-radius:999px;padding:2px 10px;margin:0 0 8px}@media(max-width:360px){.ghd{font-size:12px;padding:5px 6px}}
 .ck{padding:14px 0;border-top:1px solid #eee}
 .ck b{display:block}
 .hint{font-size:13px;color:#666;margin:3px 0 0}
@@ -272,21 +272,31 @@ const GAP_LIMITS={
 const GAP_KEYS=[['hinge','Hinge side'],['lock','Lock side'],['head','Top'],['threshold','Threshold']];
 const GAP_OPTS=(th)=>{const o=[['','Not measured']];for(let v=0;v<=15;v+=.5)o.push([String(v),v+' mm']);if(th)o.push(['>15','>15 mm']);return o};
 const gapsOf=d=>d.gaps||{};
+// Pairs of doors (Double / Leaf and a half): [key, form label, diagram label, rule type]. Stored in the same d.gaps object as the single-door keys,
+// so switching leaf type back and forth never discards values – the other set is just hidden.
+const PAIR_KEYS=[['l1hinge','Leaf 1 hinge side','L1 hinge','edge'],['l2hinge','Leaf 2 hinge side','L2 hinge','edge'],['meet','Meeting edge (between leaves)','Meeting edge','edge'],
+  ['l1head','Leaf 1 head (top)','L1 head','edge'],['l2head','Leaf 2 head (top)','L2 head','edge'],['l1th','Leaf 1 threshold','L1 threshold','th'],['l2th','Leaf 2 threshold','L2 threshold','th']];
+const LEAF1='Leaf 1 (main/active)',LEAF2='Leaf 2 (secondary)';
+const isPair=d=>/double|half/i.test(d&&d.leaf||'');
+const isHalf=d=>/half/i.test(d&&d.leaf||'');
+const gapKeyList=d=>isPair(d)?PAIR_KEYS.map(([k,l,sh,t])=>[k,l,t,sh]):GAP_KEYS.map(([k,l])=>[k,l,k==='threshold'?'th':'edge',l]);
+const GAP_BLANK={lock:'',hinge:'',head:'',threshold:'',dropSeal:false};
+const gapInit=d=>(d.gaps=Object.assign({},GAP_BLANK,d.gaps));
 function closesOK(d){for(const k of ['selfclose','closer']){const r=(d.checks[k]||{}).r;if(r==='pass'||r==='fail')return r}return ''}
 function thLimit(d){const g=gapsOf(d);const r=d.rating||'Unknown';const base=GAP_LIMITS.threshold[r]!=null?GAP_LIMITS.threshold[r]:GAP_LIMITS.threshold.Unknown;return g.dropSeal?Math.max(base,GAP_LIMITS.thresholdDropSeal):base}
 function gapEval(d){const g=gapsOf(d),out=[];const E=GAP_LIMITS.edge;
-  for(const [k,l] of GAP_KEYS){const raw=g[k];if(raw===undefined||raw===null||raw==='')continue;const v=raw==='>15'?99:parseFloat(raw);if(isNaN(v))continue;let r,why;
-    if(k==='threshold'){const lim=thLimit(d);r=v<=lim?'pass':'fail';why=(r==='pass'?'≤':'>')+lim+' mm'}
+  for(const [k,l,t,sh] of gapKeyList(d)){const raw=g[k];if(raw===undefined||raw===null||raw==='')continue;const v=raw==='>15'?99:parseFloat(raw);if(isNaN(v))continue;let r,why;
+    if(t==='th'){const lim=thLimit(d);r=v<=lim?'pass':'fail';why=(r==='pass'?'≤':'>')+lim+' mm'}
     else if(v>E.max){r='fail';why='>'+E.max+' mm'}
     else if(v>=E.min){r='pass';why=E.min+'–'+E.max+' mm'}
     else{const c=closesOK(d);r=c==='pass'?'pass':c==='fail'?'fail':'check';why=c==='pass'?'<'+E.min+' mm, door closes':c==='fail'?'<'+E.min+' mm, door not closing':'<'+E.min+' mm – check closing'}
-    out.push({k,label:l,raw,v,r,why})}
+    out.push({k,label:l,short:sh,t,raw,v,r,why})}
   return out}
 function gapSummary(d){const e=gapEval(d);if(!e.length)return null;const p=e.filter(x=>x.r==='pass').length,c=e.filter(x=>x.r==='check').length,f=e.filter(x=>x.r==='fail').length,n=e.length;
-  const t=(n===4?`${p} of 4 gaps pass`:`${p} of ${n} measured gap${n>1?'s':''} pass`)+(c?`, ${c} to check`:'');return {text:t,p,c,f,n,r:f?'fail':c?'check':'pass'}}
+  const N=gapKeyList(d).length;const t=(n===N?`${p} of ${N} gaps pass`:`${p} of ${n} measured gap${n>1?'s':''} pass`)+(c?`, ${c} to check`:'');return {text:t,p,c,f,n,r:f?'fail':c?'check':'pass'}}
 const GC={pass:'#2e7d32',fail:'#c62828',check:'#e0a100',none:'#9aa0a6'};
 const gMark=r=>r==='pass'?'✓':r==='fail'?'✗':'?';
-function gapSVG(d){const e={};gapEval(d).forEach(x=>e[x.k]=x);const g=gapsOf(d);
+function gapSVG(d){if(isPair(d))return pairSVG(d);const e={};gapEval(d).forEach(x=>e[x.k]=x);const g=gapsOf(d);
   const col=k=>GC[e[k]?e[k].r:'none'];const lab=k=>{const l=GAP_KEYS.find(x=>x[0]===k)[1];return e[k]?`${gMark(e[k].r)} ${l} ${e[k].raw==='>15'?'>15':e[k].v}mm`:`${l}: not measured`};
   const badge=(k,cx,cy,w)=>`<rect x="${cx-w/2}" y="${cy-15}" width="${w}" height="30" rx="15" fill="${col(k)}"/><text x="${cx}" y="${cy+5}" text-anchor="middle" font-size="14" font-weight="800" fill="${e[k]&&e[k].r==='check'?'#141414':'#fff'}">${esc(lab(k))}</text>`;
   return `<svg viewBox="0 0 620 400" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,Segoe UI,Roboto,Arial,sans-serif">
@@ -300,20 +310,63 @@ function gapSVG(d){const e={};gapEval(d).forEach(x=>e[x.k]=x);const g=gapsOf(d);
 <line x1="310" y1="53" x2="310" y2="33" stroke="${col('head')}"/><circle cx="310" cy="53" r="4" fill="${col('head')}"/><line x1="310" y1="327" x2="310" y2="360" stroke="${col('threshold')}"/><circle cx="310" cy="327" r="4" fill="${col('threshold')}"/></g>
 ${badge('hinge',76,200,146)}${badge('lock',544,200,146)}${badge('head',310,18,150)}${badge('threshold',310,375,190)}
 <text x="310" y="248" text-anchor="middle" font-size="11" fill="#5a3e28">Viewed from push face${g.dropSeal?' · drop seal fitted':''}</text></svg>`}
+// Pair-of-doors diagram described once as primitives, drawn as SVG (app/HTML report) and in the PDF.
+function pairSpec(d){const half=isHalf(d);const x0=228,x1=492,meet=half?407:360,l1=[x0,meet-3],l2=[meet+3,x1];const sh=[],tx=[];
+  const R=(x,y,w,h,fill,stroke,sw)=>sh.push({t:'r',x,y,w,h,fill,stroke,sw});const L=(x1,y1,x2,y2,c,w,gk)=>sh.push({t:'l',x1,y1,x2,y2,c,w,gk});
+  R(200,36,320,294,'#e9e6df','#141414',2);R(214,50,292,280,'#fff','#141414',1.5);
+  R(l1[0],68,l1[1]-l1[0],254,'#c9a77c','#6d4c33',2);R(l2[0],68,l2[1]-l2[0],254,'#d6b88f','#6d4c33',2);
+  [85,180,280].forEach(y=>{R(225,y,6,22,'#777');R(489,y,6,22,'#777')});
+  R(meet-17,205,8,40,'#4a4a4a',null,0);R(meet+7,74,4,20,'#4a4a4a',null,0);R(meet+7,296,4,20,'#4a4a4a',null,0);
+  L(130,330,590,330,'#141414',3);
+  const m1=(l1[0]+l1[1])/2,m2=(l2[0]+l2[1])/2;
+  L(216,54,216,326,null,6,'l1hinge');L(504,54,504,326,null,6,'l2hinge');L(meet,70,meet,320,null,6,'meet');
+  L(218,53,meet-4,53,null,6,'l1head');L(meet+4,53,502,53,null,6,'l2head');L(l1[0],327,l1[1],327,null,6,'l1th');L(l2[0],327,l2[1],327,null,6,'l2th');
+  const h1=Math.min(m1,280),h2=Math.max(m2,450),t1=Math.min(m1,256),t2=Math.max(m2,474);
+  L(216,200,186,200,null,1.5,'l1hinge');L(504,200,534,200,null,1.5,'l2hinge');L(m1,53,h1,36,null,1.5,'l1head');L(m2,53,h2,36,null,1.5,'l2head');L(m1,327,t1,358,null,1.5,'l1th');L(m2,327,t2,358,null,1.5,'l2th');
+  tx.push({x:m1,y:106,s:'Leaf 1',z:16,b:1},{x:m1,y:123,s:'(main/active)',z:13},{x:m2,y:106,s:'Leaf 2',z:16,b:1},{x:m2,y:123,s:'(secondary)',z:13});
+  tx.push({x:360,y:410,s:'Viewed from push face'+(half?' · leaf and a half (unequal pair)':' · double (equal pair)')+(gapsOf(d).dropSeal?' · drop seal fitted':''),z:11,c:'#5a3e28'});
+  const badges=[['l1hinge',96,200],['l2hinge',624,200],['meet',meet,160],['l1head',h1,19],['l2head',h2,19],['l1th',t1,375],['l2th',t2,375]];
+  return {W:720,H:418,sh,tx,badges,dots:[['l1hinge',216,200],['l2hinge',504,200],['l1head',m1,53],['l2head',m2,53],['l1th',m1,327],['l2th',m2,327]]}}
+function pairSVG(d){const e={};gapEval(d).forEach(x=>e[x.k]=x);const S=pairSpec(d);const col=k=>GC[e[k]?e[k].r:'none'];
+  const lab=k=>{const l=PAIR_KEYS.find(x=>x[0]===k)[2];return e[k]?`${gMark(e[k].r)} ${l} ${e[k].raw==='>15'?'>15':e[k].v}mm`:`${l}: –`};
+  let o=`<svg viewBox="0 0 ${S.W} ${S.H}" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,Segoe UI,Roboto,Arial,sans-serif">`;
+  for(const z of S.sh){if(z.t==='r')o+=`<rect x="${z.x}" y="${z.y}" width="${z.w}" height="${z.h}" fill="${z.fill}"${z.stroke?` stroke="${z.stroke}" stroke-width="${z.sw}"`:''}${z.w<10?' rx="2"':''}/>`;
+    else o+=`<line x1="${z.x1}" y1="${z.y1}" x2="${z.x2}" y2="${z.y2}" stroke="${z.gk?col(z.gk):z.c}" stroke-width="${z.w}"/>`}
+  for(const [k,x,y] of S.dots)o+=`<circle cx="${x}" cy="${y}" r="4" fill="${col(k)}"/>`;
+  for(const t of S.tx)o+=`<text x="${t.x}" y="${t.y}" text-anchor="middle" font-size="${t.z}"${t.b?' font-weight="800"':''} fill="${t.c||'#3b2a1b'}">${esc(t.s)}</text>`;
+  for(const [k,cx,cy] of S.badges){const l=lab(k);const w=Math.max(100,Math.round(l.length*10.2+22));
+    o+=`<rect x="${cx-w/2}" y="${cy-17}" width="${w}" height="34" rx="17" fill="${col(k)}"${k==='meet'?' stroke="#fff" stroke-width="2"':''}/><text x="${cx}" y="${cy+6}" text-anchor="middle" font-size="17" font-weight="800" fill="${e[k]&&e[k].r==='check'?'#141414':'#fff'}">${esc(l)}</text>`}
+  return o+'</svg>'}
+function gapPairPDF(p,d,X,CW,e,C){const S=pairSpec(d);const col=k=>C[e[k]?e[k].r:'none'];const hx=h=>{if(h.length===4)h='#'+h[1]+h[1]+h[2]+h[2]+h[3]+h[3];return [1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255)};
+  const sc=.38,ox=X+(CW-S.W*sc)/2-62,oy=p.y,T=(x,y)=>[ox+x*sc,oy+y*sc];
+  const R=(x,y,w,h,c)=>{const [a,b]=T(x,y);p.rect(a,b,w*sc,h*sc,c)};const L=(x1,y1,x2,y2,c,w)=>{const [a,b]=T(x1,y1),[cc,dd]=T(x2,y2);p.line(a,b,cc,dd,c,w)};
+  for(const z of S.sh){if(z.t==='r'){if(z.stroke){const s2=z.sw;R(z.x-s2/2,z.y-s2/2,z.w+s2,z.h+s2,hx(z.stroke));R(z.x+s2/2,z.y+s2/2,z.w-s2,z.h-s2,hx(z.fill))}else R(z.x,z.y,z.w,z.h,hx(z.fill))}
+    else L(z.x1,z.y1,z.x2,z.y2,z.gk?col(z.gk):hx(z.c),z.w>3?z.w*.43:z.w*.55)}
+  for(const t of S.tx){const [a,b]=T(t.x,t.y);const z=Math.max(5.5,t.z*sc*1.15),s=pt(t.s);p.text(a-tw(s,z,!!t.b)/2,b,s,z,!!t.b,t.c?hx(t.c):[.23,.16,.1])}
+  const mark=(r,x,y)=>{const w=[1,1,1];if(r==='pass'){p.line(x,y+4,x+2.5,y+7,w,1.4);p.line(x+2.5,y+7,x+7.5,y,w,1.4)}else if(r==='fail'){p.line(x,y,x+7,y+7,w,1.4);p.line(x+7,y,x,y+7,w,1.4)}else p.text(x+1,y+7,'?',9,true,INK)};
+  for(const [k,cx,cy] of S.badges){const [a,b]=T(cx,cy);const l=PAIR_KEYS.find(x=>x[0]===k)[2];const t=e[k]?`${l} ${e[k].raw==='>15'?'>15':e[k].v}mm`:`${l}: n/m`;
+    const w=tw(t,7,true)+(e[k]?22:10);p.rect(a-w/2,b-6.5,w,13,col(k));const tx=a-w/2+(e[k]?17:5);if(e[k])mark(e[k].r,a-w/2+5,b-3.5);p.text(tx,b+2.5,t,7,true,e[k]&&e[k].r==='check'?INK:[1,1,1])}
+  const cx=ox+S.W*sc+16;let cy=oy+24;p.text(cx,cy,pt(isHalf(d)?'Gap diagram – leaf and a half':'Gap diagram – double doors'),9.5,true,INK);cy+=12;
+  for(const l of wrapT(`${LEAF1}, ${LEAF2}. Hinge-side and head gaps per leaf, meeting-edge gap between the leaves, threshold under each leaf; viewed from push face. Edges 2–4 mm; under 2 mm passes only if the door closes properly. Thresholds up to ${thLimit(d)} mm for ${d.rating||'Unknown'}${gapsOf(d).dropSeal?' with drop seal':''}.`,8,X+CW-cx))
+    {p.text(cx,cy,l,8,false,SOFT);cy+=10}
+  cy+=4;[['pass','Pass'],['fail','Fail'],['check','Check closing']].forEach(([r,t])=>{p.rect(cx,cy-7,12,10,C[r]);mark(r,cx+2.5,cy-5.5);p.text(cx+16,cy+1,t,8,false,INK);cy+=13});
+  cy+=2;for(const x of gapEval(d)){const t=pt(`${x.label}: ${x.raw==='>15'?'>15':x.v} mm`);p.rect(cx,cy-6,6,6,C[x.r]);p.text(cx+10,cy,t,7.5,false,INK);cy+=9.5}
+  p.y=Math.max(oy+S.H*sc+6,cy+4)}
 function gapSumHTML(d){const s=gapSummary(d);if(!s)return '<p class="hint">No gaps measured yet.</p>';const bg={pass:'#e8f5e9;border-color:#a5d6a7',fail:'#fdecea;border-color:#f5c2c0',check:'#fff6d6;border-color:#f0d27a'}[s.r];
   return `<div class="gsum" style="background:${bg}"><span class="st ${s.r==='check'?'':s.r}">GAPS</span>${esc(s.text)} <span style="font-weight:400;color:#555">· edges 2–4&nbsp;mm, threshold ≤${thLimit(d)}&nbsp;mm</span></div>`}
 function gapCardInner(d){return gapSumHTML(d)+`<div class="gdiag">${gapSVG(d)}</div>`}
 function refreshGaps(d){const el=$('#gapview');if(el)el.innerHTML=gapCardInner(d)}
 // Suggest 'gaps'/'threshold' checklist results; never overwrite a result set by hand (only fill blanks or results we set earlier).
 function gapAutoCheck(d){const e=gapEval(d);d.gapAuto=d.gapAuto||{};let ch=false;
-  const want={gaps:(()=>{const x=e.filter(z=>z.k!=='threshold');if(!x.length||x.some(z=>z.r==='check'))return '';return x.some(z=>z.r==='fail')?'fail':'pass'})(),threshold:(()=>{const x=e.find(z=>z.k==='threshold');return x?x.r:''})()};
+  const want={gaps:(()=>{const x=e.filter(z=>z.t!=='th');if(!x.length||x.some(z=>z.r==='check'))return '';return x.some(z=>z.r==='fail')?'fail':'pass'})(),threshold:(()=>{const x=e.filter(z=>z.t==='th');if(!x.length)return '';return x.some(z=>z.r==='fail')?'fail':'pass'})()};
   for(const k of ['gaps','threshold']){const o=ck(d,k);const prev=d.gapAuto[k]||'';if(o.r&&o.r!==prev)continue;if(o.r!==want[k]){o.r=want[k];ch=true;const g=$(`.seg[data-ck="${k}"]`);if(g)paintSeg(g,o.r)}d.gapAuto[k]=want[k]}
   return ch}
 function gapPDF(p,d,X,CW){const s=gapSummary(d);if(!s)return;const e={};gapEval(d).forEach(x=>e[x.k]=x);
   const C={pass:GREEN,fail:RED,check:[.88,.63,0],none:GREY};const col=k=>C[e[k]?e[k].r:'none'];
-  p.ensure(24+170);const bg={pass:[.91,.96,.91],fail:[.99,.93,.92],check:[1,.96,.84]}[s.r];
+  p.ensure(24+(isPair(d)?190:170));const bg={pass:[.91,.96,.91],fail:[.99,.93,.92],check:[1,.96,.84]}[s.r];
   p.rect(X,p.y,CW,20,bg);p.rect(X+6,p.y+4,40,12,C[s.r]);p.text(X+11,p.y+13,'GAPS',7.5,true,s.r==='check'?INK:[1,1,1]);
   p.text(X+54,p.y+14,pt(s.text),10,true,INK);p.text(X+54+tw(pt(s.text),10,true)+8,p.y+14,pt(`edges 2–4 mm, threshold up to ${thLimit(d)} mm`),8.5,false,SOFT);p.y+=26;
+  if(isPair(d)){gapPairPDF(p,d,X,CW,e,C);return}
   const sc=.4,ox=X+(CW-620*sc)/2-60,oy=p.y,T=(x,y)=>[ox+x*sc,oy+y*sc];
   const R=(x,y,w,h,c)=>{const [a,b]=T(x,y);p.rect(a,b,w*sc,h*sc,c)};const L=(x1,y1,x2,y2,c,w)=>{const [a,b]=T(x1,y1),[cc,dd]=T(x2,y2);p.line(a,b,cc,dd,c,w)};
   R(216,36,188,294,[.08,.08,.08]);R(218,38,184,290,[.914,.902,.875]);R(230,50,160,280,[.08,.08,.08]);R(231.5,51.5,157,277,[1,1,1]);
@@ -635,14 +688,23 @@ function overallHTML(d){const sg=suggest(d),st=status(d),nf=failed(d).length,nu=
   return `<h2>Overall result</h2><p class="hint">Suggested: <span class="badge ${sg}">${stLabel(sg)}</span> ${nf?nf+' item(s) failed':nu?nu+' item(s) not yet checked':'all items Pass / N/A'}</p>
   ${seg('data-ov=""',[['pass','✔ PASS'],['fail','✖ FAIL']],st)}
   ${d.manual?`<p class="hint">${d.overall!==sg?'<b>Manual override</b> – differs from suggestion. ':'Set manually. '}<button type="button" class="btn sm" data-act="unoverride">Use suggestion</button></p>`:'<p class="hint">Follows checklist automatically – tap to override.</p>'}`}
+function gapSel(d,k,l,th,cls){return `<label class="f${cls?' '+cls:''}">${l}<select data-g="${k}">${GAP_OPTS(th).map(([v,t])=>`<option value="${v}"${String(gapsOf(d)[k]??'')===v?' selected':''}>${t}</option>`).join('')}</select></label>`}
+function gapFormHTML(d){
+  if(!isPair(d))return `<h2>Gap measurements</h2><p class="hint">Measure leaf-to-frame gaps (mm). Edges 2–4 mm; under 2 mm passes only if the door closes properly (Self-closing check).</p>
+   <div class="ggrid">${[['lock','Lock side'],['hinge','Hinge side'],['head','Head (top)'],['threshold','Threshold']].map(([k,l])=>`<label class="f">${l}<select data-g="${k}">${GAP_OPTS(k==='threshold').map(([v,t])=>`<option value="${v}"${String(gapsOf(d)[k]??'')===v?' selected':''}>${t}</option>`).join('')}</select></label>`).join('')}</div>
+   <label class="snchk"><input type="checkbox" id="dropseal"${gapsOf(d).dropSeal?' checked':''}> Drop seal fitted</label>
+   <div id="gapview">${gapCardInner(d)}</div>`;
+  const K=k=>PAIR_KEYS.find(x=>x[0]===k);const G=(k,cls)=>{const [kk,l,,t]=K(k);return gapSel(d,kk,l,t==='th',cls)};
+  return `<h2>Gap measurements</h2><span class="gtype">${isHalf(d)?'Leaf and a half (unequal pair)':'Double doors (equal pair)'}</span><p class="hint">Measure each leaf to the frame, and the meeting-edge gap between the two leaves (mm). Edges and heads 2–4 mm; under 2 mm passes only if the doors close properly (Self-closing check). Threshold under each leaf.</p>
+   <div class="ggrid"><div class="ghd">${LEAF1}${isHalf(d)?'<small>wider leaf</small>':''}</div><div class="ghd l2">${LEAF2}${isHalf(d)?'<small>narrower leaf</small>':''}</div>
+   ${G('l1hinge')}${G('l2hinge')}${G('meet','full')}${G('l1head')}${G('l2head')}${G('l1th')}${G('l2th')}</div>
+   <label class="snchk"><input type="checkbox" id="dropseal"${gapsOf(d).dropSeal?' checked':''}> Drop seal fitted</label>
+   <div id="gapview">${gapCardInner(d)}</div>`}
 function renderDoor(id){setNav('list');const d=doorById(id),i=S.doors.indexOf(d),n=S.doors.length,prev=S.doors[i-1],next=S.doors[i+1];
   app.innerHTML=`<div class="bar"><a class="btn" href="#/list">‹ Doors</a><span class="muted">Door ${i+1} of ${n}</span><span id="dbadge" class="badge ${status(d)}">${stLabel(status(d))}</span></div>
   <section class="card"><h2>Door details</h2>${field('Door reference','ref',d.ref,'e.g. Door-06')}${field('Location','location',d.location,'e.g. Ground floor communal lobby')}
    ${sel('Door type','type',TYPES,d.type)}${sel('Fire rating','rating',RATINGS,d.rating)}${sel('Door leaf type','leaf',LEAFS,d.leaf)}</section>
-  <section class="card"><h2>Gap measurements</h2><p class="hint">Measure leaf-to-frame gaps (mm). Edges 2–4 mm; under 2 mm passes only if the door closes properly (Self-closing check).</p>
-   <div class="ggrid">${[['lock','Lock side'],['hinge','Hinge side'],['head','Head (top)'],['threshold','Threshold']].map(([k,l])=>`<label class="f">${l}<select data-g="${k}">${GAP_OPTS(k==='threshold').map(([v,t])=>`<option value="${v}"${String(gapsOf(d)[k]??'')===v?' selected':''}>${t}</option>`).join('')}</select></label>`).join('')}</div>
-   <label class="snchk"><input type="checkbox" id="dropseal"${gapsOf(d).dropSeal?' checked':''}> Drop seal fitted</label>
-   <div id="gapview">${gapCardInner(d)}</div></section>
+  <section class="card" id="gapsec">${gapFormHTML(d)}</section>
   <section class="card"><h2>Checklist</h2><p class="hint">Based on Fire Safety (England) Regulations 2022 guidance, BS 8214 and FDIS-style checks. Tap again to clear.</p>
    <div class="row" style="margin:10px 0 0"><button type="button" class="btn sm" data-act="allpass">Set unanswered to Pass</button></div>
    ${CHECKS.map(c=>checkItem(d,c)).join('')}</section>
@@ -732,7 +794,7 @@ const ACT={
   async json(){await saveBlob(new Blob([exportJSON()],{type:'application/json'}),baseName()+'_data.json')}
 };
 function exportJSON(){ensureIds();return JSON.stringify({app:'SafeBuilt Solutions fire door inspection',exported:new Date().toISOString(),sample:!!S.isSample,survey:S.survey,
-  doors:S.doors.map(d=>({...d,doorId:d.pid,tagNo:d.tag||'',tagId:d.tagId||'',recordUrl:recordURL(d),typeLabel:typeLabel(d.type),inspected:inspDate(),nextDue:nextDue(d),keyIssues:keyIssues(d),status:status(d),suggested:suggest(d),gaps:Object.assign({lock:'',hinge:'',head:'',threshold:'',dropSeal:false},d.gaps),gapResults:gapEval(d).map(x=>({edge:x.k,mm:x.raw,result:x.r,rule:x.why})),gapSummary:(gapSummary(d)||{}).text||'No gaps measured',checks:CHECKS.map(c=>({key:c[0],item:c[1],result:(d.checks[c[0]]||{}).r||'',comment:(d.checks[c[0]]||{}).c||''})),media:d.media.map(m=>({file:mediaName(d,m),kind:m.kind,type:m.type,original:m.orig||m.caption||'',caption:m.caption||''}))})),floorPlans:fpExport()},null,2)}
+  doors:S.doors.map(d=>({...d,doorId:d.pid,tagNo:d.tag||'',tagId:d.tagId||'',recordUrl:recordURL(d),typeLabel:typeLabel(d.type),inspected:inspDate(),nextDue:nextDue(d),keyIssues:keyIssues(d),status:status(d),suggested:suggest(d),gaps:Object.assign({},GAP_BLANK,isPair(d)?Object.fromEntries(PAIR_KEYS.map(k=>[k[0],''])):{},d.gaps),gapLayout:isPair(d)?(isHalf(d)?'leaf-and-a-half':'double'):'single',gapResults:gapEval(d).map(x=>({edge:x.k,label:x.label,mm:x.raw,result:x.r,rule:x.why})),gapSummary:(gapSummary(d)||{}).text||'No gaps measured',checks:CHECKS.map(c=>({key:c[0],item:c[1],result:(d.checks[c[0]]||{}).r||'',comment:(d.checks[c[0]]||{}).c||''})),media:d.media.map(m=>({file:mediaName(d,m),kind:m.kind,type:m.type,original:m.orig||m.caption||'',caption:m.caption||''}))})),floorPlans:fpExport()},null,2)}
 function snGrow(t){t.style.height='auto';t.style.height=Math.max(44,t.scrollHeight+2)+'px'}
 function snOn(d){return !!(d.siteNotes&&d.siteNotes.trim())&&d.siteNotesInReport!==false}
 function refreshOverall(d){refreshGaps(d);const o=$('#overall');if(o)o.innerHTML=overallHTML(d);const b=$('#dbadge');if(b){const s=status(d);b.className='badge '+s;b.textContent=stLabel(s)}}
@@ -740,10 +802,10 @@ function refreshOverall(d){refreshGaps(d);const o=$('#overall');if(o)o.innerHTML
 app.addEventListener('input',e=>{const t=e.target;
   if(t.dataset.s!==undefined){S.survey[t.dataset.s]=t.value;save();return}
   const d=cur();if(!d)return;
-  if(t.dataset.g){d.gaps=Object.assign({lock:'',hinge:'',head:'',threshold:'',dropSeal:false},d.gaps);d.gaps[t.dataset.g]=t.value;gapAutoCheck(d);save();refreshOverall(d);return}
-  if(t.dataset.d){d[t.dataset.d]=t.value;save();if(t.dataset.d==='rating'){gapAutoCheck(d);save();refreshOverall(d)}if(t.classList.contains('sn'))snGrow(t);if(t.dataset.d==='ref')renderMedia(d)}
+  if(t.dataset.g){gapInit(d);d.gaps[t.dataset.g]=t.value;gapAutoCheck(d);save();refreshOverall(d);return}
+  if(t.dataset.d){d[t.dataset.d]=t.value;save();if(t.dataset.d==='rating'){gapAutoCheck(d);save();refreshOverall(d)}if(t.dataset.d==='leaf'){const gs=$('#gapsec');if(gs)gs.innerHTML=gapFormHTML(d);gapAutoCheck(d);save();refreshOverall(d)}if(t.classList.contains('sn'))snGrow(t);if(t.dataset.d==='ref')renderMedia(d)}
   else if(t.dataset.cc){ck(d,t.dataset.cc).c=t.value;save()}});
-app.addEventListener('change',e=>{const t=e.target;if(t.id==='dropseal'){const d=cur();if(d){d.gaps=Object.assign({lock:'',hinge:'',head:'',threshold:'',dropSeal:false},d.gaps);d.gaps.dropSeal=t.checked;gapAutoCheck(d);save();refreshOverall(d)}return}if(t.id==='snrep'){const d=cur();if(d){d.siteNotesInReport=t.checked;save()}return}if(t.type==='file'&&t.files&&t.files.length){const d=cur();addFiles(d,[...t.files]).then(()=>{t.value=''})}});
+app.addEventListener('change',e=>{const t=e.target;if(t.id==='dropseal'){const d=cur();if(d){gapInit(d);d.gaps.dropSeal=t.checked;gapAutoCheck(d);save();refreshOverall(d)}return}if(t.id==='snrep'){const d=cur();if(d){d.siteNotesInReport=t.checked;save()}return}if(t.type==='file'&&t.files&&t.files.length){const d=cur();addFiles(d,[...t.files]).then(()=>{t.value=''})}});
 app.addEventListener('click',async e=>{
   const sb=e.target.closest('.seg button');
   if(sb){e.preventDefault();const g=sb.parentElement,d=cur(),v=sb.dataset.v;if(!d)return;
