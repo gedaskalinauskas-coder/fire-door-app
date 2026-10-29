@@ -48,6 +48,8 @@ textarea.sn{min-height:44px;height:44px;overflow:hidden;resize:none;padding:10px
 .seg button.on.sel{background:var(--ink);color:#fff;border-color:var(--ink)}
 .gsum{display:flex;align-items:center;gap:8px;flex-wrap:wrap;border:1px solid;border-radius:6px;padding:7px 10px;margin:8px 0;font-weight:700}.gsum .st{display:inline-block;font-weight:800;color:#fff;padding:2px 8px;border-radius:999px;background:var(--check);font-size:11px}.gsum .st.pass{background:var(--green)}.gsum .st.fail{background:var(--red)}.gdiag{max-width:520px;margin:0 auto}.ggrid{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}.ggrid .full{grid-column:1/-1}.ghd{font-size:13px;font-weight:800;color:var(--brand);padding:6px 8px;margin:4px 0 8px;border-radius:6px;background:#f1f1f3;border-left:4px solid var(--brand);line-height:1.25}.ghd.l2{border-left-color:var(--sb-pink)}.ghd small{display:block;font-weight:600;color:#666;font-size:11px}.gtype{display:inline-block;font-size:12px;font-weight:700;background:var(--brand);color:#fff;border-radius:999px;padding:2px 10px;margin:0 0 8px}@media(max-width:360px){.ghd{font-size:12px;padding:5px 6px}}
 .ck{padding:14px 0;border-top:1px solid #eee}
+.repsec{background:var(--sb-yellow-tint);border:1px solid #ece3a0;border-left:5px solid var(--sb-yellow);border-radius:10px;padding:12px 12px 2px;margin:-2px 0 14px}.repsec[hidden]{display:none}.repsec h3{margin:0 0 2px;font-size:16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}.rpill{display:inline-block;background:var(--sb-pink);color:#fff;font-size:11px;font-weight:800;letter-spacing:.03em;border-radius:999px;padding:2px 9px}.repsec .hint{margin:0 0 10px}.repsec .ghd{background:#fff}.repsec .opt{font-size:13px;font-weight:800;color:#555;margin:2px 0 8px;border-top:1px dashed #d9cf7a;padding-top:10px}
+.mmin{position:relative;display:block}.mmin input{padding-right:46px}.mmin i{position:absolute;right:12px;top:50%;transform:translateY(-50%);margin-top:2px;font-style:normal;font-weight:600;color:#888;font-size:14px;pointer-events:none}
 .ck b{display:block}
 .hint{font-size:13px;color:#666;margin:3px 0 0}
 .ck input{margin-top:8px;min-height:44px;padding:10px;font-size:15px}
@@ -289,6 +291,8 @@ const REPORT_CSS=`.report .gsum{display:flex;align-items:center;gap:8px;flex-wra
 .report .thumbs .vid{aspect-ratio:4/3;border-radius:6px;background:#263238;color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;font-size:12px;padding:6px}
 .report .thumbs figcaption{font-size:11px;color:#555;word-break:break-all}
 .report .cn{margin-top:22px;border:1px solid #ddd;border-left:5px solid ${BRAND.colors.pink};border-radius:8px;padding:4px 14px 10px;break-before:page;page-break-before:always}.report .cn h2{border-bottom:0;margin-top:10px}.report .cn .ci{margin:2px 0 8px;font-weight:600}.report .cn h3{font-size:14px;margin:14px 0 4px;break-after:avoid;page-break-after:avoid}.report .cn p{margin:4px 0}.report .cn ul{margin:4px 0 6px;padding-left:20px}.report .cn li{margin:2px 0;break-inside:avoid;page-break-inside:avoid}.report .cn .cx{background:${BRAND.colors.yellowTint};border-left:4px solid ${BRAND.colors.yellow};padding:6px 10px}.report .cn .cl{font-style:italic;color:#555;margin-top:12px}
+.report .rp{border:1px solid #ece3a0;border-left:5px solid ${BRAND.colors.yellow};background:${BRAND.colors.yellowTint};border-radius:8px;padding:8px 10px;margin:8px 0;break-inside:avoid;page-break-inside:avoid}.report .rp .rph{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}.report .st.rpl{background:${BRAND.colors.pink}}.report .rpg{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:6px}.report .rpg div{background:#fff;border:1px solid #eee;border-radius:6px;padding:5px 8px}.report .rpg small{display:block;color:#666;font-size:11px}.report .rpg b{font-size:15px}.report .rpn{margin:6px 0 0;font-size:12px}
+.report .rsched{font-size:12px;min-width:640px}.report .rsched td.n,.report .rsched td:first-child{white-space:nowrap}.report .rsched th{background:${BRAND.colors.black};color:#fff;border-color:${BRAND.colors.black}}.report .rsched thead tr{border-bottom:2px solid ${BRAND.colors.yellow}}.report .rsched .rnote td{color:#555;font-size:11px;border-top:0;background:#fafafa}
 .report .gn{font-size:11px;color:#555;margin-top:16px;border-top:1px solid #ddd;padding-top:8px}
 .report a{color:inherit}`;
 
@@ -396,6 +400,19 @@ const PAIR_KEYS=[['l1hinge','Leaf 1 hinge side','L1 hinge','edge'],['l2hinge','L
 const LEAF1='Leaf 1 (main/active)',LEAF2='Leaf 2 (secondary)';
 const isPair=d=>/double|half/i.test(d&&d.leaf||'');
 const isHalf=d=>/half/i.test(d&&d.leaf||'');
+/* ---- replacement measurements: shown when Recommended action = Replace; stored in d.rep (mm, whole numbers as text).
+   Values are kept when the action changes (only hidden), and doors saved before this feature simply have no d.rep. ---- */
+const isRep=d=>!!d&&d.action==='Replace';
+const repOf=d=>(d&&d.rep)||{};
+const repV=(d,k)=>String(repOf(d)[k]==null?'':repOf(d)[k]).trim();
+const REP_OPT=[['ow','Opening width'],['oh','Opening height']]; /* frame / structural opening - optional */
+/* [key,label] for the report block: leaf width(s), height, thickness, frame depth always; opening only when entered */
+function repFields(d){const f=isPair(d)?[['w1','Leaf 1 width'],['w2','Leaf 2 width']]:[['w1','Leaf width']];
+  f.push(['h','Leaf height'],['t','Leaf thickness'],['fd','Frame depth']);REP_OPT.forEach(x=>{if(repV(d,x[0]))f.push(x)});return f}
+const repAny=d=>['w1','w2','h','t','fd','ow','oh','notes'].some(k=>repV(d,k));
+const repLeafW=d=>isPair(d)?(repV(d,'w1')||repV(d,'w2')?(repV(d,'w1')||'?')+' + '+(repV(d,'w2')||'?'):''):repV(d,'w1');
+const repOpen=d=>repV(d,'ow')||repV(d,'oh')?(repV(d,'ow')||'?')+' \u00d7 '+(repV(d,'oh')||'?'):'';
+const repDoors=()=>S.doors.filter(isRep);
 const gapKeyList=d=>isPair(d)?PAIR_KEYS.map(([k,l,sh,t])=>[k,l,t,sh]):GAP_KEYS.map(([k,l])=>[k,l,k==='threshold'?'th':'edge',l]);
 const GAP_BLANK={lock:'',hinge:'',head:'',threshold:'',dropSeal:false};
 const gapInit=d=>(d.gaps=Object.assign({},GAP_BLANK,d.gaps));
@@ -549,6 +566,32 @@ function pdfPill(p,x,y,t,col,size,h){size=size||7;h=h||size+5.5;const s=pt(t),w=
 const pillW=(t,size)=>tw(pt(t),size||7,true)+12;
 /* section heading with pink underline - used for every report heading */
 function pdfHeading(p,t,X,CW,size){size=size||12.5;p.text(X,p.y+size,pt(t),size,true,INK);p.rect(X,p.y+size+4.5,CW,1.3,BC.pink);p.y+=size+13}
+/* replacement measurements block under a Replace door: yellow-tint panel, pink REPLACE pill, white rounded value cells; kept whole on one page */
+function repPDF(p,d,X,CW){const f=repFields(d),N=f.length<=5?f.length:Math.ceil(f.length/2),G=6,cw=(CW-20-(N-1)*G)/N,ch=30,rows=Math.ceil(f.length/N),n=repV(d,'notes');
+  const nl=n?wrapT('Notes: '+n,8.5,CW-24):[],el=repAny(d)?[]:['Not measured yet \u2013 measure on site before ordering.'];
+  const h=10+16+rows*(ch+G)+(nl.length+el.length)*11+(nl.length||el.length?4:0)+4;
+  p.ensure(h+6);p.y+=4;const y0=p.y;p.rect(X,y0,CW,h,BC.yellowTint);p.rect(X,y0,4,h,BC.yellow);
+  p.text(X+12,y0+16,'Replacement measurements (mm)',10,true,INK);pdfPill(p,X+CW-10-pillW('REPLACE',7),y0+6.5,'REPLACE',BC.pink,7,12);
+  let y=y0+26;f.forEach(([k,l],i)=>{const c=i%N,r=Math.floor(i/N),cx=X+12+c*(cw+G),cy=y+r*(ch+G);fillRR(p,cx,cy,cw,ch,4,[1,1,1]);
+    p.text(cx+7,cy+10.5,pt(l),7,false,SOFT);p.text(cx+7,cy+24,pt(repV(d,k)||'\u2014'),11,true,INK)});
+  y+=rows*(ch+G);[...nl,...el].forEach((l,i)=>{p.text(X+12,y+8+i*11,l,8.5,false,INK)});
+  p.y=y0+h+2}
+/* 'Replacement schedule': every Replace door with location and sizes, for ordering and quoting */
+function repSchedPDF(p,X,CW){const L=repDoors();if(!L.length)return;const WH=[1,1,1];
+  const cols=[['Ref',48],['Location',105],['Rating',42],['Leaf type',58],['Leaf width',64],['Height',40],['Thick.',34],['Frame depth',58],['Opening W\u00d7H',66]];
+  const head=()=>{p.rect(X,p.y,CW,17,BC.black);let cx=X;cols.forEach(([t,w])=>{p.text(cx+5,p.y+11.5,fitT(t,7.5,w-7,true),7.5,true,WH);cx+=w});p.rect(X,p.y+17,CW,1.5,BC.yellow);p.y+=18.5};
+  const rowOf=d=>{const cells=[d.ref,d.location,d.rating||'\u2014',d.leaf||'\u2014',repLeafW(d)||'\u2014',repV(d,'h')||'\u2014',repV(d,'t')||'\u2014',repV(d,'fd')||'\u2014',repOpen(d)||'\u2014'];
+    const wr=cells.map((c,i)=>wrapT(c||'\u2014',8.5,cols[i][1]-9,i===0)),n=repV(d,'notes'),nl=n?wrapT('Notes: '+n,8,CW-cols[0][1]-10):[];
+    return {wr,nl,h:Math.max(...wr.map(w=>w.length))*11+8+(nl.length?nl.length*10+2:0)}};
+  const first=rowOf(L[0]);p.y+=10;p.ensure(26+18.5+first.h+30);
+  pdfHeading(p,'Replacement schedule',X,CW);
+  p.para(`${L.length} door${L.length>1?'s':''} recommended for replacement. Sizes in mm, for ordering and quoting \u2013 confirm on site before ordering.`,X,CW,8.5,false,SOFT,11);p.y+=4;head();
+  L.forEach((d,ri)=>{const r=rowOf(d);if(p.y+r.h>p.H-p.M-14){p.page();head()}
+    if(ri%2)p.rect(X,p.y,CW,r.h,[.98,.98,.973]);
+    let cx=X;r.wr.forEach((ls,i)=>{ls.forEach((l,j)=>p.text(cx+5,p.y+12.5+j*11,l,8.5,i===0,INK));cx+=cols[i][1]});
+    const ny=p.y+Math.max(...r.wr.map(w=>w.length))*11+8;r.nl.forEach((l,j)=>p.text(X+cols[0][1]+5,ny+6+j*10,l,8,false,SOFT));
+    p.line(X,p.y+r.h,X+CW,p.y+r.h,[.85,.85,.85],.6);p.y+=r.h});
+  p.y+=6}
 async function buildPDF(){
   const p=PDFDoc(),s=S.survey,X=p.M,CW=p.W-2*p.M,WH=[1,1,1];p.top=p.M+12;
   const logoD=await logoJPG(BRAND.logo,BRAND.colors.black,2,.95),logoF=await logoJPG(BRAND.logoFlat,'#ffffff');
@@ -596,6 +639,7 @@ async function buildPDF(){
       p.text(X+4,p.y+9,pt(c[1]),8.5,false,INK);p.text(X+170,p.y+9,rLabel(r),8.5,true,col);cl.forEach((l,i)=>{if(l)p.text(X+215,p.y+9+i*11,l,8.5,false,SOFT)});p.y+=h}
     p.y+=4;
     for(const [k,v] of [['Issues found',d.issues],['Recommended action',d.action],['Priority',d.priority],['Notes',d.notes]]){if(!v)continue;const ls=wrapT(v,9.5,CW-120);p.ensure(ls.length*12+4);p.text(X+4,p.y+10,k,9.5,true,INK);ls.forEach((l,i)=>p.text(X+120,p.y+10+i*12,l,9.5,false,INK));p.y+=ls.length*12+4}
+    if(isRep(d))repPDF(p,d,X,CW);
     if(snOn(d)){const ls=wrapT(d.siteNotes.trim(),9.5,CW-16);p.ensure(ls.length*12+22);p.y+=4;p.rect(X,p.y,CW,ls.length*12+18,BC.yellowTint);p.rect(X,p.y,3,ls.length*12+18,BC.yellow);p.text(X+10,p.y+10,'Surveyor notes',9.5,true,INK);ls.forEach((l,i)=>p.text(X+10,p.y+23+i*12,l,9.5,false,INK));p.y+=ls.length*12+22}
     const photos=d.media.filter(m=>m.kind==='photo'),vids=d.media.filter(m=>m.kind==='video');
     if(photos.length){p.y+=4;const tw_=(CW-24)/4;let col=0;
@@ -605,6 +649,7 @@ async function buildPDF(){
       if(col)p.y+=tw_*0.9+16}
     if(vids.length)p.para('Video: '+vids.map(m=>mediaName(d,m)).join(', ')+' (original files in ZIP download)',X+4,CW-8,8.5,false,SOFT);
     p.y+=12}
+  repSchedPDF(p,X,CW);
   clientNotesPDF(p,s,X,CW);
   p.ensure(60);p.line(X,p.y,X+CW,p.y);p.y+=6;p.para(GUIDANCE,X,CW,8,false,SOFT,10.5);
   /* every page: branded footer; pages 2+: slim black header with the logo. Drawn here (not in PDFDoc) so labels stay unchanged. */
@@ -736,6 +781,13 @@ const qrTipHTML=`<p class="qrtip"><b>Print tip:</b> ${PRINT_TIP}. Print a test o
 
 /* ---------- report markup (in-app, standalone HTML, ZIP) ---------- */
 function counts(){const c={total:S.doors.length,pass:0,fail:0,none:0};S.doors.forEach(d=>{const s=status(d);s==='pass'?c.pass++:s==='fail'?c.fail++:c.none++});return c}
+function repHTML(d){const n=repV(d,'notes');
+  return `<div class="rp"><div class="rph"><b>Replacement measurements (mm)</b><span class="st rpl">REPLACE</span></div><div class="rpg">${repFields(d).map(([k,l])=>`<div><small>${esc(l)}</small><b>${esc(repV(d,k)||'—')}</b></div>`).join('')}</div>${n?`<p class="rpn"><b>Notes:</b> ${esc(n).replace(/\n/g,'<br>')}</p>`:''}${repAny(d)?'':'<p class="rpn">Not measured yet – measure on site before ordering.</p>'}</div>`}
+function repSchedHTML(){const L=repDoors();if(!L.length)return '';
+  let h=`<h2>Replacement schedule</h2><p class="meta">${L.length} door${L.length>1?'s':''} recommended for replacement. Sizes in mm, for ordering and quoting – confirm on site before ordering.</p><div class="schedwrap"><table class="sched rsched"><thead><tr><th>Ref</th><th>Location</th><th>Rating</th><th>Leaf type</th><th>Leaf width</th><th>Leaf height</th><th>Thickness</th><th>Frame depth</th><th>Opening W × H</th></tr></thead><tbody>`;
+  for(const d of L){const n=repV(d,'notes');h+=`<tr><td><b>${esc(d.ref)}</b></td><td>${esc(d.location)}</td><td>${esc(d.rating||'—')}</td><td>${esc(d.leaf||'—')}</td><td class="n">${esc(repLeafW(d)||'—')}</td><td class="n">${esc(repV(d,'h')||'—')}</td><td class="n">${esc(repV(d,'t')||'—')}</td><td class="n">${esc(repV(d,'fd')||'—')}</td><td class="n">${esc(repOpen(d)||'—')}</td></tr>`;
+    if(n)h+=`<tr class="rnote"><td></td><td colspan="8"><b>Notes:</b> ${esc(n).replace(/\n/g,'<br>')}</td></tr>`}
+  return h+'</tbody></table></div>'}
 async function reportMarkup(mode){
   const s=S.survey,c=counts();let h=`<div class="report"><div class="rh" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap"><img src="${BRAND.logo}" alt="${esc(BRAND.name)}" style="height:54px;width:auto"><div style="flex:1;min-width:200px"><h1>${esc(BRAND.reportTitle)}</h1><p>${esc(BRAND.name)} · ${esc(BRAND.tagline)}</p></div></div>`;
   
@@ -748,6 +800,7 @@ async function reportMarkup(mode){
     h+=`<section class="dd"><h3><span>${esc(d.ref)} – ${esc(d.location)}</span><span class="st ${st}">${stLabel(st)}</span></h3><p class="meta">${esc(typeLabel(d.type))} · ${esc(d.rating||'—')} · ${esc(d.leaf||'—')}</p>`;if(gapSummary(d))h+=gapSumHTML(d)+`<div class="gdiag">${gapSVG(d)}</div>`;
     h+=`<table class="cl"><thead><tr><th>Check</th><th>Result</th><th>Comment</th></tr></thead><tbody>${CHECKS.map(k=>{const o=d.checks[k[0]]||{};return `<tr><td>${esc(k[1])}</td><td class="r-${o.r||''}">${rLabel(o.r)}</td><td>${esc(o.c||'')}</td></tr>`}).join('')}</tbody></table>`;
     h+=`<table class="kv">${[['Issues found',d.issues],['Recommended action',d.action],['Priority',d.priority],['Notes',d.notes]].map(([k,v])=>`<tr><th>${k}</th><td>${esc(v||'—').replace(/\n/g,'<br>')}</td></tr>`).join('')}</table>`;
+    if(isRep(d))h+=repHTML(d);
     if(snOn(d))h+=`<div class="sn"><b>Surveyor notes</b>${esc(d.siteNotes.trim()).replace(/\n/g,'<br>')}</div>`;
     if(d.media.length){h+='<div class="thumbs">';for(const m of d.media){const n=mediaName(d,m);let inner;
       if(mode==='app')inner=m.kind==='video'?`<video data-mid="${m.id}" controls playsinline muted preload="metadata"></video>`:`<img data-mid="${m.id}" alt="${esc(n)}">`;
@@ -756,6 +809,7 @@ async function reportMarkup(mode){
       if(mode==='zip')inner=`<a href="media/${encodeURIComponent(n)}">${inner}</a>`;
       h+=`<figure>${inner}<figcaption>${esc(n)}</figcaption></figure>`}h+='</div>'}
     h+='</section>'}
+  h+=repSchedHTML();
   h+=clientNotesHTML(s);
   h+=`<p class="gn">${esc(GUIDANCE)}<br>Report generated ${esc(new Date().toLocaleString('en-GB'))} · ${esc(BRAND.name)}.</p></div>`;
   return h;
@@ -860,6 +914,15 @@ function gapFormHTML(d){
    ${G('l1hinge')}${G('l2hinge')}${G('meet','full')}${G('l1head')}${G('l2head')}${G('l1th')}${G('l2th')}</div>
    <label class="snchk"><input type="checkbox" id="dropseal"${gapsOf(d).dropSeal?' checked':''}> Drop seal fitted</label>
    <div id="gapview">${gapCardInner(d)}</div>`}
+function repInput(d,k,l,ph){return `<label class="f">${l}<span class="mmin"><input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="5" enterkeyhint="next" data-r="${k}" value="${esc(repV(d,k))}" placeholder="${esc(ph||'')}" autocomplete="off"><i>mm</i></span></label>`}
+function repFormHTML(d){const pr=isPair(d),hf=isHalf(d);
+  return `<h3>Replacement measurements (mm) <span class="rpill">REPLACE</span></h3><p class="hint">Sizes for ordering / quoting the new doorset, in whole millimetres. Fire rating (${esc(d.rating||'not set')}) and leaf type (${esc(d.leaf||'not set')}) come from Door details.</p>
+   ${pr?`<span class="gtype">${hf?'Leaf and a half (unequal pair)':'Double doors (equal pair)'}</span>`:''}
+   <div class="ggrid">${pr?`<div class="ghd">${LEAF1}${hf?'<small>wider leaf</small>':''}</div><div class="ghd l2">${LEAF2}${hf?'<small>narrower leaf</small>':''}</div>${repInput(d,'w1','Leaf 1 width','e.g. '+(hf?'926':'826'))}${repInput(d,'w2','Leaf 2 width','e.g. '+(hf?'426':'826'))}`:repInput(d,'w1','Leaf width','e.g. 926')}
+   ${repInput(d,'h',pr?'Leaf height (both)':'Leaf height','e.g. 2040')}${repInput(d,'t',pr?'Leaf thickness (both)':'Leaf thickness','e.g. 44')}${repInput(d,'fd','Frame depth (wall / lining)','e.g. 120')}</div>
+   <div class="opt">Optional</div>
+   <div class="ggrid">${repInput(d,'ow','Frame / opening width','e.g. 1010')}${repInput(d,'oh','Frame / opening height','e.g. 2100')}</div>
+   <label class="f">Replacement notes<textarea data-r="notes" rows="2" placeholder="e.g. Left-hand hinged, vision panel 150 × 750 mm, letter plate, ironmongery to match">${esc(repOf(d).notes||'')}</textarea></label>`}
 function renderDoor(id){setNav('list');const d=doorById(id),i=S.doors.indexOf(d),n=S.doors.length,prev=S.doors[i-1],next=S.doors[i+1];
   app.innerHTML=`<div class="bar"><a class="btn" href="#/list">‹ Doors</a><span class="muted">Door ${i+1} of ${n}</span><span id="dbadge" class="badge ${status(d)}">${stLabel(status(d))}</span></div>
   <section class="card"><h2>Door details</h2>${field('Door reference','ref',d.ref,'e.g. Door-06')}${field('Location','location',d.location,'e.g. Ground floor communal lobby')}
@@ -873,6 +936,7 @@ function renderDoor(id){setNav('list');const d=doorById(id),i=S.doors.indexOf(d)
    <label class="f">Issues found<textarea id="issues" data-d="issues" placeholder="Summary of defects">${esc(d.issues)}</textarea></label>
    <button type="button" class="btn sm" data-act="fillissues" style="margin:-4px 0 12px">Fill from failed items</button>
    <label class="f">Recommended action${seg('data-da="action"',ACTIONS.map(a=>[a,a]),d.action,'sel')}</label>
+   <div id="repsec" class="repsec"${isRep(d)?'':' hidden'}>${repFormHTML(d)}</div>
    <label class="f">Priority${seg('data-da="priority"',PRIS.map(a=>[a,a]),d.priority,'sel')}</label>
    <label class="f">Notes<textarea data-d="notes" placeholder="Any other notes">${esc(d.notes)}</textarea></label></section>
   <section class="card"><h2>Site notes (scratchpad)</h2>
@@ -962,8 +1026,9 @@ function refreshOverall(d){refreshGaps(d);const o=$('#overall');if(o)o.innerHTML
 app.addEventListener('input',e=>{const t=e.target;
   if(t.dataset.s!==undefined){S.survey[t.dataset.s]=t.value;save();return}
   const d=cur();if(!d)return;
+  if(t.dataset.r){const k=t.dataset.r,v=k==='notes'?t.value:t.value.replace(/\D/g,'').slice(0,5);if(v!==t.value)t.value=v;(d.rep||(d.rep={}))[k]=v;save();return}
   if(t.dataset.g){gapInit(d);d.gaps[t.dataset.g]=t.value;gapAutoCheck(d);save();refreshOverall(d);return}
-  if(t.dataset.d){d[t.dataset.d]=t.value;save();if(t.dataset.d==='rating'){gapAutoCheck(d);save();refreshOverall(d)}if(t.dataset.d==='leaf'){const gs=$('#gapsec');if(gs)gs.innerHTML=gapFormHTML(d);gapAutoCheck(d);save();refreshOverall(d)}if(t.classList.contains('sn'))snGrow(t);if(t.dataset.d==='ref')renderMedia(d)}
+  if(t.dataset.d){d[t.dataset.d]=t.value;save();if(t.dataset.d==='rating'){const rs=$('#repsec');if(rs)rs.innerHTML=repFormHTML(d);gapAutoCheck(d);save();refreshOverall(d)}if(t.dataset.d==='leaf'){const gs=$('#gapsec');if(gs)gs.innerHTML=gapFormHTML(d);const rs=$('#repsec');if(rs)rs.innerHTML=repFormHTML(d);gapAutoCheck(d);save();refreshOverall(d)}if(t.classList.contains('sn'))snGrow(t);if(t.dataset.d==='ref')renderMedia(d)}
   else if(t.dataset.cc){ck(d,t.dataset.cc).c=t.value;save()}});
 app.addEventListener('change',e=>{const t=e.target;if(t.id==='dropseal'){const d=cur();if(d){gapInit(d);d.gaps.dropSeal=t.checked;gapAutoCheck(d);save();refreshOverall(d)}return}if(t.id==='snrep'){const d=cur();if(d){d.siteNotesInReport=t.checked;save()}return}if(t.type==='file'&&t.files&&t.files.length){const d=cur();addFiles(d,[...t.files]).then(()=>{t.value=''})}});
 app.addEventListener('click',async e=>{
@@ -971,7 +1036,8 @@ app.addEventListener('click',async e=>{
   if(sb){e.preventDefault();const g=sb.parentElement,d=cur(),v=sb.dataset.v;if(!d)return;
     if(g.dataset.ck){const o=ck(d,g.dataset.ck);o.r=o.r===v?'':v;paintSeg(g,o.r);if(g.dataset.ck==='selfclose'||g.dataset.ck==='closer')gapAutoCheck(d);save();refreshOverall(d)}
     else if(g.dataset.ov!==undefined){d.manual=true;d.overall=v;save();refreshOverall(d)}
-    else if(g.dataset.da){d[g.dataset.da]=d[g.dataset.da]===v?'':v;paintSeg(g,d[g.dataset.da],'sel');save()}
+    else if(g.dataset.da){d[g.dataset.da]=d[g.dataset.da]===v?'':v;paintSeg(g,d[g.dataset.da],'sel');save();
+      if(g.dataset.da==='action'){const rs=$('#repsec');if(rs){const was=rs.hidden;rs.hidden=!isRep(d);if(was&&!rs.hidden)toast('Replace – add the replacement sizes below')}}}
     return}
   const b=e.target.closest('[data-act]');if(!b||!ACT[b.dataset.act])return;e.preventDefault();
   try{await ACT[b.dataset.act](b,cur())}catch(err){busy(false);toast('Error: '+(err.message||err))}});
