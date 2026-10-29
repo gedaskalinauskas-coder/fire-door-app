@@ -14,7 +14,7 @@
 :root{--red:#c62828;--green:#2e7d32;--grey:#78808a;--amber:#ef6c00;--ink:#1d2330;--brand:#141414;--sb-yellow:#dcca1c;--sb-pink:#e53376;--bg:#f2f3f6}
 *{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
 body{margin:0;font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
-header{background:var(--brand);border-bottom:3px solid #dcca1c;color:#fff;padding:calc(12px + env(safe-area-inset-top)) 16px 12px;display:flex;align-items:center;gap:12px}
+header{background:var(--brand);border-bottom:3px solid var(--sb-yellow);color:#fff;padding:calc(12px + env(safe-area-inset-top)) 16px 12px;display:flex;align-items:center;gap:12px}
 header .logo{width:38px;height:38px;border-radius:8px;background:#fff;color:var(--brand);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:15px;letter-spacing:-.02em;flex:none}
 header b{display:block;font-size:17px}header span{font-size:13px;opacity:.92}
 main{max-width:640px;margin:0 auto;padding:12px 12px calc(28px + env(safe-area-inset-bottom))}
@@ -57,7 +57,17 @@ details>summary{font-weight:700;font-size:17px;cursor:pointer}
 <script>
 "use strict";
 /* Public, read-only door record. No login, no editing, no survey data needed. */
-const CO={name:'SafeBuilt Solutions Ltd',tel:'07412 089093',email:'office@safebuiltsolutions.co.uk'};
+/* BRAND - copy of the text/colour fields of BRAND in index.html. Keep the two in sync when white-labelling. */
+const BRAND={
+  name:'SafeBuilt Solutions Ltd',short:'SafeBuilt',
+  phone:'07412 089093',phoneIntl:'+447412089093',email:'office@safebuiltsolutions.co.uk',website:'',
+  services:'Fire door inspection, repair and maintenance.',
+  colors:{black:'#141414',yellow:'#dcca1c',pink:'#e53376',ink:'#1d2330',pass:'#2e7d32',fail:'#c62828'}
+};
+const CO={name:BRAND.name,tel:BRAND.phone,email:BRAND.email};
+(function(){const c=BRAND.colors,r=document.documentElement.style;[['--brand',c.black],['--sb-yellow',c.yellow],['--sb-pink',c.pink],['--ink',c.ink],['--green',c.pass],['--red',c.fail]].forEach(([k,v])=>r.setProperty(k,v));
+  document.title='Fire door record – '+BRAND.name;const h=document.querySelector('header');if(h){h.querySelector('b').textContent=BRAND.name;h.querySelector('img').alt=BRAND.short}
+  const t=document.querySelector('meta[name="theme-color"]');if(t)t.setAttribute('content',c.black)})();
 const TYPES={communal:'Communal',flat:'Flat entrance',riser:'Riser',plant:'Plant room',stair:'Stair core'};
 const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const str=v=>v==null?'':String(v);
@@ -93,14 +103,14 @@ function render(R){const s=R.survey||{},d=R.door||{},st=['pass','fail'].includes
    <div><small>Fire rating</small><b>${esc(d.rating||'—')}</b></div><div><small>Door type</small><b>${esc(typeL)}</b></div></div></section>`;
   h+=`<section class="card"><h2>Key issues</h2><p class="issues">${esc(d.keyIssues||'—')}</p>${d.action||d.priority?`<p class="muted" style="margin:10px 0 0">Recommended action: <b>${esc(d.action||'—')}</b>${d.priority?` · Priority: <b>${esc(d.priority)}</b>`:''}</p>`:''}</section>`;
   h+=`<section class="card"><h2>Photos</h2>${photos.length?`<div class="gal">${photos.map((p,i)=>`<button type="button" data-i="${i}" aria-label="Enlarge photo ${i+1}"><img loading="lazy" src="${purl(p)}" alt="${esc(p.caption||'Door photo '+(i+1))}"></button>`).join('')}</div><p class="muted" style="margin:8px 0 0">Tap a photo to enlarge.</p>`
-     :`<div class="nophoto">${R.source==='snapshot'?'<b>Photos not yet published</b><br><span class="muted">The full record with photos will appear here once SafeBuilt publishes it.</span>':'<b>No photos for this door</b>'}</div>`}</section>`;
+     :`<div class="nophoto">${R.source==='snapshot'?'<b>Photos not yet published</b><br><span class="muted">The full record with photos will appear here once '+esc(BRAND.short)+' publishes it.</span>':'<b>No photos for this door</b>'}</div>`}</section>`;
   h+=`<section class="card"><h2>Door details</h2><dl>
    <dt>Door ID</dt><dd>${esc(id||'—')}</dd>${d.tagNo?`<dt>Tag no.</dt><dd>SB ${esc(d.tagNo)}</dd>`:''}<dt>Site</dt><dd>${esc(s.site||'—')}</dd><dt>Address</dt><dd>${esc(s.address||'—')}</dd>
    <dt>Location</dt><dd>${esc(d.location||'—')}</dd>${d.leaf?`<dt>Leaf</dt><dd>${esc(d.leaf)}</dd>`:''}<dt>Survey ref.</dt><dd>${esc(s.ref||'—')}</dd><dt>Inspector</dt><dd>${esc(s.inspector||'—')}</dd></dl></section>`;
   if(Array.isArray(d.checks)&&d.checks.length)h+=`<details class="card"><summary>Inspection checklist</summary><table class="cl">${d.checks.map(c=>`<tr><td>${esc(c.item)}${c.comment?`<br><span class="muted">${esc(c.comment)}</span>`:''}</td><td class="r-${esc(c.result)}">${rLabel(c.result)}</td></tr>`).join('')}</table></details>`;
   const subj=encodeURIComponent('Fire door '+(d.ref||'')+' – '+(s.site||'')+' ('+id+')');
-  h+=`<section class="card"><h2>Inspected by SafeBuilt Solutions Ltd</h2><p class="muted" style="margin:0">Fire door inspection, repair and maintenance.<br>Tel ${CO.tel} · ${CO.email}</p>
-   <div class="btns"><a class="btn primary" href="tel:+447412089093">📞 Call</a><a class="btn" href="mailto:${CO.email}?subject=${subj}">✉️ Email</a><span id="appbtn" class="wide" style="display:contents"></span></div></section>`;
+  h+=`<section class="card"><h2>Inspected by ${esc(BRAND.name)}</h2><p class="muted" style="margin:0">${esc(BRAND.services)}<br>Tel ${CO.tel} · ${CO.email}</p>
+   <div class="btns"><a class="btn primary" href="tel:${BRAND.phoneIntl}">📞 Call</a><a class="btn" href="mailto:${CO.email}?subject=${subj}">✉️ Email</a><span id="appbtn" class="wide" style="display:contents"></span></div></section>`;
   h+=`<p class="fine">${R.source==='snapshot'?'Summary stored in the QR code at the time of inspection':'Published inspection record'} – this shows the door as found on ${esc(fmtD(s.date))} and does not update by itself. Visual, non-destructive inspection; it does not certify fire performance. If the door is damaged or does not close properly, report it to the building manager.</p>`;
   m.innerHTML=h;
   /* if this phone holds the survey in the SafeBuilt app, offer to open the full door */
@@ -112,22 +122,22 @@ function render(R){const s=R.survey||{},d=R.door||{},st=['pass','fail'].includes
   document.getElementById('lbx').onclick=()=>{lb.hidden=true};document.getElementById('lbp').onclick=()=>show(cur-1);document.getElementById('lbn').onclick=()=>show(cur+1);
   li.onclick=()=>{lb.hidden=true};document.getElementById('lbp').hidden=document.getElementById('lbn').hidden=photos.length<2;
   document.addEventListener('keydown',e=>{if(lb.hidden)return;if(e.key==='Escape')lb.hidden=true;if(e.key==='ArrowLeft')show(cur-1);if(e.key==='ArrowRight')show(cur+1)});
-  document.title=(d.ref?d.ref+' – ':'')+'Fire door record – SafeBuilt Solutions Ltd';
+  document.title=(d.ref?d.ref+' – ':'')+'Fire door record – '+BRAND.name;
 }
-function renderErr(){m.innerHTML=`<section class="card"><h2>Door record not found</h2><p>This QR code or link could not be read. Please contact SafeBuilt Solutions Ltd and quote the Door ID printed on the label.</p>
-  <div class="btns"><a class="btn primary" href="tel:+447412089093">📞 ${CO.tel}</a><a class="btn" href="mailto:${CO.email}">✉️ Email</a></div></section>`}
+function renderErr(){m.innerHTML=`<section class="card"><h2>Door record not found</h2><p>This QR code or link could not be read. Please contact ${esc(BRAND.name)} and quote the Door ID printed on the label.</p>
+  <div class="btns"><a class="btn primary" href="tel:${BRAND.phoneIntl}">📞 ${CO.tel}</a><a class="btn" href="mailto:${CO.email}">✉️ Email</a></div></section>`}
 function renderPending(){m.innerHTML=`<section class="card hero"><p class="kicker">Fire door</p><h1>Record not yet published</h1>
-  <p class="loc">This door has been surveyed by SafeBuilt Solutions Ltd. Its online record will appear here once it is published.</p>
+  <p class="loc">This door has been surveyed by ${esc(BRAND.name)}. Its online record will appear here once it is published.</p>
   <p class="muted">Door ID: <b>${esc(id)}</b></p>
-  <div class="btns"><a class="btn primary" href="tel:+447412089093">📞 ${CO.tel}</a><a class="btn" href="mailto:${CO.email}?subject=${encodeURIComponent('Fire door record '+id)}">✉️ Email</a><span id="appbtn" class="wide" style="display:contents"></span></div></section>`;
+  <div class="btns"><a class="btn primary" href="tel:${BRAND.phoneIntl}">📞 ${CO.tel}</a><a class="btn" href="mailto:${CO.email}?subject=${encodeURIComponent('Fire door record '+id)}">✉️ Email</a><span id="appbtn" class="wide" style="display:contents"></span></div></section>`;
   try{const S=JSON.parse(localStorage.getItem('sbs_firedoor_v1')||'null');const ld=S&&Array.isArray(S.doors)&&S.doors.find(x=>x&&x.pid===id);
     if(ld)document.getElementById('appbtn').innerHTML=`<a class="btn wide" href="index.html#/door/${encodeURIComponent(ld.id)}">Open full door in the app</a>`}catch(e){}}
 function renderTagPending(){let S=null;try{S=JSON.parse(localStorage.getItem('sbs_firedoor_v1')||'null')}catch(e){}
   const ld=S&&Array.isArray(S.doors)&&S.doors.find(x=>x&&x.tagId===tid);
-  m.innerHTML=`<section class="card hero"><p class="kicker">SafeBuilt asset tag</p><h1>SB ${esc(tagNoT)}</h1>
+  m.innerHTML=`<section class="card hero"><p class="kicker">${esc(BRAND.short)} asset tag</p><h1>SB ${esc(tagNoT)}</h1>
   <p class="loc">${ld?'This tag is linked to <b>'+esc(ld.ref||'a door')+'</b>. Its online record will appear here once it is published.':'Tag not yet assigned to a door.'}</p>
   <div class="btns">${ld?`<a class="btn primary wide" href="index.html#/door/${encodeURIComponent(ld.id)}">Open door in the app</a>`:S&&Array.isArray(S.doors)?`<a class="btn primary wide" href="index.html#/tag/${encodeURIComponent(tid)}">Assign this tag to a door</a>`:''}
-  <a class="btn" href="tel:+447412089093">📞 ${CO.tel}</a><a class="btn" href="mailto:${CO.email}?subject=${encodeURIComponent('Asset tag SB '+tagNoT)}">✉️ Email</a></div></section>`}
+  <a class="btn" href="tel:${BRAND.phoneIntl}">📞 ${CO.tel}</a><a class="btn" href="mailto:${CO.email}?subject=${encodeURIComponent('Asset tag SB '+tagNoT)}">✉️ Email</a></div></section>`}
 (async function(){let rec=null;
   if(okTid&&!id){try{const r=await fetch('records/tags/'+encodeURIComponent(tid)+'.json',{cache:'no-store'});if(r.ok){const j=await r.json();if(j&&typeof j.id==='string'){id=j.id;okId=/^[A-Za-z0-9][A-Za-z0-9-]{4,90}$/.test(id)}}}catch(e){}
     if(!okId)return renderTagPending()}

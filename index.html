@@ -11,11 +11,12 @@
 <meta name="apple-mobile-web-app-title" content="SafeBuilt Doors">
 <title>SafeBuilt Solutions – Fire Door Inspection</title>
 <style>
-:root{--red:#c62828;--green:#2e7d32;--grey:#8a8f98;--bg:#f2f3f6;--ink:#1d2330;--brand:#141414;--sb-yellow:#dcca1c;--sb-pink:#e53376}
+:root{--red:#c62828;--green:#2e7d32;--grey:#8a8f98;--bg:#f2f3f6;--ink:#1d2330;--brand:#141414;--sb-yellow:#dcca1c;--sb-pink:#e53376;--sb-yellow-tint:#fbf8e1;--check:#e0a100}
+/* brand colours above are fallbacks: applyBrand() sets them from BRAND.colors */
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;font:16px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
-header.top{position:sticky;top:0;z-index:5;background:var(--brand);border-bottom:3px solid #dcca1c;color:#fff;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+header.top{position:sticky;top:0;z-index:5;background:var(--brand);border-bottom:3px solid var(--sb-yellow);color:#fff;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px}
 .brand b{display:block;font-size:17px;letter-spacing:.01em}.brand span{font-size:13px;opacity:.9}
 .tag{background:#ffeb3b;color:#000;font-size:11px;font-weight:800;padding:4px 8px;border-radius:4px;white-space:nowrap}
 main{padding:12px 12px calc(96px + env(safe-area-inset-bottom));max-width:820px;margin:0 auto}
@@ -28,9 +29,9 @@ label.f{display:block;margin:0 0 12px;font-size:13px;color:#555;font-weight:600}
 input[type=text],input[type=date],input[type=number],select,textarea{display:block;width:100%;font-size:16px;padding:12px;border:1px solid #c9ccd3;border-radius:8px;margin-top:4px;background:#fff;color:inherit;min-height:48px;font-family:inherit;-webkit-appearance:none;appearance:none}
 select{background-image:linear-gradient(45deg,transparent 50%,#666 50%),linear-gradient(135deg,#666 50%,transparent 50%);background-position:calc(100% - 20px) 21px,calc(100% - 15px) 21px;background-size:5px 5px;background-repeat:no-repeat;padding-right:34px}
 textarea{min-height:84px;resize:vertical}
-textarea.sn{min-height:44px;height:44px;overflow:hidden;resize:none;padding:10px;border-left:4px solid #dcca1c}
-.snchk{display:flex;align-items:center;gap:8px;font-size:14px;margin:6px 0 2px;min-height:36px}.snchk input{width:20px;height:20px;accent-color:#141414}
-.dd .sn{border-left:4px solid #dcca1c;background:#fbf8e1;padding:6px 10px;margin:8px 0}.dd .sn b{display:block;font-size:12px}
+textarea.sn{min-height:44px;height:44px;overflow:hidden;resize:none;padding:10px;border-left:4px solid var(--sb-yellow)}
+.snchk{display:flex;align-items:center;gap:8px;font-size:14px;margin:6px 0 2px;min-height:36px}.snchk input{width:20px;height:20px;accent-color:var(--brand)}
+.dd .sn{border-left:4px solid var(--sb-yellow);background:var(--sb-yellow-tint);padding:6px 10px;margin:8px 0}.dd .sn b{display:block;font-size:12px}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:48px;padding:10px 16px;border-radius:10px;border:1px solid #c9ccd3;background:#fff;font-size:16px;font-weight:600;color:var(--ink);text-decoration:none;cursor:pointer;font-family:inherit;text-align:center}
 .btn:active{transform:scale(.98)}
 .btn.primary{background:var(--brand);color:#fff;border-color:var(--brand)}
@@ -45,7 +46,7 @@ textarea.sn{min-height:44px;height:44px;overflow:hidden;resize:none;padding:10px
 .seg button.on.fail{background:var(--red);color:#fff;border-color:var(--red)}
 .seg button.on.na{background:#607d8b;color:#fff;border-color:#607d8b}
 .seg button.on.sel{background:var(--ink);color:#fff;border-color:var(--ink)}
-.gsum{display:flex;align-items:center;gap:8px;flex-wrap:wrap;border:1px solid;border-radius:6px;padding:7px 10px;margin:8px 0;font-weight:700}.gsum .st{display:inline-block;font-weight:800;color:#fff;padding:2px 8px;border-radius:999px;background:#e0a100;font-size:11px}.gsum .st.pass{background:#2e7d32}.gsum .st.fail{background:#c62828}.gdiag{max-width:520px;margin:0 auto}.ggrid{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}.ggrid .full{grid-column:1/-1}.ghd{font-size:13px;font-weight:800;color:#141414;padding:6px 8px;margin:4px 0 8px;border-radius:6px;background:#f1f1f3;border-left:4px solid #141414;line-height:1.25}.ghd.l2{border-left-color:#e53376}.ghd small{display:block;font-weight:600;color:#666;font-size:11px}.gtype{display:inline-block;font-size:12px;font-weight:700;background:#141414;color:#fff;border-radius:999px;padding:2px 10px;margin:0 0 8px}@media(max-width:360px){.ghd{font-size:12px;padding:5px 6px}}
+.gsum{display:flex;align-items:center;gap:8px;flex-wrap:wrap;border:1px solid;border-radius:6px;padding:7px 10px;margin:8px 0;font-weight:700}.gsum .st{display:inline-block;font-weight:800;color:#fff;padding:2px 8px;border-radius:999px;background:var(--check);font-size:11px}.gsum .st.pass{background:var(--green)}.gsum .st.fail{background:var(--red)}.gdiag{max-width:520px;margin:0 auto}.ggrid{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}.ggrid .full{grid-column:1/-1}.ghd{font-size:13px;font-weight:800;color:var(--brand);padding:6px 8px;margin:4px 0 8px;border-radius:6px;background:#f1f1f3;border-left:4px solid var(--brand);line-height:1.25}.ghd.l2{border-left-color:var(--sb-pink)}.ghd small{display:block;font-weight:600;color:#666;font-size:11px}.gtype{display:inline-block;font-size:12px;font-weight:700;background:var(--brand);color:#fff;border-radius:999px;padding:2px 10px;margin:0 0 8px}@media(max-width:360px){.ghd{font-size:12px;padding:5px 6px}}
 .ck{padding:14px 0;border-top:1px solid #eee}
 .ck b{display:block}
 .hint{font-size:13px;color:#666;margin:3px 0 0}
@@ -128,6 +129,38 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 </script>
 <script>
 "use strict";
+/* ---------- BRAND: the one place to change company name, contact details, logos and colours (white-label) ----------
+   Read by: app header/title, PDF report (buildPDF), on-screen + HTML report (REPORT_CSS, reportMarkup), gap diagrams (GC),
+   QR labels/asset tags (LB, CO, drawLabel, drawTag), client-notes pages, file names.
+   door.html (public QR page) keeps a copy of the text/colour fields in its own BRAND block - keep the two in sync. */
+const BRAND={
+  name:'SafeBuilt Solutions Ltd',                         // full company name
+  short:'SafeBuilt',                                      // short name (label text fallback, file names)
+  appName:'SafeBuilt Doors',                              // home-screen app name
+  appTitle:'SafeBuilt Solutions – Fire Door Inspection',  // browser tab title
+  appSubtitle:'Fire Door Inspection',                     // text beside the logo in the app header
+  reportTitle:'Fire Door Inspection Report',
+  tagline:'Fire door contractor, East London',
+  phone:'07412 089093',
+  phoneIntl:'+447412089093',                              // phone in international form (tel: links on door.html)
+  services:'Fire door inspection, repair and maintenance.', // one-line service description (door.html)
+  email:'office@safebuiltsolutions.co.uk',
+  website:'',                                             // optional - shown in the PDF footer when set
+  inspector:'Gedas – SafeBuilt Solutions Ltd',            // default inspector for new / sample surveys
+  logo:LOGO_SRC,                                          // logo for dark backgrounds (PDF header band, report header)
+  logoFlat:LOGO_FLAT_SRC,                                 // flat logo for white backgrounds (PDF footer, labels)
+  headerLogo:'icons/logo-wordmark.png',                   // image in the app header bar
+  colors:{
+    black:'#141414',yellow:'#dcca1c',pink:'#e53376',ink:'#1d2330',yellowTint:'#fbf8e1', // chrome
+    pass:'#2e7d32',fail:'#c62828',na:'#8a8f98',check:'#e0a100',none:'#9aa0a6'          // status (pass/fail meaning only)
+  }
+};
+const hexRGB=h=>{h=String(h).replace('#','');if(h.length===3)h=h.replace(/./g,'$&$&');return [0,2,4].map(i=>parseInt(h.slice(i,i+2),16)/255)};
+const BC=Object.fromEntries(Object.entries(BRAND.colors).map(([k,v])=>[k,hexRGB(v)])); /* BRAND colours as PDF 0-1 RGB */
+function applyBrand(){const c=BRAND.colors,r=document.documentElement.style;
+  [['--red',c.fail],['--green',c.pass],['--grey',c.na],['--ink',c.ink],['--brand',c.black],['--sb-yellow',c.yellow],['--sb-pink',c.pink],['--sb-yellow-tint',c.yellowTint],['--check',c.check]].forEach(([k,v])=>r.setProperty(k,v));
+  document.title=BRAND.appTitle;const mt=(n,v)=>{const m=document.querySelector('meta[name="'+n+'"]');if(m)m.setAttribute('content',v)};mt('apple-mobile-web-app-title',BRAND.appName);mt('theme-color',c.black);
+  const im=document.querySelector('header.top .brand img');if(im){im.src=BRAND.headerLogo;im.alt=BRAND.name}const sp=document.querySelector('header.top .brand span');if(sp)sp.textContent=BRAND.appSubtitle}
 /* ---------- constants ---------- */
 const LS='sbs_firedoor_v1';
 const CHECKS=[
@@ -225,36 +258,37 @@ function clientNotesHTML(s){let h=`<section class="cn"><h2>Important notes for t
   const x=(s.clientNotes||'').trim();if(x)h+=`<h3>Additional notes from the surveyor</h3><div class="cx">${esc(x).replace(/\n/g,'<br>')}</div>`;
   return h+`<p class="cl">${esc(CN_END)}</p></section>`}
 function clientNotesPDF(p,s,X,CW){const strip=t=>t.replace(/\*\*(.+?)\*\*/g,'$1'),FS=9.5,LH=12.5;
-  p.page();p.rect(X,p.y,CW,30,[.08,.08,.08]);p.rect(X,p.y+30,CW,3,[.863,.792,.11]);p.text(X+12,p.y+20,'Important notes for the client',14,true,[1,1,1]);p.y+=42;
+  p.page();p.rect(X,p.y,CW,30,BC.black);p.rect(X,p.y+30,CW,3,BC.yellow);p.text(X+12,p.y+20,'Important notes for the client',14,true,[1,1,1]);p.y+=42;
   p.para(CN_INTRO,X,CW,9.5,true,INK,LH);p.y+=4;
-  const head=(t,first)=>{const fl=first?wrapT(strip(first),FS,CW-14).length:1;p.ensure(26+Math.min(fl,3)*LH);p.y+=6;p.rect(X,p.y,3,14,[.898,.2,.463]);p.text(X+9,p.y+11,pt(t),11,true,INK);p.y+=20};
-  const bullet=t=>{const ls=wrapT(strip(t),FS,CW-16);if(ls.length<=10)p.ensure(ls.length*LH);ls.forEach((l,i)=>{p.ensure(LH);if(i===0)p.text(X+5,p.y+FS,'\x95',FS,true,[.898,.2,.463]);p.text(X+16,p.y+FS,l,FS,false,INK);p.y+=LH});p.y+=2};
+  const head=(t,first)=>{const fl=first?wrapT(strip(first),FS,CW-14).length:1;p.ensure(26+Math.min(fl,3)*LH);p.y+=6;p.rect(X,p.y,3,14,BC.pink);p.text(X+9,p.y+11,pt(t),11,true,INK);p.y+=20};
+  const bullet=t=>{const ls=wrapT(strip(t),FS,CW-16);if(ls.length<=10)p.ensure(ls.length*LH);ls.forEach((l,i)=>{p.ensure(LH);if(i===0)p.text(X+5,p.y+FS,'\x95',FS,true,BC.pink);p.text(X+16,p.y+FS,l,FS,false,INK);p.y+=LH});p.y+=2};
   for(const n of clientNotes(s)){const f=n.body[0];head(n.h,typeof f==='string'?f:f.ul[0]);
     for(const b of n.body){if(typeof b==='string'){p.para(strip(b),X,CW,FS,false,INK,LH);p.y+=3}else b.ul.forEach(bullet)}}
   const x=(s.clientNotes||'').trim();if(x){head('Additional notes from the surveyor',x);const ls=wrapT(x,FS,CW-16);let i=0;
     while(i<ls.length){p.ensure(LH+8);const room=Math.max(1,Math.floor((p.H-p.M-14-p.y-8)/LH));const chunk=ls.slice(i,i+room);
-      p.rect(X,p.y,CW,chunk.length*LH+8,[.984,.973,.882]);p.rect(X,p.y,3,chunk.length*LH+8,[.863,.792,.11]);chunk.forEach((l,j)=>p.text(X+12,p.y+4+FS+j*LH,l,FS,false,INK));p.y+=chunk.length*LH+8;i+=chunk.length}}
+      p.rect(X,p.y,CW,chunk.length*LH+8,BC.yellowTint);p.rect(X,p.y,3,chunk.length*LH+8,BC.yellow);chunk.forEach((l,j)=>p.text(X+12,p.y+4+FS+j*LH,l,FS,false,INK));p.y+=chunk.length*LH+8;i+=chunk.length}}
   p.y+=8;p.para(CN_END,X,CW,9,true,SOFT,LH);p.y+=10}
-const REPORT_CSS=`.report .gsum{display:flex;align-items:center;gap:8px;flex-wrap:wrap;border:1px solid;border-radius:6px;padding:7px 10px;margin:4px 0 8px;font-weight:700}.report .gsum .st{background:#e0a100}.report .gsum .st.pass{background:#2e7d32}.report .gsum .st.fail{background:#c62828}.report .gdiag{max-width:460px;margin:0 auto 8px}.report{font:13px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:#1d2330;background:#fff;padding:16px;border-radius:12px;box-shadow:0 1px 2px rgba(0,0,0,.08)}
-.report .rh{background:#141414;border-bottom:4px solid #dcca1c;color:#fff;padding:14px 16px;border-radius:8px;margin-bottom:12px}.report .rh h1{margin:0;font-size:20px}.report .rh p{margin:2px 0 0;opacity:.95}
-.report h2{font-size:16px;margin:18px 0 6px;border-bottom:2px solid #e53376;padding-bottom:3px}
+/* on-screen / HTML report styles - colours come from BRAND */
+const REPORT_CSS=`.report .gsum{display:flex;align-items:center;gap:8px;flex-wrap:wrap;border:1px solid;border-radius:6px;padding:7px 10px;margin:4px 0 8px;font-weight:700}.report .gsum .st{background:${BRAND.colors.check}}.report .gsum .st.pass{background:${BRAND.colors.pass}}.report .gsum .st.fail{background:${BRAND.colors.fail}}.report .gdiag{max-width:460px;margin:0 auto 8px}.report{font:13px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:${BRAND.colors.ink};background:#fff;padding:16px;border-radius:12px;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.report .rh{background:${BRAND.colors.black};border-bottom:4px solid ${BRAND.colors.yellow};color:#fff;padding:14px 16px;border-radius:8px;margin-bottom:12px}.report .rh h1{margin:0;font-size:20px}.report .rh p{margin:2px 0 0;opacity:.95}
+.report h2{font-size:16px;margin:18px 0 6px;border-bottom:2px solid ${BRAND.colors.pink};padding-bottom:3px}
 .report .samp{background:#fff8e1;border:1px solid #ffe082;padding:8px 10px;border-radius:6px;margin:8px 0;font-weight:600}
 .report table{width:100%;border-collapse:collapse;margin:6px 0}.report th,.report td{border:1px solid #ddd;padding:6px;text-align:left;vertical-align:top}.report th{background:#f3f3f3}
 .report .kv th{width:34%}
 .report .rc{display:flex;gap:8px;margin:10px 0}.report .rc div{flex:1;border:1px solid #ddd;border-radius:8px;text-align:center;padding:8px;font-size:12px}.report .rc b{display:block;font-size:22px}
-.report .rc .p b{color:#2e7d32}.report .rc .x b{color:#c62828}
-.report .st{display:inline-block;font-weight:800;color:#fff;padding:2px 8px;border-radius:999px;background:#8a8f98;font-size:11px;white-space:nowrap}.report .st.pass{background:#2e7d32}.report .st.fail{background:#c62828}
+.report .rc .p b{color:${BRAND.colors.pass}}.report .rc .x b{color:${BRAND.colors.fail}}
+.report .st{display:inline-block;font-weight:800;color:#fff;padding:2px 8px;border-radius:999px;background:${BRAND.colors.na};font-size:11px;white-space:nowrap}.report .st.pass{background:${BRAND.colors.pass}}.report .st.fail{background:${BRAND.colors.fail}}
 .report .schedwrap{overflow-x:auto}.report .sched{font-size:12px;min-width:520px}
 .report .dd{border:1px solid #ddd;border-radius:8px;padding:10px;margin:12px 0;page-break-inside:avoid;break-inside:avoid}
 .report .dd h3{margin:0 0 4px;font-size:16px;display:flex;justify-content:space-between;gap:8px;align-items:center}
 .report .meta{color:#555;margin:0 0 6px}
 .report .cl{font-size:12px}.report .cl td:nth-child(2){white-space:nowrap}
-.report .r-pass{color:#2e7d32;font-weight:700}.report .r-fail{color:#c62828;font-weight:700}.report .r-na{color:#607d8b}.report .r-{color:#999}
+.report .r-pass{color:${BRAND.colors.pass};font-weight:700}.report .r-fail{color:${BRAND.colors.fail};font-weight:700}.report .r-na{color:#607d8b}.report .r-{color:#999}
 .report .thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-top:8px}
 .report .thumbs figure{margin:0}.report .thumbs img,.report .thumbs video{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:6px;border:1px solid #ddd;display:block;background:#222}
 .report .thumbs .vid{aspect-ratio:4/3;border-radius:6px;background:#263238;color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;font-size:12px;padding:6px}
 .report .thumbs figcaption{font-size:11px;color:#555;word-break:break-all}
-.report .cn{margin-top:22px;border:1px solid #ddd;border-left:5px solid #e53376;border-radius:8px;padding:4px 14px 10px;break-before:page;page-break-before:always}.report .cn h2{border-bottom:0;margin-top:10px}.report .cn .ci{margin:2px 0 8px;font-weight:600}.report .cn h3{font-size:14px;margin:14px 0 4px;break-after:avoid;page-break-after:avoid}.report .cn p{margin:4px 0}.report .cn ul{margin:4px 0 6px;padding-left:20px}.report .cn li{margin:2px 0;break-inside:avoid;page-break-inside:avoid}.report .cn .cx{background:#fbf8e1;border-left:4px solid #dcca1c;padding:6px 10px}.report .cn .cl{font-style:italic;color:#555;margin-top:12px}
+.report .cn{margin-top:22px;border:1px solid #ddd;border-left:5px solid ${BRAND.colors.pink};border-radius:8px;padding:4px 14px 10px;break-before:page;page-break-before:always}.report .cn h2{border-bottom:0;margin-top:10px}.report .cn .ci{margin:2px 0 8px;font-weight:600}.report .cn h3{font-size:14px;margin:14px 0 4px;break-after:avoid;page-break-after:avoid}.report .cn p{margin:4px 0}.report .cn ul{margin:4px 0 6px;padding-left:20px}.report .cn li{margin:2px 0;break-inside:avoid;page-break-inside:avoid}.report .cn .cx{background:${BRAND.colors.yellowTint};border-left:4px solid ${BRAND.colors.yellow};padding:6px 10px}.report .cn .cl{font-style:italic;color:#555;margin-top:12px}
 .report .gn{font-size:11px;color:#555;margin-top:16px;border-top:1px solid #ddd;padding-top:8px}
 .report a{color:inherit}`;
 
@@ -377,7 +411,7 @@ function gapEval(d){const g=gapsOf(d),out=[];const E=GAP_LIMITS.edge;
   return out}
 function gapSummary(d){const e=gapEval(d);if(!e.length)return null;const p=e.filter(x=>x.r==='pass').length,c=e.filter(x=>x.r==='check').length,f=e.filter(x=>x.r==='fail').length,n=e.length;
   const N=gapKeyList(d).length;const t=(n===N?`${p} of ${N} gaps pass`:`${p} of ${n} measured gap${n>1?'s':''} pass`)+(c?`, ${c} to check`:'');return {text:t,p,c,f,n,r:f?'fail':c?'check':'pass'}}
-const GC={pass:'#2e7d32',fail:'#c62828',check:'#e0a100',none:'#9aa0a6'};
+const GC={pass:BRAND.colors.pass,fail:BRAND.colors.fail,check:BRAND.colors.check,none:BRAND.colors.none};
 const gMark=r=>r==='pass'?'✓':r==='fail'?'✗':'?';
 function gapSVG(d){if(isPair(d))return pairSVG(d);const e={};gapEval(d).forEach(x=>e[x.k]=x);const g=gapsOf(d);
   const col=k=>GC[e[k]?e[k].r:'none'];const lab=k=>{const l=GAP_KEYS.find(x=>x[0]===k)[1];return e[k]?`${gMark(e[k].r)} ${l} ${e[k].raw==='>15'?'>15':e[k].v}mm`:`${l}: not measured`};
@@ -427,8 +461,10 @@ function gapPairPDF(p,d,X,CW,e,C){const S=pairSpec(d);const col=k=>C[e[k]?e[k].r
     else L(z.x1,z.y1,z.x2,z.y2,z.gk?col(z.gk):hx(z.c),z.w>3?z.w*.43:z.w*.55)}
   for(const t of S.tx){const [a,b]=T(t.x,t.y);const z=Math.max(5.5,t.z*sc*1.15),s=pt(t.s);p.text(a-tw(s,z,!!t.b)/2,b,s,z,!!t.b,t.c?hx(t.c):[.23,.16,.1])}
   const mark=(r,x,y)=>{const w=[1,1,1];if(r==='pass'){p.line(x,y+4,x+2.5,y+7,w,1.4);p.line(x+2.5,y+7,x+7.5,y,w,1.4)}else if(r==='fail'){p.line(x,y,x+7,y+7,w,1.4);p.line(x+7,y,x,y+7,w,1.4)}else p.text(x+1,y+7,'?',9,true,INK)};
-  for(const [k,cx,cy] of S.badges){const [a,b]=T(cx,cy);const l=PAIR_KEYS.find(x=>x[0]===k)[2];const t=e[k]?`${l} ${e[k].raw==='>15'?'>15':e[k].v}mm`:`${l}: n/m`;
-    const w=tw(t,7,true)+(e[k]?22:10);p.rect(a-w/2,b-6.5,w,13,col(k));const tx=a-w/2+(e[k]?17:5);if(e[k])mark(e[k].r,a-w/2+5,b-3.5);p.text(tx,b+2.5,t,7,true,e[k]&&e[k].r==='check'?INK:[1,1,1])}
+  const bs=S.badges.map(([k,cx,cy])=>{const [a,b]=T(cx,cy);const l=PAIR_KEYS.find(x=>x[0]===k)[2];const t=e[k]?`${l} ${e[k].raw==='>15'?'>15':e[k].v}mm`:`${l}: n/m`;return {k,a,b,t,w:tw(t,7,true)+(e[k]?24:12)}});
+  /* pills on the same row (e.g. L1/L2 head on a leaf and a half) must not overlap: push them apart */
+  bs.forEach(A=>bs.forEach(B=>{if(A===B||Math.abs(A.b-B.b)>1||A.a>B.a)return;const ov=(A.a+A.w/2+3)-(B.a-B.w/2);if(ov>0){A.a-=ov/2;B.a+=ov/2}}));
+  for(const {k,a,b,t,w} of bs){fillRR(p,a-w/2,b-6.5,w,13,6.5,col(k));const tx=a-w/2+(e[k]?18:6);if(e[k])mark(e[k].r,a-w/2+6,b-3.5);p.text(tx,b+2.5,t,7,true,e[k]&&e[k].r==='check'?INK:[1,1,1])}
   const cx=ox+S.W*sc+16;let cy=oy+24;p.text(cx,cy,pt(isHalf(d)?'Gap diagram – leaf and a half':'Gap diagram – double doors'),9.5,true,INK);cy+=12;
   for(const l of wrapT(`${LEAF1}, ${LEAF2}. Hinge-side and head gaps per leaf, meeting-edge gap between the leaves, threshold under each leaf; viewed from push face. Edges 2–4 mm; under 2 mm passes only if the door closes properly. Thresholds up to ${thLimit(d)} mm for ${d.rating||'Unknown'}${gapsOf(d).dropSeal?' with drop seal':''}.`,8,X+CW-cx))
     {p.text(cx,cy,l,8,false,SOFT);cy+=10}
@@ -445,9 +481,9 @@ function gapAutoCheck(d){const e=gapEval(d);d.gapAuto=d.gapAuto||{};let ch=false
   for(const k of ['gaps','threshold']){const o=ck(d,k);const prev=d.gapAuto[k]||'';if(o.r&&o.r!==prev)continue;if(o.r!==want[k]){o.r=want[k];ch=true;const g=$(`.seg[data-ck="${k}"]`);if(g)paintSeg(g,o.r)}d.gapAuto[k]=want[k]}
   return ch}
 function gapPDF(p,d,X,CW){const s=gapSummary(d);if(!s)return;const e={};gapEval(d).forEach(x=>e[x.k]=x);
-  const C={pass:GREEN,fail:RED,check:[.88,.63,0],none:GREY};const col=k=>C[e[k]?e[k].r:'none'];
+  const C={pass:GREEN,fail:RED,check:BC.check,none:GREY};const col=k=>C[e[k]?e[k].r:'none'];
   p.ensure(24+(isPair(d)?190:170));const bg={pass:[.91,.96,.91],fail:[.99,.93,.92],check:[1,.96,.84]}[s.r];
-  p.rect(X,p.y,CW,20,bg);p.rect(X+6,p.y+4,40,12,C[s.r]);p.text(X+11,p.y+13,'GAPS',7.5,true,s.r==='check'?INK:[1,1,1]);
+  p.rect(X,p.y,CW,20,bg);fillRR(p,X+6,p.y+4,40,12,3,C[s.r]);p.text(X+11,p.y+13,'GAPS',7.5,true,s.r==='check'?INK:[1,1,1]);
   p.text(X+54,p.y+14,pt(s.text),10,true,INK);p.text(X+54+tw(pt(s.text),10,true)+8,p.y+14,pt(`edges 2–4 mm, threshold up to ${thLimit(d)} mm`),8.5,false,SOFT);p.y+=26;
   if(isPair(d)){gapPairPDF(p,d,X,CW,e,C);return}
   const sc=.4,ox=X+(CW-620*sc)/2-60,oy=p.y,T=(x,y)=>[ox+x*sc,oy+y*sc];
@@ -459,7 +495,7 @@ function gapPDF(p,d,X,CW){const s=gapSummary(d);if(!s)return;const e={};gapEval(
   L(232,200,150,200,col('hinge'),.8);L(388,200,470,200,col('lock'),.8);L(310,53,310,33,col('head'),.8);L(310,327,310,360,col('threshold'),.8);
   const mark=(r,x,y)=>{const w=[1,1,1];if(r==='pass'){p.line(x,y+4,x+2.5,y+7,w,1.4);p.line(x+2.5,y+7,x+7.5,y,w,1.4)}else if(r==='fail'){p.line(x,y,x+7,y+7,w,1.4);p.line(x+7,y,x,y+7,w,1.4)}else p.text(x+1,y+7,'?',9,true,INK)};
   const badge=(k,cx,cy)=>{const [a,b]=T(cx,cy);const l=GAP_KEYS.find(x=>x[0]===k)[1];const t=e[k]?`${l} ${e[k].raw==='>15'?'>15':e[k].v}mm`:`${l}: n/m`;
-    const w=tw(t,8,true)+(e[k]?24:12);p.rect(a-w/2,b-7.5,w,15,col(k));const tx=a-w/2+(e[k]?18:6);if(e[k])mark(e[k].r,a-w/2+6,b-3.5);p.text(tx,b+3,t,8,true,e[k]&&e[k].r==='check'?INK:[1,1,1])};
+    const w=tw(t,8,true)+(e[k]?26:14);fillRR(p,a-w/2,b-7.5,w,15,7.5,col(k));const tx=a-w/2+(e[k]?19:7);if(e[k])mark(e[k].r,a-w/2+7,b-3.5);p.text(tx,b+3,t,8,true,e[k]&&e[k].r==='check'?INK:[1,1,1])};
   badge('hinge',76,200);badge('lock',544,200);badge('head',310,18);badge('threshold',310,375);
   const cx=ox+620*sc+20;let cy=oy+30;p.text(cx,cy,'Gap diagram',9.5,true,INK);cy+=12;
   for(const l of wrapT(`Leaf-to-frame gaps at each edge, viewed from push face. Edges 2–4 mm; under 2 mm passes only if the door closes properly. Threshold up to ${thLimit(d)} mm for ${d.rating||'Unknown'}${gapsOf(d).dropSeal?' with drop seal':''}.`,8,X+CW-cx))
@@ -472,8 +508,8 @@ function PDFDoc(){
   const W=595.28,H=841.89,M=40,pages=[],images=[];let ops;
   const pe=s=>s.replace(/\\/g,'\\\\').replace(/\(/g,'\\(').replace(/\)/g,'\\)').replace(/\r|\n/g,' ');
   const f=n=>(+n).toFixed(2);
-  const P={W,H,M,y:0,
-    page(){ops=[];pages.push(ops);P.y=M;},
+  const P={W,H,M,y:0,top:M, /* top: where content starts on a new page (buildPDF raises it to clear its slim page header) */
+    page(){ops=[];pages.push(ops);P.y=P.top;},
     ensure(h){if(P.y+h>H-M-14)P.page()},
     text(x,y,s,size,bold,col){col=col||[0,0,0];ops.push(`BT ${col.map(f).join(' ')} rg /${bold?'F2':'F1'} ${size} Tf ${f(x)} ${f(H-y)} Td (${pe(s)}) Tj ET`)},
     rect(x,y,w,h,col){ops.push(`${col.map(f).join(' ')} rg ${f(x)} ${f(H-y-h)} ${f(w)} ${f(h)} re f`)},
@@ -504,38 +540,63 @@ function PDFDoc(){
     }};
   P.page();return P;
 }
-const RED=[.718,.11,.11],GREEN=[.18,.49,.196],GREY=[.54,.56,.6],INK=[.11,.14,.19],SOFT=[.4,.4,.4];
+const RED=BC.fail,GREEN=BC.pass,GREY=BC.na,INK=BC.ink,SOFT=[.4,.4,.4];
 const stCol=s=>s==='pass'?GREEN:s==='fail'?RED:GREY;
+/* ---- branded PDF report helpers (report only: PDFDoc stays plain, so the QR label sheets are unchanged) ---- */
+function fillRR(p,x,y,w,h,r,col){p.raw(`${col.map(v=>(+v).toFixed(3)).join(' ')} rg ${rrPath(p,x,y,w,h,Math.min(r,h/2,w/2))} f`)}
+/* rounded status pill; returns its width */
+function pdfPill(p,x,y,t,col,size,h){size=size||7;h=h||size+5.5;const s=pt(t),w=tw(s,size,true)+12;fillRR(p,x,y,w,h,h/2,col);p.text(x+6,y+h/2+size*.35,s,size,true,[1,1,1]);return w}
+const pillW=(t,size)=>tw(pt(t),size||7,true)+12;
+/* section heading with pink underline - used for every report heading */
+function pdfHeading(p,t,X,CW,size){size=size||12.5;p.text(X,p.y+size,pt(t),size,true,INK);p.rect(X,p.y+size+4.5,CW,1.3,BC.pink);p.y+=size+13}
 async function buildPDF(){
-  const p=PDFDoc(),s=S.survey,X=p.M,CW=p.W-2*p.M;
-  p.rect(0,0,p.W,70,RED);p.text(X,30,'SafeBuilt Solutions Ltd',18,true,[1,1,1]);p.text(X,50,pt('Fire Door Inspection Report – East London'),11,false,[1,1,1]);
-  p.y=86;
-  
-  const kv=surveyKV(s);
-  for(const [k,v] of kv){const ls=wrapT(v||'—',10,CW-130);p.ensure(ls.length*13+4);p.text(X,p.y+11,k,10,true,SOFT);ls.forEach((l,i)=>p.text(X+130,p.y+11+i*13,l,10));p.y+=ls.length*13+5}
-  p.y+=6;const cnt=counts();const bw=(CW-24)/4;
-  [['Total doors',cnt.total,INK],['Pass',cnt.pass,GREEN],['Fail',cnt.fail,RED],['Not inspected',cnt.none,GREY]].forEach(([l,n,c],i)=>{const bx=X+i*(bw+8);p.box(bx,p.y,bw,46);p.text(bx+10,p.y+24,String(n),20,true,c);p.text(bx+10,p.y+39,l,9,false,SOFT)});
-  p.y+=60;
-  p.text(X,p.y+14,'Door schedule',14,true,INK);p.y+=22;
-  const cols=[['Ref',52],['Location',118],['Status',62],['Key issues',158],['Action',55],['Priority',70]];
-  const head=()=>{p.rect(X,p.y,CW,18,[.93,.93,.93]);let cx=X;cols.forEach(([t,w])=>{p.text(cx+4,p.y+12.5,t,9,true);cx+=w});p.y+=18};
-  head();
+  const p=PDFDoc(),s=S.survey,X=p.M,CW=p.W-2*p.M,WH=[1,1,1];p.top=p.M+12;
+  const logoD=await logoJPG(BRAND.logo,BRAND.colors.black,2,.95),logoF=await logoJPG(BRAND.logoFlat,'#ffffff');
+  /* header band: logo left, report title + tagline right, yellow + pink rules */
+  p.rect(0,0,p.W,78,BC.black);
+  if(logoD){const lh=46,lw=lh*logoD.w/logoD.h;p.image(logoD,X-4,16,lw,lh)}else p.text(X,46,pt(BRAND.name),16,true,WH);
+  const rt=pt(BRAND.reportTitle.toUpperCase()),tg=pt(BRAND.name+' · '+BRAND.tagline);
+  p.text(p.W-X-tw(rt,14,true),38,rt,14,true,WH);p.text(p.W-X-tw(tg,8.5),51.5,tg,8.5,false,[.85,.85,.85]);
+  p.rect(0,78,p.W,3,BC.yellow);p.rect(0,82,p.W,1,BC.pink);
+  /* title block: site (large), address, REF/date chip */
+  p.y=98;const dt=isoOK(s.date)?fmtD(s.date):(s.date||'');
+  const chip=fitT([s.ref?'REF '+s.ref:'',dt].filter(Boolean).join(' · '),8,CW*.45,true),cw=chip?tw(chip,8,true)+14:0,TW=CW-(cw?cw+14:0);
+  const tl=wrapT(s.site||'—',19,TW,true);tl.forEach((l,i)=>p.text(X,p.y+16+i*22,l,19,true,INK));p.y+=16+(tl.length-1)*22;
+  const al=s.address?wrapT(s.address,9,TW):[];al.forEach((l,i)=>p.text(X,p.y+14+i*11,l,9,false,SOFT));const by=p.y+(al.length?14+(al.length-1)*11:0);
+  if(chip){fillRR(p,X+CW-cw,by-11.5,cw,16,3,BC.black);p.text(X+CW-cw+7,by-0.5,chip,8,true,BC.yellow)}
+  p.y=by+11;
+  /* survey details: two label/value pairs per row, shaded label column (site + address are in the title block) */
+  const kv=surveyKV(s).filter(([k])=>k!=='Site / building'&&k!=='Address'),KW=110,VW=CW/2-KW,FS=8.5,LH=10.5;
+  p.line(X,p.y,X+CW,p.y,[.89,.89,.89],.6);
+  for(let i=0;i<kv.length;i+=2){const pr=[kv[i],kv[i+1]],ls=pr.map(x=>x?wrapT(x[1]||'—',FS,VW-12):[]),n=Math.max(1,...ls.map(l=>l.length)),h=n*LH+9;p.ensure(h);
+    pr.forEach((x,j)=>{if(!x)return;const cx=X+j*CW/2;p.rect(cx,p.y,KW,h,[.965,.965,.957]);p.text(cx+7,p.y+h/2+FS*.35,pt(x[0]),FS,true,SOFT);
+      const y0=p.y+(h-ls[j].length*LH)/2+FS*.8;ls[j].forEach((l,k)=>p.text(cx+KW+7,y0+k*LH,l,FS,false,INK))});
+    p.line(X,p.y+h,X+CW,p.y+h,[.89,.89,.89],.6);p.y+=h}
+  /* count boxes with coloured top strip */
+  p.y+=10;const cnt=counts(),bw=(CW-24)/4,bh=44;p.ensure(bh+10);
+  [['Total doors',cnt.total,INK],['Pass',cnt.pass,GREEN],['Fail',cnt.fail,RED],['Not inspected',cnt.none,GREY]].forEach(([l,n,c],i)=>{const bx=X+i*(bw+8);p.box(bx,p.y,bw,bh,[.84,.84,.84]);p.rect(bx-.3,p.y-.3,bw+.6,3,c);p.text(bx+8,p.y+23,String(n),18,true,c);p.text(bx+8,p.y+37,l,8,false,SOFT)});
+  p.y+=bh+14;
+  pdfHeading(p,'Door schedule',X,CW);
+  const cols=[['Ref',50],['Location',92],['Status',58],['Key issues',209],['Action',50],['Priority',56]];
+  const head=()=>{p.rect(X,p.y,CW,17,BC.black);let cx=X;cols.forEach(([t,w])=>{p.text(cx+5,p.y+11.5,t,8,true,WH);cx+=w});p.rect(X,p.y+17,CW,1.5,BC.yellow);p.y+=18.5};
+  p.ensure(50);head();
   for(const d of S.doors){const st=status(d);const cells=[d.ref,d.location,null,keyIssues(d),d.action||'—',d.priority||'—'];
-    const wr=cells.map((c,i)=>c===null?[stLabel(st)]:wrapT(c||'—',8.5,cols[i][1]-8));const h=Math.max(...wr.map(w=>w.length))*11+8;
+    const wr=cells.map((c,i)=>c===null?[stLabel(st)]:wrapT(c||'—',8.5,cols[i][1]-9));const h=Math.max(...wr.map(w=>w.length))*11+8;
     if(p.y+h>p.H-p.M-14){p.page();head()}
-    let cx=X;wr.forEach((ls,i)=>{if(i===2){p.rect(cx+3,p.y+4,cols[i][1]-6,13,stCol(st));p.text(cx+6,p.y+13.5,st?stLabel(st):'NOT INSP.',7.5,true,[1,1,1])}else ls.forEach((l,j)=>p.text(cx+4,p.y+12+j*11,l,8.5,i===0));cx+=cols[i][1]});
-    p.line(X,p.y+h,X+CW,p.y+h);p.y+=h}
-  if(plans().some(x=>x.pins.length)){await fpPDF(p);p.page()}else{p.y+=14;p.ensure(40)}p.text(X,p.y+14,'Door details',14,true,INK);p.y+=24;
-  for(const d of S.doors){const st=status(d);p.ensure(80);
-    p.rect(X,p.y,CW,24,[.95,.95,.96]);p.rect(X,p.y,5,24,stCol(st));p.text(X+12,p.y+16,pt((d.ref||'Door')+' – '+(d.location||'')).slice(0,80),11.5,true);
-    p.rect(X+CW-88,p.y+5,82,14,stCol(st));p.text(X+CW-82,p.y+15,stLabel(st),8,true,[1,1,1]);p.y+=30;
+    let cx=X;wr.forEach((ls,i)=>{if(i===2)pdfPill(p,cx+5,p.y+4.5,st?stLabel(st):'NOT INSP.',stCol(st),7,12);else ls.forEach((l,j)=>p.text(cx+5,p.y+12.5+j*11,l,8.5,i===0,INK));cx+=cols[i][1]});
+    p.line(X,p.y+h,X+CW,p.y+h,[.85,.85,.85],.6);p.y+=h}
+  if(plans().some(x=>x.pins.length)){await fpPDF(p);p.page()}else{p.y+=16;p.ensure(120)/* keep heading with the first door */}pdfHeading(p,'Door details',X,CW);p.y+=2;
+  for(const d of S.doors){const st=status(d);p.ensure(gapSummary(d)?(isPair(d)?262:242):80); /* keep the header bar with its gap diagram */
+    /* door header bar: status-coloured edge + rounded status pill */
+    p.rect(X,p.y,CW,24,[.957,.957,.949]);p.rect(X,p.y,5,24,stCol(st));p.text(X+14,p.y+16,pt((d.ref||'Door')+' – '+(d.location||'')).slice(0,80),11.5,true,INK);
+    const sl=stLabel(st);pdfPill(p,X+CW-8-pillW(sl,7.5),p.y+5.5,sl,stCol(st),7.5,13);p.y+=30;
     p.para(`Type: ${typeLabel(d.type)}   |   Rating: ${d.rating||'—'}   |   Leaf: ${d.leaf||'—'}`,X,CW,9.5,false,SOFT);p.y+=3;if(gapSummary(d)){gapPDF(p,d,X,CW);p.y+=4}
-    for(const c of CHECKS){const o=d.checks[c[0]]||{};const r=o.r||'';const col=r==='pass'?GREEN:r==='fail'?RED:SOFT;
-      const cl=wrapT(o.c||'',8.5,CW-215);const h=Math.max(1,cl.length)*11+3;p.ensure(h);
-      p.text(X+4,p.y+9,pt(c[1]),8.5,false);p.text(X+170,p.y+9,rLabel(r),8.5,true,col);cl.forEach((l,i)=>{if(l)p.text(X+215,p.y+9+i*11,l,8.5,false,SOFT)});p.y+=h}
+    let zi=0;for(const c of CHECKS){const o=d.checks[c[0]]||{};const r=o.r||'';const col=r==='pass'?GREEN:r==='fail'?RED:SOFT;
+      const cl=wrapT(o.c||'',8.5,CW-215);const h=Math.max(1,cl.length)*11+3;p.ensure(h);if(zi++%2)p.rect(X,p.y,CW,h,[.98,.98,.973]);
+      p.text(X+4,p.y+9,pt(c[1]),8.5,false,INK);p.text(X+170,p.y+9,rLabel(r),8.5,true,col);cl.forEach((l,i)=>{if(l)p.text(X+215,p.y+9+i*11,l,8.5,false,SOFT)});p.y+=h}
     p.y+=4;
-    for(const [k,v] of [['Issues found',d.issues],['Recommended action',d.action],['Priority',d.priority],['Notes',d.notes]]){if(!v)continue;const ls=wrapT(v,9.5,CW-120);p.ensure(ls.length*12+4);p.text(X+4,p.y+10,k,9.5,true);ls.forEach((l,i)=>p.text(X+120,p.y+10+i*12,l,9.5));p.y+=ls.length*12+4}
-    if(snOn(d)){const ls=wrapT(d.siteNotes.trim(),9.5,CW-16);p.ensure(ls.length*12+22);p.y+=4;p.rect(X,p.y,3,ls.length*12+18,[.863,.792,.11]);p.text(X+10,p.y+10,'Surveyor notes',9.5,true);ls.forEach((l,i)=>p.text(X+10,p.y+23+i*12,l,9.5));p.y+=ls.length*12+22}
+    for(const [k,v] of [['Issues found',d.issues],['Recommended action',d.action],['Priority',d.priority],['Notes',d.notes]]){if(!v)continue;const ls=wrapT(v,9.5,CW-120);p.ensure(ls.length*12+4);p.text(X+4,p.y+10,k,9.5,true,INK);ls.forEach((l,i)=>p.text(X+120,p.y+10+i*12,l,9.5,false,INK));p.y+=ls.length*12+4}
+    if(snOn(d)){const ls=wrapT(d.siteNotes.trim(),9.5,CW-16);p.ensure(ls.length*12+22);p.y+=4;p.rect(X,p.y,CW,ls.length*12+18,BC.yellowTint);p.rect(X,p.y,3,ls.length*12+18,BC.yellow);p.text(X+10,p.y+10,'Surveyor notes',9.5,true,INK);ls.forEach((l,i)=>p.text(X+10,p.y+23+i*12,l,9.5,false,INK));p.y+=ls.length*12+22}
     const photos=d.media.filter(m=>m.kind==='photo'),vids=d.media.filter(m=>m.kind==='video');
     if(photos.length){p.y+=4;const tw_=(CW-24)/4;let col=0;
       for(const m of photos){const t=await thumbFor(m.id,700);if(!t)continue;const th=tw_*t.h/t.w>tw_*0.9?tw_*0.9:tw_*t.h/t.w;const iw=th*t.w/t.h;
@@ -546,13 +607,20 @@ async function buildPDF(){
     p.y+=12}
   clientNotesPDF(p,s,X,CW);
   p.ensure(60);p.line(X,p.y,X+CW,p.y);p.y+=6;p.para(GUIDANCE,X,CW,8,false,SOFT,10.5);
-  p.footer((i,n)=>{p.text(p.M,p.H-22,pt(`SafeBuilt Solutions Ltd  ·  ${s.ref||''}  ·  ${s.site||''}`).slice(0,95),8,false,GREY);p.text(p.W-p.M-60,p.H-22,`Page ${i} of ${n}`,8,false,GREY)});
+  /* every page: branded footer; pages 2+: slim black header with the logo. Drawn here (not in PDFDoc) so labels stay unchanged. */
+  p.footer((i,n)=>{
+    if(i>1){p.rect(0,0,p.W,24,BC.black);if(logoD){const lh=15,lw=lh*logoD.w/logoD.h;p.image(logoD,X-2,4.5,lw,lh)}
+      const ht=fitT(BRAND.reportTitle+(s.site?'  ·  '+s.site:''),7.5,CW-110);p.text(p.W-X-tw(ht,7.5),15,ht,7.5,false,WH);p.rect(0,24,p.W,1.5,BC.yellow)}
+    const fy=p.H-34;p.rect(0,fy,p.W,2,BC.yellow);let tx=X;
+    if(logoF){const lh=11,lw=lh*logoF.w/logoF.h;p.image(logoF,X,fy+(34-lh)/2+1,lw,lh);tx=X+lw+8}
+    const pg=`Page ${i} of ${n}`,pw=tw(pg,8,true);p.text(p.W-X-pw,fy+21,pg,8,true,INK);
+    p.text(tx,fy+21,fitT([s.ref,s.site,BRAND.email,BRAND.phone,BRAND.website].filter(Boolean).join(' · '),7.5,p.W-X-pw-12-tx),7.5,false,[.47,.47,.47])});
   return p.build();
 }
 
 
 /* ---------- QR door labels (Avery L7163) ---------- */
-const CO={name:'SafeBuilt Solutions Ltd',tel:'07412 089093',email:'office@safebuiltsolutions.co.uk'};
+const CO={name:BRAND.name,tel:BRAND.phone,email:BRAND.email};
 const PUBLIC_URL='https://gedaskalinauskas-coder.github.io/fire-door-app/door.html';
 const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const isoOK=s=>/^\d{4}-\d{2}-\d{2}$/.test(s||'');
@@ -596,12 +664,12 @@ const clip=(s,n)=>{s=String(s||'').replace(/\s+/g,' ').trim();if(n<=0)return '';
 const QRC={};
 function doorQR(d){const id=doorId(d),url=recordURL(d);if(QRC[url])return QRC[url];
   const q=qrcode(0,'M');q.addData(url);q.make();return QRC[url]={url,q,v:(q.getModuleCount()-17)/4,id}}
-/* SafeBuilt wordmark on the label header colour, as JPEG for the PDF writer */
+/* BRAND logo baked onto a flat background colour, as JPEG for the PDF writer (scale: resolution multiplier, q: JPEG quality) */
 const LOGO_JPG={};
-async function logoJPG(src,bg){src=src||LOGO_SRC;bg=bg||'#141414';const key=bg+src.length;if(LOGO_JPG[key]!==undefined)return LOGO_JPG[key];
+async function logoJPG(src,bg,scale,q){src=src||BRAND.logo;bg=bg||BRAND.colors.black;scale=scale||1;q=q||.92;const key=bg+src.length+(scale!==1||q!==.92?':'+scale+':'+q:'');if(LOGO_JPG[key]!==undefined)return LOGO_JPG[key];
   try{const img=new Image();await new Promise((res,rej)=>{img.onload=res;img.onerror=rej;img.src=src});
-    const w=img.naturalWidth,h=img.naturalHeight,c=document.createElement('canvas');c.width=w;c.height=h;const g=c.getContext('2d');
-    g.fillStyle=bg;g.fillRect(0,0,w,h);g.drawImage(img,0,0);const u=c.toDataURL('image/jpeg',.92),bin=atob(u.split(',')[1]),bytes=new Uint8Array(bin.length);
+    const w=Math.round(img.naturalWidth*scale),h=Math.round(img.naturalHeight*scale),c=document.createElement('canvas');c.width=w;c.height=h;const g=c.getContext('2d');
+    g.fillStyle=bg;g.fillRect(0,0,w,h);if(scale===1)g.drawImage(img,0,0);else{g.imageSmoothingQuality='high';g.drawImage(img,0,0,w,h)}const u=c.toDataURL('image/jpeg',q),bin=atob(u.split(',')[1]),bytes=new Uint8Array(bin.length);
     for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);return LOGO_JPG[key]={bytes,w,h}}catch(e){return LOGO_JPG[key]=null}}
 const MM=72/25.4;
 const L7163={name:'Avery L7163 (14 per sheet)',cols:2,rows:7,w:99.1,h:38.1,top:15.15,left:4.65,px:101.6,py:38.1,per:14};
@@ -616,7 +684,7 @@ function drawTag(p,ox,oy,t,logo){const m=v=>v*MM,G=L7160,Q=tagQR(t.tid),c=v=>v.m
   p.raw(`0.6 0.6 0.6 RG 0.5 w ${rrPath(p,ox+m(1.2),oy+m(1.2),m(G.w-2.4),m(G.h-2.4),m(2.5))} S`); /* thin grey outline, no fill */
   const bt=oy+m(2.3),bh=m(6.6),cx=ox+m(G.w/2);
   if(logo){const lh=m(5.2),lw=Math.min(m(G.w-12),lh*logo.w/logo.h),lh2=lw*logo.h/logo.w;p.image(logo,cx-lw/2,bt+(bh-lh2)/2,lw,lh2)}
-  else p.text(cx-tw('SafeBuilt',12,true)/2,bt+m(5),'SafeBuilt',12,true,LB.black);
+  else p.text(cx-tw(pt(BRAND.short),12,true)/2,bt+m(5),pt(BRAND.short),12,true,LB.black);
   const rx=ox+m(4),rw=m(G.w-8),ry=bt+bh+m(.5);p.rect(rx,ry,rw,m(.45),LB.yellow);p.rect(rx,ry+m(.6),rw,m(.45),LB.pink);
   const qs=m(24.4),qx=ox+m(3.3),qy=oy+m(11.0);drawQR(p,Q.q,qx,qy,qs);
   const tx=qx+qs+m(2.2),tr=ox+m(G.w-3),TW=tr-tx,tn='SB '+t.no;let ts=20;while(ts>9&&tw(tn,ts,true)>TW)ts-=.5;
@@ -628,14 +696,14 @@ function drawQR(p,q,x,y,size){const n=q.getModuleCount(),s=size/n,ops=[];
   for(let r=0;r<n;r++){let c=0;while(c<n){if(q.isDark(r,c)){let e=c;while(e<n&&q.isDark(r,e))e++;ops.push(c+' '+r+' '+(e-c)+' 1.02 re');c=e}else c++}}
   p.raw('q 0 0 0 rg '+s.toFixed(5)+' 0 0 '+(-s).toFixed(5)+' '+x.toFixed(3)+' '+(p.H-y).toFixed(3)+' cm\n'+ops.join('\n')+'\nf Q')}
 function fitT(s,size,maxW,bold){s=pt(s);if(tw(s,size,bold)<=maxW)return s;while(s.length>1&&tw(s+'\x85',size,bold)>maxW)s=s.slice(0,-1);return s.replace(/\s+$/,'')+'\x85'}
-const LB={black:[.078,.078,.078],yellow:[.863,.792,.11],pink:[.898,.2,.463],ink:[.08,.08,.08],soft:[.38,.38,.38]};
+const LB={black:BC.black,yellow:BC.yellow,pink:BC.pink,ink:BC.black,soft:[.38,.38,.38]}; /* label colours from BRAND */
 function drawLabel(p,ox,oy,d,logo,mode){const pre=mode!=='after';const m=v=>v*MM,s=S.survey,Q=doorQR(d),W=[1,1,1],G=L7163;
   /* QR 29 mm, left, vertically centred; 3 mm from the label edge + white quiet zone around it */
   const qs=m(29),qx=ox+m(3),qy=oy+(m(G.h)-qs)/2;drawQR(p,Q.q,qx,qy,qs);
   const tx=ox+m(35.6),tr=ox+m(G.w-2.2),TW=tr-tx;
   /* ink-light white header: flat wordmark + FIRE DOOR - KEEP SHUT in black, thin yellow underline */
   const hy=oy+m(2.2),hh=m(6.6);p.rect(tx,hy+hh,TW,m(.7),LB.yellow);
-  let lw=0;if(logo){const lh=hh-m(1.8);lw=lh*logo.w/logo.h;p.image(logo,tx,hy+m(.9),lw,lh)}else{const co='SafeBuilt';lw=tw(co,8,true);p.text(tx+m(1.2),hy+m(4.5),co,8,true,LB.yellow)}
+  let lw=0;if(logo){const lh=hh-m(1.8);lw=lh*logo.w/logo.h;p.image(logo,tx,hy+m(.9),lw,lh)}else{const co=pt(BRAND.short);lw=tw(co,8,true);p.text(tx+m(1.2),hy+m(4.5),co,8,true,LB.yellow)}
   const kt='FIRE DOOR \x96 KEEP SHUT',ks=tw(kt,7.6,true)<=TW-lw-m(4)?7.6:6.6;p.text(tr-tw(kt,ks,true),hy+m(4.6),kt,ks,true,LB.black);
   /* door ref + rating chip */
   let y=hy+hh+m(.7)+m(5.1);const rs=8.5,ch=m(4.4);let cw;
@@ -662,14 +730,14 @@ const posOpts=G=>Array.from({length:G.per},(_,i)=>`<option value="${i+1}">${i+1}
 function posSelect(id){return `<label class="f">Start at label position<select id="${id}">${posOpts(L7163)}</select></label>`}
 function styleSelect(id,pos,mode){return `<label class="f">Label style<select id="${id}" onchange="styleChg(this.value,'${pos}','${mode}')"><option value="std">Standard (99 x 38 mm)</option><option value="tag">Compact tag (63.5 x 38.1 mm)</option></select></label>`}
 function styleChg(v,pos,mode){const G=SHEET(v),ps=$('#'+pos),ms=$('#'+mode);if(ps){const o=+ps.value||1;ps.innerHTML=posOpts(G);ps.value=String(Math.min(o,G.per))}
-  if(ms){ms.disabled=v==='tag';ms.closest('label').style.opacity=v==='tag'?.5:1}const h=$('#'+pos+'hint');if(h)h.innerHTML=v==='tag'?'Sheet: <b>'+L7160.name+'</b> – 63.5 × 38.1 mm (also J8160). Compact asset tag: QR, asset number and SafeBuilt logo only.':h.dataset.std}
+  if(ms){ms.disabled=v==='tag';ms.closest('label').style.opacity=v==='tag'?.5:1}const h=$('#'+pos+'hint');if(h)h.innerHTML=v==='tag'?'Sheet: <b>'+L7160.name+'</b> – 63.5 × 38.1 mm (also J8160). Compact asset tag: QR, asset number and '+esc(BRAND.short)+' logo only.':h.dataset.std}
 const PRINT_TIP='Print at 100% / Actual size, not Fit to page';
 const qrTipHTML=`<p class="qrtip"><b>Print tip:</b> ${PRINT_TIP}. Print a test on plain paper first and hold it behind a label sheet to check it lines up.</p>`;
 
 /* ---------- report markup (in-app, standalone HTML, ZIP) ---------- */
 function counts(){const c={total:S.doors.length,pass:0,fail:0,none:0};S.doors.forEach(d=>{const s=status(d);s==='pass'?c.pass++:s==='fail'?c.fail++:c.none++});return c}
 async function reportMarkup(mode){
-  const s=S.survey,c=counts();let h=`<div class="report"><div class="rh" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap"><img src="${LOGO_SRC}" alt="SafeBuilt Solutions Ltd" style="height:54px;width:auto"><div style="flex:1;min-width:200px"><h1>Fire Door Inspection Report</h1><p>SafeBuilt Solutions Ltd · Fire door contractor, East London</p></div></div>`;
+  const s=S.survey,c=counts();let h=`<div class="report"><div class="rh" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap"><img src="${BRAND.logo}" alt="${esc(BRAND.name)}" style="height:54px;width:auto"><div style="flex:1;min-width:200px"><h1>${esc(BRAND.reportTitle)}</h1><p>${esc(BRAND.name)} · ${esc(BRAND.tagline)}</p></div></div>`;
   
   h+=`<table class="kv">${surveyKV(s).map(([k,v])=>`<tr><th>${k}</th><td>${esc(v||'—')}</td></tr>`).join('')}</table>`;
   h+=`<div class="rc"><div><b>${c.total}</b>Total</div><div class="p"><b>${c.pass}</b>Pass</div><div class="x"><b>${c.fail}</b>Fail</div><div><b>${c.none}</b>Not inspected</div></div>`;
@@ -689,7 +757,7 @@ async function reportMarkup(mode){
       h+=`<figure>${inner}<figcaption>${esc(n)}</figcaption></figure>`}h+='</div>'}
     h+='</section>'}
   h+=clientNotesHTML(s);
-  h+=`<p class="gn">${esc(GUIDANCE)}<br>Report generated ${esc(new Date().toLocaleString('en-GB'))} · SafeBuilt Solutions Ltd.</p></div>`;
+  h+=`<p class="gn">${esc(GUIDANCE)}<br>Report generated ${esc(new Date().toLocaleString('en-GB'))} · ${esc(BRAND.name)}.</p></div>`;
   return h;
 }
 async function reportHTMLFile(mode){const body=await reportMarkup(mode);
@@ -721,7 +789,7 @@ function mkChecks(over,na){const o={};CHECKS.forEach(c=>o[c[0]]={r:(na||[]).incl
 async function loadSample(){
   await clearMedia().catch(()=>{});Object.keys(URLS).forEach(k=>{URL.revokeObjectURL(URLS[k]);delete URLS[k]});Object.keys(TH).forEach(k=>delete TH[k]);
   const D=(ref,location,type,rating,leaf,checks,x)=>Object.assign({id:uid(),ref,location,type,rating,leaf,checks,overall:'',manual:false,issues:'',action:'',priority:'',notes:'',media:[]},x||{});
-  S={isSample:true,survey:{site:'Marlowe Court (SAMPLE)',address:'1–48 Example Road, Stratford, London E15 0XX',client:'Example Housing Association (sample)',inspector:'Gedas – SafeBuilt Solutions Ltd',date:today(),ref:'SBS-FD-2026-0001',height:'11to18',storeys:'6',btype:'Residential block (flats)'},doors:[
+  S={isSample:true,survey:{site:'Marlowe Court (SAMPLE)',address:'1–48 Example Road, Stratford, London E15 0XX',client:'Example Housing Association (sample)',inspector:BRAND.inspector,date:today(),ref:'SBS-FD-2026-0001',height:'11to18',storeys:'6',btype:'Residential block (flats)'},doors:[
     D('Door-01','Ground floor communal entrance lobby','communal','FD30S','Double',mkChecks({gaps:{r:'fail',c:'Head gap 6 mm at meeting stiles (sides 3 mm).'},smoke:{r:'fail',c:'Smoke seal missing on meeting stile of active leaf (~1.2 m).'},glazing:{r:'pass',c:'Vision panels marked Pyroguard, beads secure.'}},['holdopen']),
       {issues:'6 mm head gap at meeting stiles exceeds 2–4 mm guidance; smoke seal missing on meeting stile.',action:'Adjust',priority:'Within 3 months',notes:'Re-hang/adjust leaves to reduce head gap, then fit matching intumescent/smoke seal to meeting stile.'}),
     D('Door-02','First floor communal lobby','communal','FD30S','Single',mkChecks({gaps:{r:'pass',c:'3 mm all round.'},threshold:{r:'pass',c:'3 mm.'}},['glazing','holdopen']),{notes:'Door in good condition. Re-inspect at next quarterly check.'}),
@@ -859,13 +927,13 @@ const ACT={
     for(let i=0;i<n;i++){const d={id:uid(),ref:pre+String(n0+i).padStart(w,'0'),location:'',type:'',rating:'',leaf:'Single',checks:{},overall:'',manual:false,issues:'',action:'',priority:'',notes:'',media:[]};S.doors.push(d);doorId(d)}
     save();route();toast(n+' door'+(n>1?'s':'')+' added')},
   async blanktags(){const n=Math.max(1,Math.min(210,parseInt(($('#bqty')||{}).value,10)||0));if(!confirm('Reserve and print '+n+' new asset tag numbers?'))return;busy(true,'Building tags…');
-    try{const ts=reserveTags(n);const p=await buildLabels(ts.map(t=>({blank:t})),+($('#bstart')||{}).value||1,'before','tag');busy(false);await saveBlob(p,'SafeBuilt_asset-tags_SB'+ts[0].no+'-SB'+ts[ts.length-1].no+'_L7160.pdf')}catch(e){busy(false);toast('Tags failed: '+e.message)}},
+    try{const ts=reserveTags(n);const p=await buildLabels(ts.map(t=>({blank:t})),+($('#bstart')||{}).value||1,'before','tag');busy(false);await saveBlob(p,safe(BRAND.short)+'_asset-tags_SB'+ts[0].no+'-SB'+ts[ts.length-1].no+'_L7160.pdf')}catch(e){busy(false);toast('Tags failed: '+e.message)}},
   assigntag(b,d){const v=($('#tagin')||{}).value;if(!v)return toast('Enter the tag number or scan the tag');if(d.tag&&!confirm('Replace tag SB '+d.tag+' on this door?'))return;
     try{const no=assignTag(d,v);toast('Tag SB '+no+' linked to '+(d.ref||'door'));route()}catch(e){toast(e.message)}},
   picktag(b){const d=doorById(b.dataset.door),tid=b.dataset.tid;if(!d)return;if(d.tag&&!confirm('Replace tag SB '+d.tag+' on '+d.ref+'?'))return;
     try{const no=assignTag(d,tid);toast('Tag SB '+no+' linked to '+(d.ref||'door'));location.hash='#/door/'+d.id}catch(e){toast(e.message)}},
   async add(){const n=S.doors.length+1;const d={id:uid(),ref:'Door-'+pad(n),location:'',type:'',rating:'',leaf:'Single',checks:{},overall:'',manual:false,issues:'',action:'',priority:'',notes:'',media:[]};S.doors.push(d);doorId(d);save();location.hash='#/door/'+d.id},
-  async blank(){if(!confirm('Start a new blank survey? This deletes the sample doors and photos on this device.'))return;await clearMedia();S={isSample:false,survey:{site:'',address:'',client:'',inspector:'Gedas – SafeBuilt Solutions Ltd',date:today(),ref:''},doors:[]};save();route();toast('Blank survey started')},
+  async blank(){if(!confirm('Start a new blank survey? This deletes the sample doors and photos on this device.'))return;await clearMedia();S={isSample:false,survey:{site:'',address:'',client:'',inspector:BRAND.inspector,date:today(),ref:''},doors:[]};save();route();toast('Blank survey started')},
   async reset(){if(!confirm('Reset to sample data? All current doors, photos and videos on this device will be deleted.'))return;busy(true,'Loading sample…');await loadSample();busy(false);location.hash='#/list';route();toast('Sample data restored')},
   allpass(b,d){CHECKS.forEach(c=>{const o=ck(d,c[0]);if(!o.r)o.r='pass'});save();renderDoor(d.id)},
   fillissues(b,d){const t=failed(d).map(c=>{const o=d.checks[c[0]];return c[1]+(o.c?': '+o.c:'')}).join('\n');d.issues=t;$('#issues').value=t;save();if(!t)toast('No failed items')},
@@ -885,7 +953,7 @@ const ACT={
   previewrec(b,d){const u=doorQR(d).url.replace(PUBLIC_URL,'door.html');window.open(u,'_blank')||(location.href=u)},
   async json(){await saveBlob(new Blob([exportJSON()],{type:'application/json'}),baseName()+'_data.json')}
 };
-function exportJSON(){ensureIds();return JSON.stringify({app:'SafeBuilt Solutions fire door inspection',exported:new Date().toISOString(),sample:!!S.isSample,survey:S.survey,
+function exportJSON(){ensureIds();return JSON.stringify({app:BRAND.name.replace(/ Ltd$/,'')+' fire door inspection',exported:new Date().toISOString(),sample:!!S.isSample,survey:S.survey,
   doors:S.doors.map(d=>({...d,doorId:d.pid,tagNo:d.tag||'',tagId:d.tagId||'',recordUrl:recordURL(d),typeLabel:typeLabel(d.type),inspected:inspDate(),nextDue:nextDue(d),keyIssues:keyIssues(d),status:status(d),suggested:suggest(d),gaps:Object.assign({},GAP_BLANK,isPair(d)?Object.fromEntries(PAIR_KEYS.map(k=>[k[0],''])):{},d.gaps),gapLayout:isPair(d)?(isHalf(d)?'leaf-and-a-half':'double'):'single',gapResults:gapEval(d).map(x=>({edge:x.k,label:x.label,mm:x.raw,result:x.r,rule:x.why})),gapSummary:(gapSummary(d)||{}).text||'No gaps measured',checks:CHECKS.map(c=>({key:c[0],item:c[1],result:(d.checks[c[0]]||{}).r||'',comment:(d.checks[c[0]]||{}).c||''})),media:d.media.map(m=>({file:mediaName(d,m),kind:m.kind,type:m.type,original:m.orig||m.caption||'',caption:m.caption||''}))})),floorPlans:fpExport()},null,2)}
 function snGrow(t){t.style.height='auto';t.style.height=Math.max(44,t.scrollHeight+2)+'px'}
 function snOn(d){return !!(d.siteNotes&&d.siteNotes.trim())&&d.siteNotesInReport!==false}
@@ -1012,17 +1080,17 @@ async function fpFiles(){const out=[];for(const p of plans()){const b=await medi
 function fpExport(){return plans().map(p=>({id:p.id,name:p.name,file:fpName(p),width:p.w,height:p.h,pins:p.pins.map((q,i)=>{const d=doorById(q.door)||{};return {n:i+1,door:q.door,doorRef:d.ref||'',doorId:d.pid||'',x:q.x,y:q.y}})}))}
 async function fpPDF(p){const X=p.M,CW=p.W-2*p.M;
   for(const pl of plans()){if(!pl.pins.length)continue;const t=await thumbFor(pl.mid,1600);if(!t)continue;p.page();
-    p.text(X,p.y+14,pt('Floor plan – '+pl.name),14,true,INK);p.y+=24;
+    pdfHeading(p,'Floor plan – '+pl.name,X,CW);p.y+=2;
     const maxH=p.H-p.M-p.y-150,k=Math.min(CW/t.w,maxH/t.h),iw=t.w*k,ih=t.h*k,ix=X+(CW-iw)/2,iy=p.y;p.image(t,ix,iy,iw,ih);p.box(ix,iy,iw,ih);
     const f=n=>n.toFixed(2);
     pl.pins.forEach((q,i)=>{const d=doorById(q.door);if(!d)return;const cx=ix+q.x*iw,cy=p.H-(iy+q.y*ih),r=7,c=.5523*r,col=stCol(status(d));
       p.raw(`${col.map(f).join(' ')} rg 1 1 1 RG 1 w ${f(cx+r)} ${f(cy)} m ${f(cx+r)} ${f(cy+c)} ${f(cx+c)} ${f(cy+r)} ${f(cx)} ${f(cy+r)} c ${f(cx-c)} ${f(cy+r)} ${f(cx-r)} ${f(cy+c)} ${f(cx-r)} ${f(cy)} c ${f(cx-r)} ${f(cy-c)} ${f(cx-c)} ${f(cy-r)} ${f(cx)} ${f(cy-r)} c ${f(cx+c)} ${f(cy-r)} ${f(cx+r)} ${f(cy-c)} ${f(cx+r)} ${f(cy)} c B`);
       const s=String(i+1),fs=i+1>99?5.5:7;p.text(cx-tw(s,fs,true)/2,iy+q.y*ih+fs*.36,s,fs,true,[1,1,1])});
     p.y=iy+ih+12;
-    pl.pins.forEach((q,i)=>{const d=doorById(q.door);if(!d)return;const st=status(d);p.ensure(13);p.rect(X,p.y+2,8,8,stCol(st));p.text(X+12,p.y+9.5,pt(`${i+1}. ${d.ref||''} – ${d.location||''}`).slice(0,90),8.5,false);p.text(X+CW-70,p.y+9.5,stLabel(st),8,true,stCol(st));p.y+=12})}}
+    pl.pins.forEach((q,i)=>{const d=doorById(q.door);if(!d)return;const st=status(d);p.ensure(13);p.rect(X,p.y+2,8,8,stCol(st));p.text(X+12,p.y+9.5,pt(`${i+1}. ${d.ref||''} – ${d.location||''}`).slice(0,90),8.5,false);pdfPill(p,X+CW-pillW(stLabel(st),6.5),p.y+1.5,stLabel(st),stCol(st),6.5,10);p.y+=12})}}
 
 (async function init(){
-  const st=document.createElement('style');st.textContent=REPORT_CSS;document.head.appendChild(st);
+  applyBrand();const st=document.createElement('style');st.textContent=REPORT_CSS;document.head.appendChild(st);
   try{const raw=localStorage.getItem(LS);if(raw)S=JSON.parse(raw)}catch(e){}
   if(!S||!S.survey){try{await loadSample()}catch(e){S={isSample:false,survey:{date:today()},doors:[]};toast('Storage unavailable: '+e.message)}}
   if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
