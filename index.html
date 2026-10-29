@@ -25,7 +25,7 @@ nav.bottom a.on{color:var(--brand);box-shadow:inset 0 3px 0 var(--sb-pink)}
 .card{background:#fff;border-radius:12px;padding:14px;margin:0 0 12px;box-shadow:0 1px 2px rgba(0,0,0,.08)}
 h2{font-size:18px;margin:0 0 10px}
 label.f{display:block;margin:0 0 12px;font-size:13px;color:#555;font-weight:600}
-input[type=text],input[type=date],select,textarea{display:block;width:100%;font-size:16px;padding:12px;border:1px solid #c9ccd3;border-radius:8px;margin-top:4px;background:#fff;color:inherit;min-height:48px;font-family:inherit;-webkit-appearance:none;appearance:none}
+input[type=text],input[type=date],input[type=number],select,textarea{display:block;width:100%;font-size:16px;padding:12px;border:1px solid #c9ccd3;border-radius:8px;margin-top:4px;background:#fff;color:inherit;min-height:48px;font-family:inherit;-webkit-appearance:none;appearance:none}
 select{background-image:linear-gradient(45deg,transparent 50%,#666 50%),linear-gradient(135deg,#666 50%,transparent 50%);background-position:calc(100% - 20px) 21px,calc(100% - 15px) 21px;background-size:5px 5px;background-repeat:no-repeat;padding-right:34px}
 textarea{min-height:84px;resize:vertical}
 textarea.sn{min-height:44px;height:44px;overflow:hidden;resize:none;padding:10px;border-left:4px solid #dcca1c}
@@ -153,6 +153,88 @@ const LEAFS=['Single','Double','Leaf and a half'];
 const ACTIONS=['Repair','Adjust','Replace'];
 const PRIS=['Urgent','Within 3 months','Advisory'];
 const GUIDANCE='Gap and seal figures are typical guidance only – BS 8214:2016 and the door manufacturer’s certification data take precedence. Under the Fire Safety (England) Regulations 2022, responsible persons in multi-occupied residential buildings over 11 m must undertake quarterly checks of communal fire doors and use best endeavours to check flat entrance doors annually. This is a visual, non-destructive inspection and does not certify fire performance.';
+/* ---------- building details + "Important notes for the client" ---------- */
+const HEIGHTS=[['lt11','Under 11m'],['11to18','11m to under 18m'],['18plus','18m and over / 7+ storeys (higher-risk building)'],['unknown','Not known']];
+const BTYPES=['Residential block (flats)','HMO','Mixed use','Commercial','Other'];
+const heightLabel=v=>(HEIGHTS.find(h=>h[0]===v)||[,''])[1];
+/* Generic wording only (no company names): the app is used by other surveyors. Sections: {h, body:[string | {ul:[...]}]}. **x** = bold in HTML. */
+function clientNotes(s){s=s||{};const h=s.height||'';const N=[];
+  N.push({h:'About this inspection',body:[{ul:[
+    'This was a visual, non-destructive inspection of the fire doors listed in this report, as found on the survey date. Doors were not taken apart and no destructive or laboratory testing was carried out.',
+    'The inspection records the condition of each door at the time of the visit. It does not certify the fire resistance or fire performance of any door, and it is not a fire risk assessment.']}]});
+  N.push({h:'Repairs must keep the door’s certified performance',body:['A fire door is a tested system: the leaf, frame, glazing, seals and ironmongery work together. Repairs must not reduce the performance the door was tested and certified to give.',{ul:[
+    'Only compatible, fire-rated components should be used – hinges, closers, latches and locks, intumescent and smoke seals, and glazing.',
+    'Work should follow the door manufacturer’s certification or field of application data, BS 8214:2016, and the rules of the relevant third-party certification scheme (for example BM TRADA Q-Mark, FIRAS or the BWF Fire Door Alliance).']}]});
+  N.push({h:'When a door cannot be repaired',body:['Some defects cannot be put right by repair, and the complete doorset will need to be replaced. Typical examples are:',{ul:[
+    'there is no certification label, plug or other evidence of the door’s fire rating;',
+    'the door has glazing that is not fire-rated, or glazing such as Georgian wired glass with no tested glazing system for that door;',
+    'the leaf or frame has major damage, holes, splits or unapproved alterations;',
+    'the gaps between the leaf and the frame cannot be brought within the permitted tolerance.']}]});
+  N.push({h:'What replacement involves',body:[{ul:[
+    'Replacement normally means a complete certified doorset – leaf, frame, ironmongery and seals supplied and tested together – rather than a new leaf hung in the old frame, unless the manufacturer’s certification allows this.',
+    'The doorset should be installed by a competent installer, ideally one certified under a third-party installation scheme.',
+    'Installation certificates, product certificates and door labels should be kept as evidence that the correct product was fitted correctly. They will be needed for future inspections.']}]});
+  N.push({h:'What the client or Responsible Person needs to arrange',body:['Before work can start, the client or Responsible Person should arrange or confirm:',{ul:[
+    'access to every door in the programme, including doors to individual flats;',
+    'any notices to leaseholders or tenants, and their consent where it is needed;',
+    'whether each door belongs to the freeholder or the leaseholder (check the lease), as this affects who is responsible for the work and who pays;',
+    'landlord or freeholder consent, where needed;',
+    'listed building consent or conservation area consent, where applicable;',
+    'asbestos information for older buildings (for example the asbestos register or a refurbishment survey) before any drilling or removal of frames;',
+    'lead times for certified doorsets, which are often several weeks and should be allowed for in the programme.']}]});
+  N.push({h:'Legal duty to maintain fire doors',body:[{ul:[
+    'Under the Regulatory Reform (Fire Safety) Order 2005, the Responsible Person must keep fire safety measures, including fire doors, maintained in efficient working order and good repair.',
+    'Defects identified in this report should be put right within the timescales given by the priority ratings below. If work is delayed, the Responsible Person should record why and consider whether the fire risk assessment needs reviewing.',
+    'The Fire Safety Order applies in England and Wales. The other regulations referred to in these notes apply in England; different rules apply in Wales, Scotland and Northern Ireland, and the client should confirm which apply to their building.']}]});
+  if(h==='unknown')N[N.length-1].body[0].ul.push('The building height was not confirmed at the time of the survey. If the building contains flats and is over 11 metres high, or is 18 metres or more or has 7 or more storeys, additional legal duties apply. The client should confirm the height and ask the surveyor to update this report.');
+  N.push({h:'What the priority ratings mean',body:[{ul:[
+    '**Urgent** – a defect that significantly affects the door’s ability to hold back fire and smoke, or to close and latch. It should be made safe or put right as soon as possible, and the Responsible Person should consider interim measures until it is done.',
+    '**Within 3 months** – a defect that reduces the door’s performance and should be put right within 3 months of the survey date.',
+    '**Advisory** – a minor issue or recommended improvement that does not currently compromise the door’s fire performance. It should be dealt with at the next planned maintenance, or before the next inspection.']}]});
+  N.push({h:'Quotations and hidden defects',body:[{ul:[
+    'Any quotation based on this report is based on a visual inspection only.',
+    'Some defects only become visible once work starts – for example missing or poor frame fixings, damaged or weak surrounding walls, or poor previous fire-stopping around the frame. Any extra work needed to deal with these will be quoted separately before it is carried out.']}]});
+  N.push({h:'After the work',body:[{ul:[
+    'A re-inspection after the work is recommended, to confirm that each door has been repaired or replaced correctly.',
+    'Keep records of this report, the work carried out, certificates, product data and photographs. They form part of the building’s fire safety records and support the fire risk assessment.']}]});
+  if(h==='11to18'||h==='18plus')N.push({h:'Buildings over 11 metres: Fire Safety (England) Regulations 2022',body:['Where the building contains two or more flats (sets of domestic premises) and is over 11 metres high, measured to the floor of the top storey, the Responsible Person must:',{ul:[
+    'check the fire doors in communal areas, including their self-closing devices, at least every 3 months;',
+    'use best endeavours to check flat entrance doors, including their self-closing devices, at least every 12 months, and keep a record of the steps taken, including attempts to get access;',
+    'give residents information about fire doors: keep them shut when not in use, do not tamper with self-closers, and report any fault or damage straight away. This applies to new residents when they move in and to all residents every 12 months.']}]});
+  if(h==='18plus'){
+    N.push({h:'Higher-risk buildings: Building Safety Act 2022',body:[{ul:[
+      'A building in England that is at least 18 metres high or has at least 7 storeys, and contains at least two residential units, is a higher-risk building. It must be registered with the Building Safety Regulator (BSR) and have an Accountable Person and a Principal Accountable Person, who are responsible for managing its building safety risks.',
+      'Fire door repairs and replacements should be recorded, and the evidence kept – certificates, product data, photographs and installation records – as part of the building’s “golden thread” of safety information.']}]});
+    N.push({h:'Replacement work in a higher-risk building may need approval',body:[{ul:[
+      'Replacing flat entrance doors or communal fire doors, or other work that affects compartmentation (the fire-resisting walls, floors and doors that stop fire spreading), may count as “building work” in a higher-risk building.',
+      'Building work in an existing higher-risk building generally needs building control approval from the BSR before it starts (the “Gateway” process). Work involving passive fire safety measures such as fire doors falls into the higher category of work (Category A). There are limited exceptions, such as work under a competent person scheme or genuine emergency repairs, which must be notified to the BSR. In all cases the work must meet the Building Regulations, including Approved Document B (fire safety).',
+      'Once approval is given, changes to the approved doorsets or products must go through the BSR’s change control process. A like-for-like or higher-specification substitute is normally recorded; other changes may need to be notified to the BSR, or approved before that part of the work continues.',
+      'The client should check with their Accountable Person, Building Safety Manager or building control **before** instructing replacement works, as approval can take time and may affect the programme and cost.',
+      'Like-for-like repairs and routine maintenance – for example replacing a damaged seal, adjusting a closer or re-fixing a hinge – generally do not need approval. If unsure, the client should confirm with the BSR or building control.']}]});
+    N.push({h:'Other duties for high-rise residential buildings',body:['For context only: under the Fire Safety (England) Regulations 2022, the Responsible Person for a residential building of 18 metres or more, or 7 or more storeys, must also share building information with the local fire and rescue service (including floor and building plans and external wall information), keep plans and contact details in a secure information box, and install wayfinding signage that is visible in low light. These duties do not change the fire door work, but fire doors are a key part of the same fire strategy.']});
+    N.push({h:'Flat entrance doors and leaseholders',body:[{ul:[
+      'The Responsible Person may need access to individual flats, and the cooperation of leaseholders, to inspect, repair or replace flat entrance doors.',
+      'Under the Building Safety Act 2022, residents and owners of flats in a higher-risk building must not damage, remove or interfere with relevant safety items. Government guidance gives fire doors as an example, and disabling a self-closer is a typical breach. Exactly which doors count depends on the building and the lease, so the client should confirm how this applies to flat entrance doors.']}]});
+  }
+  return N}
+const CN_INTRO='Please read these notes before accepting a quotation or instructing work. They explain what this report covers and the practical and legal points that often affect fire door repair and replacement.';
+const CN_END='These notes are general guidance, not legal advice.';
+function clientNotesHTML(s){let h=`<section class="cn"><h2>Important notes for the client</h2><p class="ci">${esc(CN_INTRO)}</p>`;
+  const fmt=t=>esc(t).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');
+  for(const n of clientNotes(s)){h+=`<h3>${esc(n.h)}</h3>`;for(const b of n.body)h+=typeof b==='string'?`<p>${fmt(b)}</p>`:`<ul>${b.ul.map(x=>`<li>${fmt(x)}</li>`).join('')}</ul>`}
+  const x=(s.clientNotes||'').trim();if(x)h+=`<h3>Additional notes from the surveyor</h3><div class="cx">${esc(x).replace(/\n/g,'<br>')}</div>`;
+  return h+`<p class="cl">${esc(CN_END)}</p></section>`}
+function clientNotesPDF(p,s,X,CW){const strip=t=>t.replace(/\*\*(.+?)\*\*/g,'$1'),FS=9.5,LH=12.5;
+  p.page();p.rect(X,p.y,CW,30,[.08,.08,.08]);p.rect(X,p.y+30,CW,3,[.863,.792,.11]);p.text(X+12,p.y+20,'Important notes for the client',14,true,[1,1,1]);p.y+=42;
+  p.para(CN_INTRO,X,CW,9.5,true,INK,LH);p.y+=4;
+  const head=(t,first)=>{const fl=first?wrapT(strip(first),FS,CW-14).length:1;p.ensure(26+Math.min(fl,3)*LH);p.y+=6;p.rect(X,p.y,3,14,[.898,.2,.463]);p.text(X+9,p.y+11,pt(t),11,true,INK);p.y+=20};
+  const bullet=t=>{const ls=wrapT(strip(t),FS,CW-16);if(ls.length<=10)p.ensure(ls.length*LH);ls.forEach((l,i)=>{p.ensure(LH);if(i===0)p.text(X+5,p.y+FS,'\x95',FS,true,[.898,.2,.463]);p.text(X+16,p.y+FS,l,FS,false,INK);p.y+=LH});p.y+=2};
+  for(const n of clientNotes(s)){const f=n.body[0];head(n.h,typeof f==='string'?f:f.ul[0]);
+    for(const b of n.body){if(typeof b==='string'){p.para(strip(b),X,CW,FS,false,INK,LH);p.y+=3}else b.ul.forEach(bullet)}}
+  const x=(s.clientNotes||'').trim();if(x){head('Additional notes from the surveyor',x);const ls=wrapT(x,FS,CW-16);let i=0;
+    while(i<ls.length){p.ensure(LH+8);const room=Math.max(1,Math.floor((p.H-p.M-14-p.y-8)/LH));const chunk=ls.slice(i,i+room);
+      p.rect(X,p.y,CW,chunk.length*LH+8,[.984,.973,.882]);p.rect(X,p.y,3,chunk.length*LH+8,[.863,.792,.11]);chunk.forEach((l,j)=>p.text(X+12,p.y+4+FS+j*LH,l,FS,false,INK));p.y+=chunk.length*LH+8;i+=chunk.length}}
+  p.y+=8;p.para(CN_END,X,CW,9,true,SOFT,LH);p.y+=10}
 const REPORT_CSS=`.report .gsum{display:flex;align-items:center;gap:8px;flex-wrap:wrap;border:1px solid;border-radius:6px;padding:7px 10px;margin:4px 0 8px;font-weight:700}.report .gsum .st{background:#e0a100}.report .gsum .st.pass{background:#2e7d32}.report .gsum .st.fail{background:#c62828}.report .gdiag{max-width:460px;margin:0 auto 8px}.report{font:13px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:#1d2330;background:#fff;padding:16px;border-radius:12px;box-shadow:0 1px 2px rgba(0,0,0,.08)}
 .report .rh{background:#141414;border-bottom:4px solid #dcca1c;color:#fff;padding:14px 16px;border-radius:8px;margin-bottom:12px}.report .rh h1{margin:0;font-size:20px}.report .rh p{margin:2px 0 0;opacity:.95}
 .report h2{font-size:16px;margin:18px 0 6px;border-bottom:2px solid #e53376;padding-bottom:3px}
@@ -172,6 +254,7 @@ const REPORT_CSS=`.report .gsum{display:flex;align-items:center;gap:8px;flex-wra
 .report .thumbs figure{margin:0}.report .thumbs img,.report .thumbs video{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:6px;border:1px solid #ddd;display:block;background:#222}
 .report .thumbs .vid{aspect-ratio:4/3;border-radius:6px;background:#263238;color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;font-size:12px;padding:6px}
 .report .thumbs figcaption{font-size:11px;color:#555;word-break:break-all}
+.report .cn{margin-top:22px;border:1px solid #ddd;border-left:5px solid #e53376;border-radius:8px;padding:4px 14px 10px;break-before:page;page-break-before:always}.report .cn h2{border-bottom:0;margin-top:10px}.report .cn .ci{margin:2px 0 8px;font-weight:600}.report .cn h3{font-size:14px;margin:14px 0 4px;break-after:avoid;page-break-after:avoid}.report .cn p{margin:4px 0}.report .cn ul{margin:4px 0 6px;padding-left:20px}.report .cn li{margin:2px 0;break-inside:avoid;page-break-inside:avoid}.report .cn .cx{background:#fbf8e1;border-left:4px solid #dcca1c;padding:6px 10px}.report .cn .cl{font-style:italic;color:#555;margin-top:12px}
 .report .gn{font-size:11px;color:#555;margin-top:16px;border-top:1px solid #ddd;padding-top:8px}
 .report a{color:inherit}`;
 
@@ -383,6 +466,8 @@ function gapPDF(p,d,X,CW){const s=gapSummary(d);if(!s)return;const e={};gapEval(
     {p.text(cx,cy,l,8,false,SOFT);cy+=10}
   cy+=4;[['pass','Pass'],['fail','Fail'],['check','Check closing']].forEach(([r,t])=>{p.rect(cx,cy-7,12,10,C[r]);mark(r,cx+2.5,cy-5.5);p.text(cx+16,cy+1,t,8,false,INK);cy+=13});
   p.y=oy+400*sc+6}
+function surveyKV(s){const kv=[['Site / building',s.site],['Address',s.address],['Client',s.client],['Inspector',s.inspector],['Survey date',s.date],['Survey reference',s.ref]];
+  if(s.height)kv.push(['Building height',heightLabel(s.height)]);if(s.storeys)kv.push(['Storeys',s.storeys]);if(s.btype)kv.push(['Building type',s.btype]);return kv}
 function PDFDoc(){
   const W=595.28,H=841.89,M=40,pages=[],images=[];let ops;
   const pe=s=>s.replace(/\\/g,'\\\\').replace(/\(/g,'\\(').replace(/\)/g,'\\)').replace(/\r|\n/g,' ');
@@ -426,7 +511,7 @@ async function buildPDF(){
   p.rect(0,0,p.W,70,RED);p.text(X,30,'SafeBuilt Solutions Ltd',18,true,[1,1,1]);p.text(X,50,pt('Fire Door Inspection Report – East London'),11,false,[1,1,1]);
   p.y=86;
   
-  const kv=[['Site / building',s.site],['Address',s.address],['Client',s.client],['Inspector',s.inspector],['Survey date',s.date],['Survey reference',s.ref]];
+  const kv=surveyKV(s);
   for(const [k,v] of kv){const ls=wrapT(v||'—',10,CW-130);p.ensure(ls.length*13+4);p.text(X,p.y+11,k,10,true,SOFT);ls.forEach((l,i)=>p.text(X+130,p.y+11+i*13,l,10));p.y+=ls.length*13+5}
   p.y+=6;const cnt=counts();const bw=(CW-24)/4;
   [['Total doors',cnt.total,INK],['Pass',cnt.pass,GREEN],['Fail',cnt.fail,RED],['Not inspected',cnt.none,GREY]].forEach(([l,n,c],i)=>{const bx=X+i*(bw+8);p.box(bx,p.y,bw,46);p.text(bx+10,p.y+24,String(n),20,true,c);p.text(bx+10,p.y+39,l,9,false,SOFT)});
@@ -459,6 +544,7 @@ async function buildPDF(){
       if(col)p.y+=tw_*0.9+16}
     if(vids.length)p.para('Video: '+vids.map(m=>mediaName(d,m)).join(', ')+' (original files in ZIP download)',X+4,CW-8,8.5,false,SOFT);
     p.y+=12}
+  clientNotesPDF(p,s,X,CW);
   p.ensure(60);p.line(X,p.y,X+CW,p.y);p.y+=6;p.para(GUIDANCE,X,CW,8,false,SOFT,10.5);
   p.footer((i,n)=>{p.text(p.M,p.H-22,pt(`SafeBuilt Solutions Ltd  ·  ${s.ref||''}  ·  ${s.site||''}`).slice(0,95),8,false,GREY);p.text(p.W-p.M-60,p.H-22,`Page ${i} of ${n}`,8,false,GREY)});
   return p.build();
@@ -585,7 +671,7 @@ function counts(){const c={total:S.doors.length,pass:0,fail:0,none:0};S.doors.fo
 async function reportMarkup(mode){
   const s=S.survey,c=counts();let h=`<div class="report"><div class="rh" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap"><img src="${LOGO_SRC}" alt="SafeBuilt Solutions Ltd" style="height:54px;width:auto"><div style="flex:1;min-width:200px"><h1>Fire Door Inspection Report</h1><p>SafeBuilt Solutions Ltd · Fire door contractor, East London</p></div></div>`;
   
-  h+=`<table class="kv">${[['Site / building',s.site],['Address',s.address],['Client',s.client],['Inspector',s.inspector],['Survey date',s.date],['Survey reference',s.ref]].map(([k,v])=>`<tr><th>${k}</th><td>${esc(v||'—')}</td></tr>`).join('')}</table>`;
+  h+=`<table class="kv">${surveyKV(s).map(([k,v])=>`<tr><th>${k}</th><td>${esc(v||'—')}</td></tr>`).join('')}</table>`;
   h+=`<div class="rc"><div><b>${c.total}</b>Total</div><div class="p"><b>${c.pass}</b>Pass</div><div class="x"><b>${c.fail}</b>Fail</div><div><b>${c.none}</b>Not inspected</div></div>`;
   h+=`<h2>Door schedule</h2><div class="schedwrap"><table class="sched"><thead><tr><th>Ref</th><th>Location</th><th>Status</th><th>Key issues</th><th>Action</th><th>Priority</th></tr></thead><tbody>`;
   for(const d of S.doors){const st=status(d);h+=`<tr><td><b>${esc(d.ref)}</b></td><td>${esc(d.location)}</td><td><span class="st ${st}">${stLabel(st)}</span></td><td>${esc(keyIssues(d))}</td><td>${esc(d.action||'—')}</td><td>${esc(d.priority||'—')}</td></tr>`}
@@ -602,6 +688,7 @@ async function reportMarkup(mode){
       if(mode==='zip')inner=`<a href="media/${encodeURIComponent(n)}">${inner}</a>`;
       h+=`<figure>${inner}<figcaption>${esc(n)}</figcaption></figure>`}h+='</div>'}
     h+='</section>'}
+  h+=clientNotesHTML(s);
   h+=`<p class="gn">${esc(GUIDANCE)}<br>Report generated ${esc(new Date().toLocaleString('en-GB'))} · SafeBuilt Solutions Ltd.</p></div>`;
   return h;
 }
@@ -634,7 +721,7 @@ function mkChecks(over,na){const o={};CHECKS.forEach(c=>o[c[0]]={r:(na||[]).incl
 async function loadSample(){
   await clearMedia().catch(()=>{});Object.keys(URLS).forEach(k=>{URL.revokeObjectURL(URLS[k]);delete URLS[k]});Object.keys(TH).forEach(k=>delete TH[k]);
   const D=(ref,location,type,rating,leaf,checks,x)=>Object.assign({id:uid(),ref,location,type,rating,leaf,checks,overall:'',manual:false,issues:'',action:'',priority:'',notes:'',media:[]},x||{});
-  S={isSample:true,survey:{site:'Marlowe Court (SAMPLE)',address:'1–48 Example Road, Stratford, London E15 0XX',client:'Example Housing Association (sample)',inspector:'Gedas – SafeBuilt Solutions Ltd',date:today(),ref:'SBS-FD-2026-0001'},doors:[
+  S={isSample:true,survey:{site:'Marlowe Court (SAMPLE)',address:'1–48 Example Road, Stratford, London E15 0XX',client:'Example Housing Association (sample)',inspector:'Gedas – SafeBuilt Solutions Ltd',date:today(),ref:'SBS-FD-2026-0001',height:'11to18',storeys:'6',btype:'Residential block (flats)'},doors:[
     D('Door-01','Ground floor communal entrance lobby','communal','FD30S','Double',mkChecks({gaps:{r:'fail',c:'Head gap 6 mm at meeting stiles (sides 3 mm).'},smoke:{r:'fail',c:'Smoke seal missing on meeting stile of active leaf (~1.2 m).'},glazing:{r:'pass',c:'Vision panels marked Pyroguard, beads secure.'}},['holdopen']),
       {issues:'6 mm head gap at meeting stiles exceeds 2–4 mm guidance; smoke seal missing on meeting stile.',action:'Adjust',priority:'Within 3 months',notes:'Re-hang/adjust leaves to reduce head gap, then fit matching intumescent/smoke seal to meeting stile.'}),
     D('Door-02','First floor communal lobby','communal','FD30S','Single',mkChecks({gaps:{r:'pass',c:'3 mm all round.'},threshold:{r:'pass',c:'3 mm.'}},['glazing','holdopen']),{notes:'Door in good condition. Re-inspect at next quarterly check.'}),
@@ -661,6 +748,11 @@ function renderList(){setNav('list');const s=S.survey,c=counts();
   <details class="card" id="survey" ${S.doors.length?'':'open'}><summary>Survey details <span class="muted">${esc(s.ref||'')}</span></summary>
    ${field('Site / building name','site',s.site,'e.g. Marlowe Court','s')}${field('Address','address',s.address,'Street, town, postcode','s')}${field('Client','client',s.client,'','s')}
    ${field('Inspector','inspector',s.inspector,'','s')}${field('Survey date','date',s.date,'','s','date')}${field('Survey reference','ref',s.ref,'e.g. SBS-FD-2026-0001','s')}
+   <label class="f">Building height<select data-s="height" id="sheight"><option value="">Select…</option>${HEIGHTS.map(([v,t])=>`<option value="${v}"${s.height===v?' selected':''}>${esc(t)}</option>`).join('')}</select></label>
+   <p class="hint" style="margin:-4px 0 12px">Sets the legal notes in the report. A building of 18m or more, or 7 or more storeys, with at least 2 flats is a higher-risk building.</p>
+   <label class="f">Storeys <span class="muted">(optional)</span><input type="number" min="1" max="200" inputmode="numeric" data-s="storeys" id="sstoreys" value="${esc(s.storeys||'')}" placeholder="e.g. 8"></label>
+   <label class="f">Building type<select data-s="btype" id="sbtype"><option value="">Select…</option>${BTYPES.map(t=>`<option${s.btype===t?' selected':''}>${esc(t)}</option>`).join('')}</select></label>
+   <label class="f">Extra notes for client <span class="muted">(added to “Important notes for the client” in the report)</span><textarea data-s="clientNotes" id="sclientnotes" rows="3" placeholder="e.g. Doors 12–18 are leaseholder-owned; access to be arranged via the managing agent.">${esc(s.clientNotes||'')}</textarea></label>
   </details>
   <div class="row" style="margin-bottom:12px"><button class="btn" data-act="qrpanel" title="${PRINT_TIP}">🏷 QR labels</button><a class="btn" href="#/plans">🗺 Floor plans${plans().length?' ('+plans().length+')':''}</a></div>
   <section class="card" id="qrpanel" hidden><h2>QR door labels</h2>
