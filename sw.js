@@ -7,7 +7,7 @@
      records/ (published client door records), and anything not in the list below.
    - Survey data lives in localStorage / IndexedDB and is never read or cached here.
    Bump VERSION whenever an app file changes so old caches are removed. */
-const VERSION = 'sb-doors-v2';
+const VERSION = 'sb-doors-v3';
 const SHELL = [
   './', './index.html', './invite.html', './manifest.webmanifest',
   './icons/apple-touch-icon.png', './icons/favicon-32.png', './icons/favicon-16.png', './icons/favicon.ico',

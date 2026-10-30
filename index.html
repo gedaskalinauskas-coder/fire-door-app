@@ -122,6 +122,11 @@ footer.copy{max-width:820px;margin:0 auto;padding:4px 16px calc(84px + env(safe-
 #lock .msg{min-height:20px;font-size:14px;margin:12px 0 0;color:#ffd0dd}
 #lock .copy{font-size:11px;opacity:.6;margin:26px 0 0}
 body.locked{overflow:hidden}
+.brand b.coname{display:inline;font-size:16px;max-width:52vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.brand b.coname[hidden]{display:none}
+.coprev{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:4px 0 12px}.coprev div{border-radius:10px;min-height:92px;display:flex;align-items:center;justify-content:center;padding:10px;border:1px solid #ddd;flex-direction:column;gap:4px}
+.coprev .dk{background:#141414;color:#fff}.coprev .wt{background:#fff}.coprev img{max-width:100%;max-height:70px;width:auto;height:auto;display:block}.coprev small{font-size:11px;opacity:.7}
+.costat{border-left:5px solid var(--sb-yellow);background:var(--sb-yellow-tint);border-radius:8px;padding:8px 10px;margin:0 0 12px;font-size:14px}
+.coacc{display:flex;align-items:center;gap:10px;margin:0 0 12px;font-size:14px}.coacc input[type=color]{width:56px;height:44px;border:1px solid #c9ccd3;border-radius:8px;padding:2px;background:#fff}
 @media print{
   header.top,nav.bottom,.noprint,#toast,#lock{display:none!important}
   footer.copy{padding:8px 0 0}
@@ -145,7 +150,7 @@ body.locked{overflow:hidden}
   <p class="copy" id="lockcopy"></p>
 </form></div>
 <header class="top">
-  <div class="brand" style="display:flex;align-items:center;gap:10px"><img src="icons/logo-wordmark.png" alt="SafeBuilt Solutions Ltd" style="height:40px;width:auto"><span style="font-size:13px;opacity:.95;border-left:1px solid rgba(255,255,255,.5);padding-left:10px">Fire Door Inspection</span></div>
+  <div class="brand" style="display:flex;align-items:center;gap:10px"><img src="icons/logo-wordmark.png" alt="SafeBuilt Solutions Ltd" style="height:40px;width:auto;max-width:46vw;object-fit:contain"><b class="coname" hidden></b><span style="font-size:13px;opacity:.95;border-left:1px solid rgba(255,255,255,.5);padding-left:10px">Fire Door Inspection</span></div>
   <span id="sampleTag" class="tag" hidden>SAMPLE DATA</span>
 </header>
 <main id="app"><p class="empty">Loading…</p></main>
@@ -166,7 +171,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 /* ---------- BRAND: the one place to change company name, contact details, logos and colours (white-label) ----------
    Read by: app header/title, PDF report (buildPDF) incl. its leaseholder letters (leaseLetterPDF), on-screen + HTML report (REPORT_CSS, reportMarkup), gap diagrams (GC),
    QR labels/asset tags (LB, CO, drawLabel, drawTag), client-notes pages, file names.
-   door.html (public QR page) keeps a copy of the text/colour fields in its own BRAND block - keep the two in sync. */
+   door.html (public QR page) keeps a copy of the text/colour fields in its own BRAND block - keep the two in sync.
+   BRAND is the default: reports read EB (effective brand), which a user's 'My company' profile on their own phone can override - see effBrand(). */
 const BRAND={
   name:'SafeBuilt Solutions Ltd',                         // full company name
   companyNo:'16660983',                                   // Companies House number (copyright line)
@@ -197,11 +203,45 @@ const BRAND={
 };
 const copyrightLine=()=>`© ${BRAND.copyrightYear} ${BRAND.name}${BRAND.companyNo?' (Company No. '+BRAND.companyNo+')':''}. All rights reserved.`;
 const hexRGB=h=>{h=String(h).replace('#','');if(h.length===3)h=h.replace(/./g,'$&$&');return [0,2,4].map(i=>parseInt(h.slice(i,i+2),16)/255)};
-const BC=Object.fromEntries(Object.entries(BRAND.colors).map(([k,v])=>[k,hexRGB(v)])); /* BRAND colours as PDF 0-1 RGB */
+/* ---------- My company: per-device company profile for reports (white-label for each surveyor) ----------
+   EB = effective brand = BRAND overridden by the profile saved on this phone (BRAND stays the default; no profile => EB is BRAND).
+   EB is read by the app header, on-screen/HTML report, PDF report + leaseholder letters, and QR labels / asset tags.
+   BRAND (SafeBuilt, the app seller) is kept for the lock screen, access service, invite page, manifest/icons, licence and in-app copyright.
+   Stored in its own IndexedDB database 'sbs_company' (falls back to localStorage) - survey data and media are never touched. */
+let PROFILE=null,EB=BRAND;
+const CO_LS='sbs_company_v1';
+let codbp;
+function coDB(){return codbp||(codbp=new Promise((res,rej)=>{const r=indexedDB.open('sbs_company',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}))}
+async function coIDB(mode,fn){const d=await coDB();return new Promise((res,rej)=>{const tx=d.transaction('kv',mode);const r=fn(tx.objectStore('kv'));tx.oncomplete=()=>res(r&&r.result);tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error)})}
+async function coGet(){let p=null;try{p=await coIDB('readonly',s=>s.get('profile'))}catch(e){}
+  if(!p){try{p=JSON.parse(localStorage.getItem(CO_LS)||'null')}catch(e){}}return p&&typeof p==='object'&&p.name?p:null}
+async function coPut(p){try{await coIDB('readwrite',s=>s.put(p,'profile'));try{localStorage.removeItem(CO_LS)}catch(e){}return}catch(e){}
+  localStorage.setItem(CO_LS,JSON.stringify(p))} /* throws if neither store is available */
+async function coDel(){try{await coIDB('readwrite',s=>s.delete('profile'))}catch(e){}try{localStorage.removeItem(CO_LS)}catch(e){}}
+const isHex=v=>/^#[0-9a-f]{6}$/i.test(v||'');
+const lumHex=h=>{const [r,g,b]=hexRGB(h);return .2126*r+.7152*g+.0722*b};
+const mixHex=(a,b,t)=>{const A=hexRGB(a),B=hexRGB(b);return '#'+A.map((x,i)=>Math.round((x+(B[i]-x)*t)*255).toString(16).padStart(2,'0')).join('')};
+const oneLine=v=>String(v||'').replace(/\s*\n+\s*/g,', ').replace(/\s+/g,' ').trim();
+function effBrand(p){if(!p||!String(p.name||'').trim())return BRAND;
+  const name=oneLine(p.name),c=Object.assign({},BRAND.colors);
+  if(isHex(p.accent)){c.yellow=p.accent.toLowerCase();c.pink=c.yellow;c.yellowTint=mixHex(c.yellow,'#ffffff',.88)}
+  return Object.assign({},BRAND,{custom:true,name,short:name.replace(/[\s,]+(ltd\.?|limited|llp|plc)$/i,'')||name,tagline:oneLine(p.tagline),
+    address:oneLine(p.address),phone:oneLine(p.phone),email:oneLine(p.email),website:oneLine(p.website),companyNo:oneLine(p.companyNo),
+    inspector:name,logo:p.logoD||'',logoFlat:p.logoF||'',headerLogo:p.logoD||'',colors:c})}
+const nameTag=()=>EB.tagline?EB.name+' · '+EB.tagline:EB.name;
+/* PDF footer small print: SafeBuilt copyright by default; a custom company gets a small app credit instead (LICENSE unchanged) */
+const reportCredit=()=>EB.custom?(EB.companyNo?EB.name+' (Company No. '+EB.companyNo+') · ':'')+'Report produced with SafeBuilt Doors':copyrightLine();
+/* fit a logo into a box (keeps the old size whenever it already fits) */
+const fitLogo=(l,h,maxW)=>{let w=h*l.w/l.h;if(w>maxW){w=maxW;h=w*l.h/l.w}return [w,h]};
+const BC={}; /* EB colours as PDF 0-1 RGB (filled by brandColours) */
+function brandColours(){const c=EB.colors;Object.keys(BC).forEach(k=>delete BC[k]);Object.entries(c).forEach(([k,v])=>BC[k]=hexRGB(v));
+  BC.accText=hexRGB(lumHex(c.yellow)>=.35?c.yellow:'#ffffff'); /* accent used as text on the black band */
+  BC.onAcc=hexRGB(lumHex(c.yellow)>=.5?c.black:'#ffffff')}     /* text on an accent-filled chip */
+brandColours();
 function applyBrand(){const c=BRAND.colors,r=document.documentElement.style;
   [['--red',c.fail],['--green',c.pass],['--grey',c.na],['--ink',c.ink],['--brand',c.black],['--sb-yellow',c.yellow],['--sb-pink',c.pink],['--sb-yellow-tint',c.yellowTint],['--check',c.check]].forEach(([k,v])=>r.setProperty(k,v));
   document.title=BRAND.appTitle;const mt=(n,v)=>{const m=document.querySelector('meta[name="'+n+'"]');if(m)m.setAttribute('content',v)};mt('apple-mobile-web-app-title',BRAND.appName);mt('theme-color',c.black);
-  const im=document.querySelector('header.top .brand img');if(im){im.src=BRAND.headerLogo;im.alt=BRAND.name}const sp=document.querySelector('header.top .brand span');if(sp)sp.textContent=BRAND.appSubtitle;
+  applyHeader();
   const cf=document.getElementById('copyfoot');if(cf)cf.textContent=copyrightLine()+' Authorised licensed use only.';
   const set=(id,k,v)=>{const e=document.getElementById(id);if(e)e[k]=v};
   set('locklogo','src',BRAND.headerLogo);set('locklogo','alt',BRAND.name);set('lockname','textContent',BRAND.name);set('locksub','textContent',BRAND.appSubtitle);set('lockcopy','textContent',copyrightLine())}
@@ -242,6 +282,16 @@ function showLock(){return new Promise(resolve=>{
     I.value='';fails++;try{sessionStorage.setItem(unlockFails,String(fails))}catch(err){}
     if(fails>=5)wait(5);else{M.textContent='Wrong access code. Please try again.';I.focus()}};
 })}
+function applyHeader(){const im=document.querySelector('header.top .brand img'),nm=document.querySelector('header.top .brand b.coname'),sp=document.querySelector('header.top .brand span');
+  if(im){if(EB.headerLogo){im.src=EB.headerLogo;im.hidden=false}else im.hidden=true;im.alt=EB.name}
+  if(nm){nm.textContent=EB.name;nm.hidden=!!EB.headerLogo}if(sp)sp.textContent=EB.appSubtitle;
+  const c=EB.colors;['header.top','#app','nav.bottom','#fpsheet'].forEach(q=>{const e=document.querySelector(q);if(!e)return;
+    [['--sb-yellow',c.yellow],['--sb-pink',c.pink],['--sb-yellow-tint',c.yellowTint]].forEach(([k,v])=>EB.custom?e.style.setProperty(k,v):e.style.removeProperty(k))})}
+/* re-derive everything that depends on EB after the profile changes */
+function refreshBrand(){EB=effBrand(PROFILE);brandColours();Object.assign(LB,{black:BC.black,yellow:BC.yellow,pink:BC.pink,ink:BC.black,onAcc:BC.onAcc});
+  Object.assign(CO,{name:EB.name,tel:EB.phone,email:EB.email});
+  let st=document.getElementById('reportcss');if(!st){st=document.createElement('style');st.id='reportcss';document.head.appendChild(st)}st.textContent=reportCSS();
+  applyHeader()}
 async function lockApp(){try{localStorage.removeItem(unlockKey)}catch(e){}await showLock();route()}
 /* silent online check on app open: re-lock only when the service says this device was removed or its code deactivated */
 async function checkAccess(){if(!lockOn()||!navigator.onLine)return;let tok='',dev='';try{tok=localStorage.getItem(unlockKey)||'';dev=localStorage.getItem(deviceKey)||''}catch(e){return}
@@ -359,28 +409,28 @@ function clientNotesPDF(p,s,X,CW){const strip=t=>t.replace(/\*\*(.+?)\*\*/g,'$1'
       p.rect(X,p.y,CW,chunk.length*LH+8,BC.yellowTint);p.rect(X,p.y,3,chunk.length*LH+8,BC.yellow);chunk.forEach((l,j)=>p.text(X+12,p.y+4+FS+j*LH,l,FS,false,INK));p.y+=chunk.length*LH+8;i+=chunk.length}}
   p.y+=8;p.para(CN_END,X,CW,9,true,SOFT,LH);p.y+=10}
 /* on-screen / HTML report styles - colours come from BRAND */
-const REPORT_CSS=`.report .gsum{display:flex;align-items:center;gap:8px;flex-wrap:wrap;border:1px solid;border-radius:6px;padding:7px 10px;margin:4px 0 8px;font-weight:700}.report .gsum .st{background:${BRAND.colors.check}}.report .gsum .st.pass{background:${BRAND.colors.pass}}.report .gsum .st.fail{background:${BRAND.colors.fail}}.report .gdiag{max-width:460px;margin:0 auto 8px}.report{font:13px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:${BRAND.colors.ink};background:#fff;padding:16px;border-radius:12px;box-shadow:0 1px 2px rgba(0,0,0,.08)}
-.report .rh{background:${BRAND.colors.black};border-bottom:4px solid ${BRAND.colors.yellow};color:#fff;padding:14px 16px;border-radius:8px;margin-bottom:12px}.report .rh h1{margin:0;font-size:20px}.report .rh p{margin:2px 0 0;opacity:.95}
-.report h2{font-size:16px;margin:18px 0 6px;border-bottom:2px solid ${BRAND.colors.pink};padding-bottom:3px}
+const reportCSS=()=>`.report .gsum{display:flex;align-items:center;gap:8px;flex-wrap:wrap;border:1px solid;border-radius:6px;padding:7px 10px;margin:4px 0 8px;font-weight:700}.report .gsum .st{background:${EB.colors.check}}.report .gsum .st.pass{background:${EB.colors.pass}}.report .gsum .st.fail{background:${EB.colors.fail}}.report .gdiag{max-width:460px;margin:0 auto 8px}.report{font:13px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:${EB.colors.ink};background:#fff;padding:16px;border-radius:12px;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.report .rh{background:${EB.colors.black};border-bottom:4px solid ${EB.colors.yellow};color:#fff;padding:14px 16px;border-radius:8px;margin-bottom:12px}.report .rh h1{margin:0;font-size:20px}.report .rh p{margin:2px 0 0;opacity:.95}
+.report h2{font-size:16px;margin:18px 0 6px;border-bottom:2px solid ${EB.colors.pink};padding-bottom:3px}
 .report .samp{background:#fff8e1;border:1px solid #ffe082;padding:8px 10px;border-radius:6px;margin:8px 0;font-weight:600}
 .report table{width:100%;border-collapse:collapse;margin:6px 0}.report th,.report td{border:1px solid #ddd;padding:6px;text-align:left;vertical-align:top}.report th{background:#f3f3f3}
 .report .kv th{width:34%}
 .report .rc{display:flex;gap:8px;margin:10px 0}.report .rc div{flex:1;border:1px solid #ddd;border-radius:8px;text-align:center;padding:8px;font-size:12px}.report .rc b{display:block;font-size:22px}
-.report .rc .p b{color:${BRAND.colors.pass}}.report .rc .x b{color:${BRAND.colors.fail}}
-.report .st{display:inline-block;font-weight:800;color:#fff;padding:2px 8px;border-radius:999px;background:${BRAND.colors.na};font-size:11px;white-space:nowrap}.report .st.pass{background:${BRAND.colors.pass}}.report .st.fail{background:${BRAND.colors.fail}}
+.report .rc .p b{color:${EB.colors.pass}}.report .rc .x b{color:${EB.colors.fail}}
+.report .st{display:inline-block;font-weight:800;color:#fff;padding:2px 8px;border-radius:999px;background:${EB.colors.na};font-size:11px;white-space:nowrap}.report .st.pass{background:${EB.colors.pass}}.report .st.fail{background:${EB.colors.fail}}
 .report .schedwrap{overflow-x:auto}.report .sched{font-size:12px;min-width:520px}
 .report .dd{border:1px solid #ddd;border-radius:8px;padding:10px;margin:12px 0;page-break-inside:avoid;break-inside:avoid}
 .report .dd h3{margin:0 0 4px;font-size:16px;display:flex;justify-content:space-between;gap:8px;align-items:center}
 .report .meta{color:#555;margin:0 0 6px}
 .report .cl{font-size:12px}.report .cl td:nth-child(2){white-space:nowrap}
-.report .r-pass{color:${BRAND.colors.pass};font-weight:700}.report .r-fail{color:${BRAND.colors.fail};font-weight:700}.report .r-na{color:#607d8b}.report .r-{color:#999}
+.report .r-pass{color:${EB.colors.pass};font-weight:700}.report .r-fail{color:${EB.colors.fail};font-weight:700}.report .r-na{color:#607d8b}.report .r-{color:#999}
 .report .thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-top:8px}
 .report .thumbs figure{margin:0}.report .thumbs img,.report .thumbs video{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:6px;border:1px solid #ddd;display:block;background:#222}
 .report .thumbs .vid{aspect-ratio:4/3;border-radius:6px;background:#263238;color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;font-size:12px;padding:6px}
 .report .thumbs figcaption{font-size:11px;color:#555;word-break:break-all}
-.report .cn{margin-top:22px;border:1px solid #ddd;border-left:5px solid ${BRAND.colors.pink};border-radius:8px;padding:4px 14px 10px;break-before:page;page-break-before:always}.report .cn h2{border-bottom:0;margin-top:10px}.report .cn .ci{margin:2px 0 8px;font-weight:600}.report .cn h3{font-size:14px;margin:14px 0 4px;break-after:avoid;page-break-after:avoid}.report .cn p{margin:4px 0}.report .cn ul{margin:4px 0 6px;padding-left:20px}.report .cn li{margin:2px 0;break-inside:avoid;page-break-inside:avoid}.report .cn .cx{background:${BRAND.colors.yellowTint};border-left:4px solid ${BRAND.colors.yellow};padding:6px 10px}.report .cn .cl{font-style:italic;color:#555;margin-top:12px}
-.report .rp{border:1px solid #ece3a0;border-left:5px solid ${BRAND.colors.yellow};background:${BRAND.colors.yellowTint};border-radius:8px;padding:8px 10px;margin:8px 0;break-inside:avoid;page-break-inside:avoid}.report .rp .rph{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}.report .st.rpl{background:${BRAND.colors.pink}}.report .rpg{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:6px}.report .rpg div{background:#fff;border:1px solid #eee;border-radius:6px;padding:5px 8px}.report .rpg small{display:block;color:#666;font-size:11px}.report .rpg b{font-size:15px}.report .rpn{margin:6px 0 0;font-size:12px}
-.report .rsched{font-size:12px;min-width:640px}.report .rsched td.n,.report .rsched td:first-child{white-space:nowrap}.report .rsched th{background:${BRAND.colors.black};color:#fff;border-color:${BRAND.colors.black}}.report .rsched thead tr{border-bottom:2px solid ${BRAND.colors.yellow}}.report .rsched .rnote td{color:#555;font-size:11px;border-top:0;background:#fafafa}
+.report .cn{margin-top:22px;border:1px solid #ddd;border-left:5px solid ${EB.colors.pink};border-radius:8px;padding:4px 14px 10px;break-before:page;page-break-before:always}.report .cn h2{border-bottom:0;margin-top:10px}.report .cn .ci{margin:2px 0 8px;font-weight:600}.report .cn h3{font-size:14px;margin:14px 0 4px;break-after:avoid;page-break-after:avoid}.report .cn p{margin:4px 0}.report .cn ul{margin:4px 0 6px;padding-left:20px}.report .cn li{margin:2px 0;break-inside:avoid;page-break-inside:avoid}.report .cn .cx{background:${EB.colors.yellowTint};border-left:4px solid ${EB.colors.yellow};padding:6px 10px}.report .cn .cl{font-style:italic;color:#555;margin-top:12px}
+.report .rp{border:1px solid #ece3a0;border-left:5px solid ${EB.colors.yellow};background:${EB.colors.yellowTint};border-radius:8px;padding:8px 10px;margin:8px 0;break-inside:avoid;page-break-inside:avoid}.report .rp .rph{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}.report .st.rpl{background:${EB.colors.pink}}.report .rpg{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:6px}.report .rpg div{background:#fff;border:1px solid #eee;border-radius:6px;padding:5px 8px}.report .rpg small{display:block;color:#666;font-size:11px}.report .rpg b{font-size:15px}.report .rpn{margin:6px 0 0;font-size:12px}
+.report .rsched{font-size:12px;min-width:640px}.report .rsched td.n,.report .rsched td:first-child{white-space:nowrap}.report .rsched th{background:${EB.colors.black};color:#fff;border-color:${EB.colors.black}}.report .rsched thead tr{border-bottom:2px solid ${EB.colors.yellow}}.report .rsched .rnote td{color:#555;font-size:11px;border-top:0;background:#fafafa}
 .report .gn{font-size:11px;color:#555;margin-top:16px;border-top:1px solid #ddd;padding-top:8px}
 .report a{color:inherit}`;
 
@@ -682,19 +732,20 @@ function repSchedPDF(p,X,CW){const L=repDoors();if(!L.length)return;const WH=[1,
   p.y+=6}
 async function buildPDF(){
   const p=PDFDoc(),s=S.survey,X=p.M,CW=p.W-2*p.M,WH=[1,1,1];p.top=p.M+12;
-  const logoD=await logoJPG(BRAND.logo,BRAND.colors.black,2,.95),logoF=await logoJPG(BRAND.logoFlat,'#ffffff');
+  const {logoD,logoF}=await pdfLogos();
   /* header band: logo left, report title + tagline right, yellow + pink rules */
   p.rect(0,0,p.W,78,BC.black);
-  if(logoD){const lh=46,lw=lh*logoD.w/logoD.h;p.image(logoD,X-4,16,lw,lh)}else p.text(X,46,pt(BRAND.name),16,true,WH);
-  const rt=pt(BRAND.reportTitle.toUpperCase()),tg=pt(BRAND.name+' · '+BRAND.tagline);
+  let hw=0;if(logoD){const [lw,lh]=fitLogo(logoD,46,240);hw=lw;p.image(logoD,X-4,16+(46-lh)/2,lw,lh)}else{const nm=fitT(EB.name,16,CW*.5,true);hw=tw(nm,16,true);p.text(X,46,nm,16,true,WH)}
+  const rt=pt(EB.reportTitle.toUpperCase()),tg=fitT(nameTag(),8.5,CW-hw-16);
   p.text(p.W-X-tw(rt,14,true),38,rt,14,true,WH);p.text(p.W-X-tw(tg,8.5),51.5,tg,8.5,false,[.85,.85,.85]);
+  if(EB.custom){const ct=fitT([EB.address,EB.phone,EB.email,EB.website].filter(Boolean).join(' · '),7.5,CW-hw-16);if(ct)p.text(p.W-X-tw(ct,7.5),64,ct,7.5,false,[.7,.7,.7])}
   p.rect(0,78,p.W,3,BC.yellow);p.rect(0,82,p.W,1,BC.pink);
   /* title block: site (large), address, REF/date chip */
   p.y=98;const dt=isoOK(s.date)?fmtD(s.date):(s.date||'');
   const chip=fitT([s.ref?'REF '+s.ref:'',dt].filter(Boolean).join(' · '),8,CW*.45,true),cw=chip?tw(chip,8,true)+14:0,TW=CW-(cw?cw+14:0);
   const tl=wrapT(s.site||'—',19,TW,true);tl.forEach((l,i)=>p.text(X,p.y+16+i*22,l,19,true,INK));p.y+=16+(tl.length-1)*22;
   const al=s.address?wrapT(s.address,9,TW):[];al.forEach((l,i)=>p.text(X,p.y+14+i*11,l,9,false,SOFT));const by=p.y+(al.length?14+(al.length-1)*11:0);
-  if(chip){fillRR(p,X+CW-cw,by-11.5,cw,16,3,BC.black);p.text(X+CW-cw+7,by-0.5,chip,8,true,BC.yellow)}
+  if(chip){fillRR(p,X+CW-cw,by-11.5,cw,16,3,BC.black);p.text(X+CW-cw+7,by-0.5,chip,8,true,BC.accText)}
   p.y=by+11;
   /* survey details: two label/value pairs per row, shaded label column (site + address are in the title block) */
   const kv=surveyKV(s).filter(([k])=>k!=='Site / building'&&k!=='Address'),KW=110,VW=CW/2-KW,FS=8.5,LH=10.5;
@@ -744,13 +795,13 @@ async function buildPDF(){
   /* every page: branded footer; pages 2+: slim black header with the logo. Drawn here (not in PDFDoc) so labels stay unchanged. */
   p.footer((i,n)=>{
     const lp=LL&&LL.info[i]; /* letter pages: own header band on the first page, slim header naming the letter on a second page */
-    if(i>1&&!(lp&&lp.first)){p.rect(0,0,p.W,24,BC.black);if(logoD){const lh=15,lw=lh*logoD.w/logoD.h;p.image(logoD,X-2,4.5,lw,lh)}
-      const ht=fitT(lp?'Leaseholder letter'+(flatNo(lp.d)?'  ·  Flat '+flatNo(lp.d):'  ·  '+(lp.d.ref||''))+' (continued)':BRAND.reportTitle+(s.site?'  ·  '+s.site:''),7.5,CW-110);p.text(p.W-X-tw(ht,7.5),15,ht,7.5,false,WH);p.rect(0,24,p.W,1.5,BC.yellow)}
+    if(i>1&&!(lp&&lp.first)){p.rect(0,0,p.W,24,BC.black);if(logoD){const [lw,lh]=fitLogo(logoD,15,90);p.image(logoD,X-2,4.5+(15-lh)/2,lw,lh)}else{p.text(X,15.5,fitT(EB.name,8,100,true),8,true,WH)}
+      const ht=fitT(lp?'Leaseholder letter'+(flatNo(lp.d)?'  ·  Flat '+flatNo(lp.d):'  ·  '+(lp.d.ref||''))+' (continued)':EB.reportTitle+(s.site?'  ·  '+s.site:''),7.5,CW-110);p.text(p.W-X-tw(ht,7.5),15,ht,7.5,false,WH);p.rect(0,24,p.W,1.5,BC.yellow)}
     const fy=p.H-34;p.rect(0,fy,p.W,2,BC.yellow);let tx=X;
-    if(logoF){const lh=11,lw=lh*logoF.w/logoF.h;p.image(logoF,X,fy+(34-lh)/2+1,lw,lh);tx=X+lw+8}
+    if(logoF){const [lw,lh]=fitLogo(logoF,11,80);p.image(logoF,X,fy+(34-lh)/2+1,lw,lh);tx=X+lw+8}
     const pg=`Page ${i} of ${n}`,pw=tw(pg,8,true);p.text(p.W-X-pw,fy+21,pg,8,true,INK);
-    p.text(tx,fy+17,fitT([s.ref,s.site,BRAND.email,BRAND.phone,BRAND.website].filter(Boolean).join(' · '),7.5,p.W-X-pw-12-tx),7.5,false,[.47,.47,.47]);
-    p.text(tx,fy+27,fitT(copyrightLine(),6,p.W-X-pw-12-tx),6,false,[.6,.6,.6])});
+    p.text(tx,fy+17,fitT([s.ref,s.site,EB.email,EB.phone,EB.website].filter(Boolean).join(' · '),7.5,p.W-X-pw-12-tx),7.5,false,[.47,.47,.47]);
+    p.text(tx,fy+27,fitT(reportCredit(),6,p.W-X-pw-12-tx),6,false,[.6,.6,.6])});
   return p.build();
 }
 
@@ -807,8 +858,8 @@ async function leaseLettersPDF(p,logoD){const L=letterDoors();if(!L.length)retur
 async function leaseLetterPDF(p,d,logoD,k,n){const s=S.survey,X=p.M,CW=p.W-2*p.M,WH=[1,1,1],st=status(d),pass=st==='pass',fno=flatNo(d),FS=9.5,LH=12.5;
   /* header band, as the report's first page */
   p.rect(0,0,p.W,78,BC.black);
-  if(logoD){const lh=46,lw=lh*logoD.w/logoD.h;p.image(logoD,X-4,16,lw,lh)}else p.text(X,46,pt(BRAND.name),16,true,WH);
-  const rt='LEASEHOLDER LETTER',tg=pt(BRAND.name+' · '+BRAND.tagline);
+  let hw=0;if(logoD){const [lw,lh]=fitLogo(logoD,46,240);hw=lw;p.image(logoD,X-4,16+(46-lh)/2,lw,lh)}else{const nm=fitT(EB.name,16,CW*.5,true);hw=tw(nm,16,true);p.text(X,46,nm,16,true,WH)}
+  const rt='LEASEHOLDER LETTER',tg=fitT(nameTag(),8.5,CW-hw-16);
   p.text(p.W-X-tw(rt,14,true),38,rt,14,true,WH);p.text(p.W-X-tw(tg,8.5),51.5,tg,8.5,false,[.85,.85,.85]);
   const lc=`Letter ${k} of ${n}`;p.text(p.W-X-tw(lc,7.5),64,lc,7.5,false,[.7,.7,.7]);
   p.rect(0,78,p.W,3,BC.yellow);p.rect(0,82,p.W,1,BC.pink);
@@ -850,10 +901,10 @@ async function leaseLetterPDF(p,d,logoD,k,n){const s=S.survey,X=p.M,CW=p.W-2*p.M
     const rv=r||'To be confirmed';fillRR(p,X,y+21,pillW(rv,8.5)+4,15,7.5,r?BC.black:BC.na);p.text(X+8,y+21+7.5+3,pt(rv),8.5,true,WH);
     rl.forEach((l,i)=>p.text(X,y+38+FS+i*LH,l,FS,false,INK));wl.forEach((l,i)=>p.text(X+cw+G,y+22+FS+i*LH,l,FS,false,INK));
     p.y=y+Math.max(38+rl.length*LH,22+wl.length*LH)+2}
-  /* contact panel from BRAND */
+  /* contact panel from EB (BRAND or the 'My company' profile) */
   {const ttl=pass?'Questions about your door?':'Book your remedial works',ref=(d.ref||'')+(fno?' (Flat '+fno+')':''),
-    L1=wrapT(`${pass?'If you have any questions':'To book the work or ask a question'}, please contact ${BRAND.name}:`,FS,CW-28),
-    C=[BRAND.phone&&['Phone',BRAND.phone],BRAND.email&&['Email',BRAND.email],BRAND.website&&['Web',BRAND.website]].filter(Boolean),
+    L1=wrapT(`${pass?'If you have any questions':'To book the work or ask a question'}, please contact ${EB.name}:`,FS,CW-28),
+    C=[EB.phone&&['Phone',EB.phone],EB.email&&['Email',EB.email],EB.website&&['Web',EB.website],EB.address&&['Address',fitT(EB.address,10.5,CW-74,true)]].filter(Boolean),
     L2=wrapT(`Please quote door ref ${ref}${s.site?' at '+s.site:''} when you get in touch.`,FS,CW-28),h=12+14+L1.length*LH+C.length*14+L2.length*LH+12;
     p.y+=10;p.ensure(h);const y=p.y;p.rect(X,y,CW,h,BC.yellowTint);p.rect(X,y,4,h,BC.yellow);let cy=y+12;
     p.text(X+14,cy+10,pt(ttl),11.5,true,INK);cy+=18;L1.forEach(l=>{p.text(X+14,cy+FS,l,FS,false,INK);cy+=LH});cy+=2;
@@ -862,7 +913,7 @@ async function leaseLetterPDF(p,d,logoD,k,n){const s=S.survey,X=p.M,CW=p.W-2*p.M
 }
 
 /* ---------- QR door labels (Avery L7163) ---------- */
-const CO={name:BRAND.name,tel:BRAND.phone,email:BRAND.email};
+const CO={name:EB.name,tel:EB.phone,email:EB.email}; /* updated by refreshBrand */
 const PUBLIC_URL='https://gedaskalinauskas-coder.github.io/fire-door-app/door.html';
 const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const isoOK=s=>/^\d{4}-\d{2}-\d{2}$/.test(s||'');
@@ -908,7 +959,10 @@ function doorQR(d){const id=doorId(d),url=recordURL(d);if(QRC[url])return QRC[ur
   const q=qrcode(0,'M');q.addData(url);q.make();return QRC[url]={url,q,v:(q.getModuleCount()-17)/4,id}}
 /* BRAND logo baked onto a flat background colour, as JPEG for the PDF writer (scale: resolution multiplier, q: JPEG quality) */
 const LOGO_JPG={};
-async function logoJPG(src,bg,scale,q){src=src||BRAND.logo;bg=bg||BRAND.colors.black;scale=scale||1;q=q||.92;const key=bg+src.length+(scale!==1||q!==.92?':'+scale+':'+q:'');if(LOGO_JPG[key]!==undefined)return LOGO_JPG[key];
+/* report logos: dark-band version (header) + white-background version (footer); a custom company's logos are pre-flattened JPEGs */
+async function pdfLogos(){if(!EB.custom)return {logoD:await logoJPG(BRAND.logo,BRAND.colors.black,2,.95),logoF:await logoJPG(BRAND.logoFlat,'#ffffff')};
+  return {logoD:EB.logo?await logoJPG(EB.logo,BRAND.colors.black,1,.95):null,logoF:EB.logoFlat?await logoJPG(EB.logoFlat,'#ffffff',1,.95):null}}
+async function logoJPG(src,bg,scale,q){src=src||BRAND.logo;bg=bg||BRAND.colors.black;scale=scale||1;q=q||.92;const key=bg+src.length+src.slice(-40)+(scale!==1||q!==.92?':'+scale+':'+q:'');if(LOGO_JPG[key]!==undefined)return LOGO_JPG[key];
   try{const img=new Image();await new Promise((res,rej)=>{img.onload=res;img.onerror=rej;img.src=src});
     const w=Math.round(img.naturalWidth*scale),h=Math.round(img.naturalHeight*scale),c=document.createElement('canvas');c.width=w;c.height=h;const g=c.getContext('2d');
     g.fillStyle=bg;g.fillRect(0,0,w,h);if(scale===1)g.drawImage(img,0,0);else{g.imageSmoothingQuality='high';g.drawImage(img,0,0,w,h)}const u=c.toDataURL('image/jpeg',q),bin=atob(u.split(',')[1]),bytes=new Uint8Array(bin.length);
@@ -926,7 +980,7 @@ function drawTag(p,ox,oy,t,logo){const m=v=>v*MM,G=L7160,Q=tagQR(t.tid),c=v=>v.m
   p.raw(`0.6 0.6 0.6 RG 0.5 w ${rrPath(p,ox+m(1.2),oy+m(1.2),m(G.w-2.4),m(G.h-2.4),m(2.5))} S`); /* thin grey outline, no fill */
   const bt=oy+m(2.3),bh=m(6.6),cx=ox+m(G.w/2);
   if(logo){const lh=m(5.2),lw=Math.min(m(G.w-12),lh*logo.w/logo.h),lh2=lw*logo.h/logo.w;p.image(logo,cx-lw/2,bt+(bh-lh2)/2,lw,lh2)}
-  else p.text(cx-tw(pt(BRAND.short),12,true)/2,bt+m(5),pt(BRAND.short),12,true,LB.black);
+  else{const sn=fitT(EB.short,12,m(G.w-8),true);p.text(cx-tw(sn,12,true)/2,bt+m(5),sn,12,true,LB.black)}
   const rx=ox+m(4),rw=m(G.w-8),ry=bt+bh+m(.5);p.rect(rx,ry,rw,m(.45),LB.yellow);p.rect(rx,ry+m(.6),rw,m(.45),LB.pink);
   const qs=m(24.4),qx=ox+m(3.3),qy=oy+m(11.0);drawQR(p,Q.q,qx,qy,qs);
   const tx=qx+qs+m(2.2),tr=ox+m(G.w-3),TW=tr-tx,tn='SB '+t.no;let ts=20;while(ts>9&&tw(tn,ts,true)>TW)ts-=.5;
@@ -938,18 +992,18 @@ function drawQR(p,q,x,y,size){const n=q.getModuleCount(),s=size/n,ops=[];
   for(let r=0;r<n;r++){let c=0;while(c<n){if(q.isDark(r,c)){let e=c;while(e<n&&q.isDark(r,e))e++;ops.push(c+' '+r+' '+(e-c)+' 1.02 re');c=e}else c++}}
   p.raw('q 0 0 0 rg '+s.toFixed(5)+' 0 0 '+(-s).toFixed(5)+' '+x.toFixed(3)+' '+(p.H-y).toFixed(3)+' cm\n'+ops.join('\n')+'\nf Q')}
 function fitT(s,size,maxW,bold){s=pt(s);if(tw(s,size,bold)<=maxW)return s;while(s.length>1&&tw(s+'\x85',size,bold)>maxW)s=s.slice(0,-1);return s.replace(/\s+$/,'')+'\x85'}
-const LB={black:BC.black,yellow:BC.yellow,pink:BC.pink,ink:BC.black,soft:[.38,.38,.38]}; /* label colours from BRAND */
+const LB={black:BC.black,yellow:BC.yellow,pink:BC.pink,ink:BC.black,onAcc:BC.onAcc,soft:[.38,.38,.38]}; /* label colours from EB (refreshBrand) */
 function drawLabel(p,ox,oy,d,logo,mode){const pre=mode!=='after';const m=v=>v*MM,s=S.survey,Q=doorQR(d),W=[1,1,1],G=L7163;
   /* QR 29 mm, left, vertically centred; 3 mm from the label edge + white quiet zone around it */
   const qs=m(29),qx=ox+m(3),qy=oy+(m(G.h)-qs)/2;drawQR(p,Q.q,qx,qy,qs);
   const tx=ox+m(35.6),tr=ox+m(G.w-2.2),TW=tr-tx;
   /* ink-light white header: flat wordmark + FIRE DOOR - KEEP SHUT in black, thin yellow underline */
   const hy=oy+m(2.2),hh=m(6.6);p.rect(tx,hy+hh,TW,m(.7),LB.yellow);
-  let lw=0;if(logo){const lh=hh-m(1.8);lw=lh*logo.w/logo.h;p.image(logo,tx,hy+m(.9),lw,lh)}else{const co=pt(BRAND.short);lw=tw(co,8,true);p.text(tx+m(1.2),hy+m(4.5),co,8,true,LB.yellow)}
+  let lw=0;if(logo){const [w,lh]=fitLogo(logo,hh-m(1.8),TW*.42);lw=w;p.image(logo,tx,hy+m(.9)+(hh-m(1.8)-lh)/2,lw,lh)}else{const co=fitT(EB.short,8,TW*.42,true);lw=tw(co,8,true)+m(1.2);p.text(tx+m(1.2),hy+m(4.5),co,8,true,EB.custom?LB.black:LB.yellow)}
   const kt='FIRE DOOR \x96 KEEP SHUT',ks=tw(kt,7.6,true)<=TW-lw-m(4)?7.6:6.6;p.text(tr-tw(kt,ks,true),hy+m(4.6),kt,ks,true,LB.black);
   /* door ref + rating chip */
   let y=hy+hh+m(.7)+m(5.1);const rs=8.5,ch=m(4.4);let cw;
-  if(d.rating){const rt=pt(d.rating);cw=tw(rt,rs,true)+m(2.6);p.rect(tr-cw,y-m(3.7),cw,ch,LB.yellow);p.text(tr-cw+m(1.3),y-m(.45),rt,rs,true,LB.black)}
+  if(d.rating){const rt=pt(d.rating);cw=tw(rt,rs,true)+m(2.6);p.rect(tr-cw,y-m(3.7),cw,ch,LB.yellow);p.text(tr-cw+m(1.3),y-m(.45),rt,rs,true,LB.onAcc)}
   else{cw=m(15);p.box(tr-cw,y-m(3.7),cw,ch,LB.black);p.text(tr-cw+m(1.3),y-m(.45),'FD',rs,true,LB.black)} /* blank chip: write the rating in */
   p.text(tx,y,fitT(d.ref||'Door',13,TW-cw-m(2),true),13,true,LB.ink);
   /* location: max 2 lines */
@@ -964,7 +1018,7 @@ function drawLabel(p,ox,oy,d,logo,mode){const pre=mode!=='after';const m=v=>v*MM
   const av=TW-tw(ft,6.6,true)-m(2.5);if(av>m(8)){const ids=fitT('ID '+Q.id,4.2,av);p.text(tr-tw(ids,4.2),fy,ids,4.2,false,[.55,.55,.55])}
 }
 async function buildLabels(doors,start,mode,style){const p=PDFDoc(),G=SHEET(style);if(style==='tag')doors.forEach(d=>{if(!d.blank)tagNo(d)});let slot=Math.max(0,Math.min(G.per-1,(start||1)-1));
-  ensureIds();const logo=await logoJPG(LOGO_FLAT_SRC,'#ffffff');
+  ensureIds();const logo=EB.custom?(EB.logoFlat?await logoJPG(EB.logoFlat,'#ffffff',1,.95):null):await logoJPG(LOGO_FLAT_SRC,'#ffffff');
   for(const d of doors){if(slot>=G.per){p.page();slot=0}const c=slot%G.cols,r=Math.floor(slot/G.cols);(style==='tag'?drawTag(p,(G.left+c*G.px)*MM,(G.top+r*G.py)*MM,d.blank||{no:d.tag,tid:d.tagId},logo):drawLabel(p,(G.left+c*G.px)*MM,(G.top+r*G.py)*MM,d,logo,mode));slot++}
   return p.build()}
 function modeSelect(id){return `<label class="f">Label type<select id="${id}"><option value="before">Before inspection (no dates)</option><option value="after">After inspection (with dates)</option></select></label>`}
@@ -972,7 +1026,7 @@ const posOpts=G=>Array.from({length:G.per},(_,i)=>`<option value="${i+1}">${i+1}
 function posSelect(id){return `<label class="f">Start at label position<select id="${id}">${posOpts(L7163)}</select></label>`}
 function styleSelect(id,pos,mode){return `<label class="f">Label style<select id="${id}" onchange="styleChg(this.value,'${pos}','${mode}')"><option value="std">Standard (99 x 38 mm)</option><option value="tag">Compact tag (63.5 x 38.1 mm)</option></select></label>`}
 function styleChg(v,pos,mode){const G=SHEET(v),ps=$('#'+pos),ms=$('#'+mode);if(ps){const o=+ps.value||1;ps.innerHTML=posOpts(G);ps.value=String(Math.min(o,G.per))}
-  if(ms){ms.disabled=v==='tag';ms.closest('label').style.opacity=v==='tag'?.5:1}const h=$('#'+pos+'hint');if(h)h.innerHTML=v==='tag'?'Sheet: <b>'+L7160.name+'</b> – 63.5 × 38.1 mm (also J8160). Compact asset tag: QR, asset number and '+esc(BRAND.short)+' logo only.':h.dataset.std}
+  if(ms){ms.disabled=v==='tag';ms.closest('label').style.opacity=v==='tag'?.5:1}const h=$('#'+pos+'hint');if(h)h.innerHTML=v==='tag'?'Sheet: <b>'+L7160.name+'</b> – 63.5 × 38.1 mm (also J8160). Compact asset tag: QR, asset number and '+esc(EB.short)+' logo only.':h.dataset.std}
 const PRINT_TIP='Print at 100% / Actual size, not Fit to page';
 const qrTipHTML=`<p class="qrtip"><b>Print tip:</b> ${PRINT_TIP}. Print a test on plain paper first and hold it behind a label sheet to check it lines up.</p>`;
 
@@ -986,7 +1040,7 @@ function repSchedHTML(){const L=repDoors();if(!L.length)return '';
     if(n)h+=`<tr class="rnote"><td></td><td colspan="8"><b>Notes:</b> ${esc(n).replace(/\n/g,'<br>')}</td></tr>`}
   return h+'</tbody></table></div>'}
 async function reportMarkup(mode){
-  const s=S.survey,c=counts();let h=`<div class="report"><div class="rh" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap"><img src="${BRAND.logo}" alt="${esc(BRAND.name)}" style="height:54px;width:auto"><div style="flex:1;min-width:200px"><h1>${esc(BRAND.reportTitle)}</h1><p>${esc(BRAND.name)} · ${esc(BRAND.tagline)}</p></div></div>`;
+  const s=S.survey,c=counts();let h=`<div class="report"><div class="rh" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">${EB.logo?`<img src="${EB.logo}" alt="${esc(EB.name)}" style="height:54px;width:auto${EB.custom?';max-width:60%;object-fit:contain':''}">`:''}<div style="flex:1;min-width:200px"><h1>${esc(EB.reportTitle)}</h1><p>${esc(nameTag())}</p>${EB.custom&&[EB.address,EB.phone,EB.email,EB.website].some(Boolean)?`<p style="font-size:12px;opacity:.8">${esc([EB.address,EB.phone,EB.email,EB.website].filter(Boolean).join(' · '))}${EB.companyNo?' · Company No. '+esc(EB.companyNo):''}</p>`:''}</div></div>`;
   
   h+=`<table class="kv">${surveyKV(s).map(([k,v])=>`<tr><th>${k}</th><td>${esc(v||'—')}</td></tr>`).join('')}</table>`;
   h+=`<div class="rc"><div><b>${c.total}</b>Total</div><div class="p"><b>${c.pass}</b>Pass</div><div class="x"><b>${c.fail}</b>Fail</div><div><b>${c.none}</b>Not inspected</div></div>`;
@@ -1008,11 +1062,11 @@ async function reportMarkup(mode){
     h+='</section>'}
   h+=repSchedHTML();
   h+=clientNotesHTML(s);
-  h+=`<p class="gn">${esc(GUIDANCE)}<br>Report generated ${esc(new Date().toLocaleString('en-GB'))} · ${esc(BRAND.name)}.</p></div>`;
+  h+=`<p class="gn">${esc(GUIDANCE)}<br>Report generated ${esc(new Date().toLocaleString('en-GB'))} · ${esc(EB.name)}.</p></div>`;
   return h;
 }
 async function reportHTMLFile(mode){const body=await reportMarkup(mode);
-  return `<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fire Door Report ${esc(S.survey.ref||'')}</title><style>body{margin:0;background:#f2f3f6;padding:12px}.report{max-width:900px;margin:0 auto}@media print{body{background:#fff;padding:0}.report{box-shadow:none}}${REPORT_CSS}</style></head><body>${body}</body></html>`}
+  return `<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fire Door Report ${esc(S.survey.ref||'')}</title><style>body{margin:0;background:#f2f3f6;padding:12px}.report{max-width:900px;margin:0 auto}@media print{body{background:#fff;padding:0}.report{box-shadow:none}}${reportCSS()}</style></head><body>${body}</body></html>`}
 
 /* ---------- sample data ---------- */
 async function sampleImg(ref,title,kind){
@@ -1040,7 +1094,7 @@ function mkChecks(over,na){const o={};CHECKS.forEach(c=>o[c[0]]={r:(na||[]).incl
 async function loadSample(){
   await clearMedia().catch(()=>{});Object.keys(URLS).forEach(k=>{URL.revokeObjectURL(URLS[k]);delete URLS[k]});Object.keys(TH).forEach(k=>delete TH[k]);
   const D=(ref,location,type,rating,leaf,checks,x)=>Object.assign({id:uid(),ref,location,type,rating,leaf,checks,overall:'',manual:false,issues:'',action:'',priority:'',notes:'',media:[]},x||{});
-  S={isSample:true,survey:{site:'Marlowe Court (SAMPLE)',address:'1–48 Example Road, Stratford, London E15 0XX',client:'Example Housing Association (sample)',inspector:BRAND.inspector,date:today(),ref:'SBS-FD-2026-0001',height:'11to18',storeys:'6',btype:'Residential block (flats)'},doors:[
+  S={isSample:true,survey:{site:'Marlowe Court (SAMPLE)',address:'1–48 Example Road, Stratford, London E15 0XX',client:'Example Housing Association (sample)',inspector:EB.inspector,date:today(),ref:'SBS-FD-2026-0001',height:'11to18',storeys:'6',btype:'Residential block (flats)'},doors:[
     D('Door-01','Ground floor communal entrance lobby','communal','FD30S','Double',mkChecks({gaps:{r:'fail',c:'Head gap 6 mm at meeting stiles (sides 3 mm).'},smoke:{r:'fail',c:'Smoke seal missing on meeting stile of active leaf (~1.2 m).'},glazing:{r:'pass',c:'Vision panels marked Pyroguard, beads secure.'}},['holdopen']),
       {issues:'6 mm head gap at meeting stiles exceeds 2–4 mm guidance; smoke seal missing on meeting stile.',action:'Adjust',priority:'Within 3 months',notes:'Re-hang/adjust leaves to reduce head gap, then fit matching intumescent/smoke seal to meeting stile.'}),
     D('Door-02','First floor communal lobby','communal','FD30S','Single',mkChecks({gaps:{r:'pass',c:'3 mm all round.'},threshold:{r:'pass',c:'3 mm.'}},['glazing','holdopen']),{notes:'Door in good condition. Re-inspect at next quarterly check.'}),
@@ -1073,7 +1127,7 @@ function renderList(){setNav('list');const s=S.survey,c=counts();
    <label class="f">Building type<select data-s="btype" id="sbtype"><option value="">Select…</option>${BTYPES.map(t=>`<option${s.btype===t?' selected':''}>${esc(t)}</option>`).join('')}</select></label>
    <label class="f">Extra notes for client <span class="muted">(added to “Important notes for the client” in the report)</span><textarea data-s="clientNotes" id="sclientnotes" rows="3" placeholder="e.g. Doors 12–18 are leaseholder-owned; access to be arranged via the managing agent.">${esc(s.clientNotes||'')}</textarea></label>
   </details>
-  <div class="row" style="margin-bottom:12px"><button class="btn" data-act="qrpanel" title="${PRINT_TIP}">🏷 QR labels</button><a class="btn" href="#/plans">🗺 Floor plans${plans().length?' ('+plans().length+')':''}</a></div>
+  <div class="row" style="margin-bottom:12px"><button class="btn" data-act="qrpanel" title="${PRINT_TIP}">🏷 QR labels</button><a class="btn" href="#/plans">🗺 Floor plans${plans().length?' ('+plans().length+')':''}</a><a class="btn" href="#/company">🏢 My company</a></div>
   <section class="card" id="qrpanel" hidden><h2>QR door labels</h2>
    <p class="hint" id="qrstarthint" data-std="Sheet: <b>${L7163.name}</b> – 99.1 × 38.1 mm labels.">Sheet: <b>${L7163.name}</b> – 99.1 × 38.1 mm labels (also fits J8163 and other L7163-size sheets). One label per door: ${c.total} door${c.total===1?'':'s'} = ${Math.max(1,Math.ceil(c.total/14))} sheet${c.total>14?'s':''}.</p>
    ${styleSelect('qrstyle','qrstart','qrmode')}${modeSelect('qrmode')}${posSelect('qrstart')}
@@ -1163,7 +1217,8 @@ async function renderSummary(){setNav('summary');
    <button class="btn primary wide" data-act="pdf">⬇ Download report (PDF)</button>
    <button class="btn" data-act="print">🖨 Print / Save as PDF</button><button class="btn" data-act="html">⬇ Report (HTML)</button>
    <button class="btn dark wide" data-act="zipall">⬇ Download all files (ZIP)</button>
-   <button class="btn sm" data-act="json">Export JSON</button>${lockOn()?'<button class="btn sm" data-act="lockapp" title="Lock this device: the access code is needed to open the app again. Survey data is kept.">🔒 Lock app</button>':''}<button class="btn sm danger" data-act="reset">Reset to sample data</button></div>
+   <a class="btn wide" href="#/company">🏢 My company <small class="muted" style="font-weight:600">${EB.custom?esc(EB.name):'logo &amp; details on your reports'}</small></a>
+    <button class="btn sm" data-act="json">Export JSON</button>${lockOn()?'<button class="btn sm" data-act="lockapp" title="Lock this device: the access code is needed to open the app again. Survey data is kept.">🔒 Lock app</button>':''}<button class="btn sm danger" data-act="reset">Reset to sample data</button></div>
    <div id="report"></div>`;
   $('#report').innerHTML=await reportMarkup('app');hydrate($('#report'))}
 /* reached from a scanned blank tag (door.html 'Assign to a door') */
@@ -1172,7 +1227,7 @@ function renderTagPick(tid){setNav('list');const no=tid.slice(2,8),cur=S.doors.f
    ${cur?`<p>Already linked to <a href="#/door/${cur.id}"><b>${esc(cur.ref)}</b></a>.</p>`:'<p class="hint">Choose the door this tag is fixed to:</p>'}
    <ul class="doors">${S.doors.map(d=>`<li><button type="button" class="btn block" style="justify-content:space-between" data-act="picktag" data-door="${d.id}" data-tid="${tid}"><span><b>${esc(d.ref||'(no ref)')}</b> <small class="muted">${esc(d.location||'')}</small></span><small>${d.tag?'SB '+esc(d.tag):''}</small></button></li>`).join('')||'<li class="empty">No doors yet.</li>'}</ul></section>`}
 function route(){if(!S)return;const h=location.hash.replace(/^#\/?/,'').split('/');
-  if(h[0]==='tag'&&TID_RE.test(h[1]||''))renderTagPick(h[1]);else if(h[0]==='door'&&doorById(h[1])){renderDoor(h[1]);fpDoorHook(doorById(h[1]))}else if(h[0]==='plans')renderPlans();else if(h[0]==='plan')renderPlan(h[1],h[2]);else if(h[0]==='summary')renderSummary();else renderList();window.scrollTo(0,0)}
+  if(h[0]==='tag'&&TID_RE.test(h[1]||''))renderTagPick(h[1]);else if(h[0]==='door'&&doorById(h[1])){renderDoor(h[1]);fpDoorHook(doorById(h[1]))}else if(h[0]==='plans')renderPlans();else if(h[0]==='plan')renderPlan(h[1],h[2]);else if(h[0]==='summary')renderSummary();else if(h[0]==='company')renderCompany();else renderList();window.scrollTo(0,0)}
 
 /* ---------- actions ---------- */
 async function addFiles(d,files){busy(true,'Saving…');let n=0;
@@ -1188,13 +1243,13 @@ const ACT={
     for(let i=0;i<n;i++){const d={id:uid(),ref:pre+String(n0+i).padStart(w,'0'),location:'',type:'',rating:'',leaf:'Single',checks:{},overall:'',manual:false,issues:'',action:'',priority:'',notes:'',media:[]};S.doors.push(d);doorId(d)}
     save();route();toast(n+' door'+(n>1?'s':'')+' added')},
   async blanktags(){const n=Math.max(1,Math.min(210,parseInt(($('#bqty')||{}).value,10)||0));if(!confirm('Reserve and print '+n+' new asset tag numbers?'))return;busy(true,'Building tags…');
-    try{const ts=reserveTags(n);const p=await buildLabels(ts.map(t=>({blank:t})),+($('#bstart')||{}).value||1,'before','tag');busy(false);await saveBlob(p,safe(BRAND.short)+'_asset-tags_SB'+ts[0].no+'-SB'+ts[ts.length-1].no+'_L7160.pdf')}catch(e){busy(false);toast('Tags failed: '+e.message)}},
+    try{const ts=reserveTags(n);const p=await buildLabels(ts.map(t=>({blank:t})),+($('#bstart')||{}).value||1,'before','tag');busy(false);await saveBlob(p,safe(EB.short)+'_asset-tags_SB'+ts[0].no+'-SB'+ts[ts.length-1].no+'_L7160.pdf')}catch(e){busy(false);toast('Tags failed: '+e.message)}},
   assigntag(b,d){const v=($('#tagin')||{}).value;if(!v)return toast('Enter the tag number or scan the tag');if(d.tag&&!confirm('Replace tag SB '+d.tag+' on this door?'))return;
     try{const no=assignTag(d,v);toast('Tag SB '+no+' linked to '+(d.ref||'door'));route()}catch(e){toast(e.message)}},
   picktag(b){const d=doorById(b.dataset.door),tid=b.dataset.tid;if(!d)return;if(d.tag&&!confirm('Replace tag SB '+d.tag+' on '+d.ref+'?'))return;
     try{const no=assignTag(d,tid);toast('Tag SB '+no+' linked to '+(d.ref||'door'));location.hash='#/door/'+d.id}catch(e){toast(e.message)}},
   async add(){const n=S.doors.length+1;const d={id:uid(),ref:'Door-'+pad(n),location:'',type:'',rating:'',leaf:'Single',checks:{},overall:'',manual:false,issues:'',action:'',priority:'',notes:'',media:[]};S.doors.push(d);doorId(d);save();location.hash='#/door/'+d.id},
-  async blank(){if(!confirm('Start a new blank survey? This deletes the sample doors and photos on this device.'))return;await clearMedia();S={isSample:false,survey:{site:'',address:'',client:'',inspector:BRAND.inspector,date:today(),ref:''},doors:[]};save();route();toast('Blank survey started')},
+  async blank(){if(!confirm('Start a new blank survey? This deletes the sample doors and photos on this device.'))return;await clearMedia();S={isSample:false,survey:{site:'',address:'',client:'',inspector:EB.inspector,date:today(),ref:''},doors:[]};save();route();toast('Blank survey started')},
   async reset(){if(!confirm('Reset to sample data? All current doors, photos and videos on this device will be deleted.'))return;busy(true,'Loading sample…');await loadSample();busy(false);location.hash='#/list';route();toast('Sample data restored')},
   allpass(b,d){CHECKS.forEach(c=>{const o=ck(d,c[0]);if(!o.r)o.r='pass'});save();renderDoor(d.id)},
   fillissues(b,d){const t=failed(d).map(c=>{const o=d.checks[c[0]];return c[1]+(o.c?': '+o.c:'')}).join('\n');d.issues=t;$('#issues').value=t;save();if(!t)toast('No failed items')},
@@ -1240,6 +1295,72 @@ app.addEventListener('click',async e=>{
   const b=e.target.closest('[data-act]');if(!b||!ACT[b.dataset.act])return;e.preventDefault();
   try{await ACT[b.dataset.act](b,cur())}catch(err){busy(false);toast('Error: '+(err.message||err))}});
 window.addEventListener('hashchange',route);
+/* ---------- My company screen (#/company): name, contact details, logo and accent colour for reports made on this phone ---------- */
+let CF=null; /* draft profile while the screen is open */
+const coF=[['name','Company name','e.g. Test Fire Ltd','text','organization'],['tagline','Strapline (optional)','e.g. Fire door surveys, Essex','text','off'],
+  ['address','Address','Street, town, postcode','area','street-address'],['phone','Phone','e.g. 01234 567890','tel','tel'],['email','Email','e.g. office@yourcompany.co.uk','email','email'],
+  ['website','Website (optional)','e.g. www.yourcompany.co.uk','url','url'],['companyNo','Company number (optional)','e.g. 12345678','text','off']];
+function renderCompany(){setNav('summary');if(!CF)CF=Object.assign({},PROFILE||{});const P=CF,on=!!EB.custom;
+  const inp=([k,l,ph,t,ac])=>`<label class="f">${esc(l)}${t==='area'?`<textarea id="co_${k}" rows="2" placeholder="${esc(ph)}" autocomplete="${ac}">${esc(P[k]||'')}</textarea>`:
+    `<input type="text" id="co_${k}" value="${esc(P[k]||'')}" placeholder="${esc(ph)}" autocomplete="${ac}"${t==='tel'?' inputmode="tel"':t==='email'?' inputmode="email" autocapitalize="off" spellcheck="false"':t==='url'?' inputmode="url" autocapitalize="off" spellcheck="false"':''}>`}</label>`;
+  const acc=isHex(P.accent);
+  app.innerHTML=`<div class="bar"><a class="btn" href="#/summary">‹ Report</a><b>My company</b><span></span></div>
+  <p class="costat">${on?`Reports on this phone use <b>${esc(EB.name)}</b>.`:'Reports on this phone use the default <b>SafeBuilt</b> details.'} Your details go on the report, PDF, leaseholder letters and QR labels. Saved on this phone only.</p>
+  <section class="card"><h2>Company details</h2>${coF.map(inp).join('')}</section>
+  <section class="card"><h2>Logo</h2>
+   <div class="coprev" id="coprev">${P.logoD?`<div class="dk"><img src="${P.logoD}" alt="Logo on dark header"><small>Report header</small></div><div class="wt"><img src="${P.logoF}" alt="Logo on white"><small>Footer &amp; labels</small></div>`:'<div class="wt" style="grid-column:1/-1"><small>No logo – your company name is shown instead.</small></div>'}</div>
+   <label class="btn primary block" style="position:relative;overflow:hidden">📷 ${P.logoD?'Change logo':'Choose logo (photo or file)'}<input type="file" id="cologo" accept="image/*,.png,.jpg,.jpeg,.heic,.heif" style="position:absolute;left:0;top:0;opacity:0;width:1px;height:1px"></label>
+   <label class="f" style="margin-top:12px">Logo background on the black report header<select id="co_logoBg"><option value="auto">Automatic</option><option value="dark">Black (for light / white logos)</option><option value="white">White panel (for dark logos)</option></select></label>
+   ${P.logoD?'<button type="button" class="btn danger block" data-act="colgdel">Remove logo</button>':''}
+   <p class="hint">PNG with a transparent background looks best. Photos and JPEGs work too. The logo is resized to max 800 px and stored on this phone.</p></section>
+  <section class="card"><h2>Accent colour <span class="muted">(optional)</span></h2>
+   <label class="coacc"><input type="checkbox" id="co_accOn"${acc?' checked':''} style="width:22px;height:22px"> Use my own accent colour</label>
+   <label class="coacc">Colour <input type="color" id="co_accent" value="${acc?P.accent:BRAND.colors.yellow}"></label>
+   <p class="hint">Used for the coloured lines and highlights on the report and labels. Leave unticked to keep the default colours. Pass / fail colours do not change.</p></section>
+  <button type="button" class="btn primary block" data-act="cosave" style="margin-bottom:10px">💾 Save</button>
+  <button type="button" class="btn danger block" data-act="coreset">Reset to default (SafeBuilt)</button>
+  <p class="hint" style="margin:12px 2px">These settings are kept on this phone only and are not synced to other devices. Survey data is not affected.</p>`;
+  const bg=$('#co_logoBg');if(bg)bg.value=P.logoBg||'auto'}
+/* read the form into the draft */
+function coRead(){coF.forEach(([k])=>{const e=$('#co_'+k);if(e)CF[k]=e.value.trim()});const on=$('#co_accOn'),a=$('#co_accent');CF.accent=on&&on.checked&&a&&isHex(a.value)?a.value.toLowerCase():'';const bg=$('#co_logoBg');if(bg)CF.logoBg=bg.value}
+/* ---- logo processing: decode (PNG/JPEG/HEIC where the browser can), resize to max 800 px wide, trim transparent edges,
+   then make two JPEGs for the PDF writer: one for the black header band, one for white backgrounds (footer, QR labels) ---- */
+async function coDecode(file){const u=URL.createObjectURL(file);
+  try{const img=new Image();await new Promise((res,rej)=>{img.onload=res;img.onerror=rej;img.src=u});if(img.naturalWidth)return img}catch(e){}finally{setTimeout(()=>URL.revokeObjectURL(u),2000)}
+  if(window.createImageBitmap){try{return await createImageBitmap(file)}catch(e){}}
+  throw new Error('This image cannot be read on this device – use a PNG or JPEG')}
+function coCanvas(w,h){const c=document.createElement('canvas');c.width=Math.max(1,Math.round(w));c.height=Math.max(1,Math.round(h));return c}
+function coPrepare(img){const W=img.naturalWidth||img.width,H=img.naturalHeight||img.height;if(!W||!H)throw new Error('Empty image');
+  const k=Math.min(1,800/W,600/H),c=coCanvas(W*k,H*k),g=c.getContext('2d');g.imageSmoothingQuality='high';g.drawImage(img,0,0,c.width,c.height);
+  const d=g.getImageData(0,0,c.width,c.height).data;let x0=c.width,y0=c.height,x1=-1,y1=-1,tr=0,n=0,L=0,A=0;
+  for(let y=0;y<c.height;y++)for(let x=0;x<c.width;x++){const i=(y*c.width+x)*4,a=d[i+3];n++;if(a<240)tr++;if(a>16){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}
+    if(a>128){L+=(.2126*d[i]+.7152*d[i+1]+.0722*d[i+2])/255;A++}}
+  if(x1<0)throw new Error('The image is empty or fully transparent');
+  const alpha=tr/n>.01,light=A?L/A>.6:false,out=coCanvas(x1-x0+1,y1-y0+1);out.getContext('2d').drawImage(c,x0,y0,out.width,out.height,0,0,out.width,out.height);
+  return {src:out.toDataURL('image/png'),alpha,light}}
+async function coVersions(P){if(!P.logoSrc)return;const img=new Image();await new Promise((res,rej)=>{img.onload=res;img.onerror=()=>rej(new Error('Logo could not be read'));img.src=P.logoSrc});
+  const w=img.naturalWidth,h=img.naturalHeight,pad=Math.round(Math.max(w,h)*.06)+4;
+  const flat=(bg,pd)=>{const c=coCanvas(w+2*pd,h+2*pd),g=c.getContext('2d');g.fillStyle=bg;g.fillRect(0,0,c.width,c.height);g.drawImage(img,pd,pd);return c.toDataURL('image/jpeg',.9)};
+  const m=P.logoBg||'auto',dark=m==='dark'||(m==='auto'&&(!P.logoAlpha||P.logoLight));
+  P.logoD=dark?flat(BRAND.colors.black,0):flat('#ffffff',pad);       /* black report header */
+  P.logoF=P.logoAlpha&&P.logoLight?flat(BRAND.colors.black,pad):flat('#ffffff',0)}  /* white backgrounds */
+async function coLogoFile(f){busy(true,'Preparing logo…');
+  try{const img=await coDecode(f),r=coPrepare(img);coRead();Object.assign(CF,{logoSrc:r.src,logoAlpha:r.alpha,logoLight:r.light});await coVersions(CF);busy(false);renderCompany();toast('Logo ready – tap Save to use it')}
+  catch(e){busy(false);toast('Logo failed: '+(e.message||e))}}
+app.addEventListener('change',e=>{const t=e.target;
+  if(t.id==='cologo'){e.stopPropagation();if(t.files&&t.files[0])coLogoFile(t.files[0]).then(()=>{t.value=''});return}
+  if(t.id==='co_logoBg'&&CF&&CF.logoSrc){e.stopPropagation();coRead();coVersions(CF).then(renderCompany).catch(err=>toast(err.message))}},true);
+Object.assign(ACT,{
+  colgdel(){coRead();['logoSrc','logoD','logoF','logoAlpha','logoLight'].forEach(k=>delete CF[k]);renderCompany();toast('Logo removed – tap Save to keep this')},
+  async cosave(){coRead();if(!CF.name){toast('Enter your company name');const e=$('#co_name');if(e)e.focus();return}
+    if(CF.email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(CF.email)){toast('Check the email address');return}
+    const p={v:1,saved:new Date().toISOString()};['name','tagline','address','phone','email','website','companyNo','accent','logoBg','logoSrc','logoD','logoF','logoAlpha','logoLight'].forEach(k=>{if(CF[k]!==undefined&&CF[k]!=='')p[k]=CF[k]});
+    try{await coPut(p)}catch(e){toast('Could not save on this phone: '+(e.message||e.name));return}
+    PROFILE=p;CF=null;refreshBrand();renderCompany();window.scrollTo(0,0);toast('Saved – reports now use '+EB.name)},
+  async coreset(){if(!confirm('Reset to the default SafeBuilt details? Your company details and logo will be removed from this phone. Survey data is kept.'))return;
+    await coDel();PROFILE=null;CF=null;refreshBrand();renderCompany();window.scrollTo(0,0);toast('Reset to SafeBuilt')}
+});
+window.addEventListener('hashchange',()=>{if(!/^#\/?company/.test(location.hash))CF=null});
 /* ---------- floor plans (plan images in IndexedDB 'media' store; plan + pin metadata in S.plans) ---------- */
 const plans=()=>S.plans||(S.plans=[]);
 const planById=id=>plans().find(p=>p.id===id);
@@ -1354,7 +1475,7 @@ async function fpPDF(p){const X=p.M,CW=p.W-2*p.M;
     pl.pins.forEach((q,i)=>{const d=doorById(q.door);if(!d)return;const st=status(d);p.ensure(13);p.rect(X,p.y+2,8,8,stCol(st));p.text(X+12,p.y+9.5,pt(`${i+1}. ${d.ref||''} – ${d.location||''}`).slice(0,90),8.5,false);pdfPill(p,X+CW-pillW(stLabel(st),6.5),p.y+1.5,stLabel(st),stCol(st),6.5,10);p.y+=12})}}
 
 (async function init(){
-  applyBrand();const st=document.createElement('style');st.textContent=REPORT_CSS;document.head.appendChild(st);
+  applyBrand();try{PROFILE=await coGet()}catch(e){}refreshBrand();
   if(!isUnlocked())await showLock();else setTimeout(checkAccess,1500);
   try{const raw=localStorage.getItem(LS);if(raw)S=JSON.parse(raw)}catch(e){}
   if(!S||!S.survey){try{await loadSample()}catch(e){S={isSample:false,survey:{date:today()},doors:[]};toast('Storage unavailable: '+e.message)}}
