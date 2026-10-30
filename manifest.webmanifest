@@ -1,8 +1,8 @@
 {
   "id": "./index.html",
-  "name": "SafeBuilt Fire Door Survey",
-  "short_name": "SafeBuilt Doors",
-  "description": "Fire Door Inspection app for SafeBuilt Solutions Ltd: record fire doors on site and produce PDF reports.",
+  "name": "S B Fire Door App",
+  "short_name": "S B Doors",
+  "description": "S B Fire Door App: record fire doors on site and produce PDF reports.",
   "lang": "en-GB",
   "dir": "ltr",
   "start_url": "./index.html",

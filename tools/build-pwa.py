@@ -15,15 +15,15 @@ def s(k):
     m = re.search(r"\b" + k + r":'((?:[^'\\]|\\.)*)'", block)
     return m.group(1) if m else ''
 colors = dict(re.findall(r"(\w+):'(#[0-9a-fA-F]{3,8})'", re.search(r"colors:\{(.*?)\}", block, re.S).group(1)))
-B = {k: s(k) for k in ('name', 'companyNo', 'copyrightYear', 'short', 'appName', 'appSubtitle', 'headerLogo')}
+B = {k: s(k) for k in ('name', 'companyNo', 'copyrightYear', 'short', 'appName', 'appShort', 'appSubtitle', 'headerLogo')}
 B['colors'] = {k: colors[k] for k in ('black', 'yellow', 'pink', 'ink')}
 B['inviteLine'] = 'Fire door surveys on site – photos, gap checks and PDF reports, even offline.'
 
 manifest = {
     "id": "./index.html",
-    "name": f"{B['short']} Fire Door Survey",
-    "short_name": B['appName'],
-    "description": f"{B['appSubtitle']} app for {B['name']}: record fire doors on site and produce PDF reports.",
+    "name": B['appName'],
+    "short_name": B['appShort'] or B['appName'],
+    "description": f"{B['appName']}: record fire doors on site and produce PDF reports.",
     "lang": "en-GB",
     "dir": "ltr",
     "start_url": "./index.html",
@@ -50,7 +50,7 @@ inv = re.sub(r"/\*BRAND:start\*/.*?/\*BRAND:end\*/", lambda m: '/*BRAND:start*/\
 lib = re.search(r"(/\*! qrcode-generator.*?)\n</script>", src, re.S).group(1)
 inv = re.sub(r"/\*QRLIB:start\*/.*?/\*QRLIB:end\*/", lambda m: '/*QRLIB:start*/\n' + lib + '\n/*QRLIB:end*/', inv, flags=re.S)
 inv = re.sub(r'(<meta name="theme-color" content=")[^"]*', lambda m: m.group(1) + B['colors']['black'], inv)
-inv = re.sub(r'(<meta name="apple-mobile-web-app-title" content=")[^"]*', lambda m: m.group(1) + B['appName'], inv)
+inv = re.sub(r'(<meta name="apple-mobile-web-app-title" content=")[^"]*', lambda m: m.group(1) + (B['appShort'] or B['appName']), inv)
 open(P('invite.html'), 'w', encoding='utf-8').write(inv)
 if '--icons' in sys.argv:
     subprocess.check_call([sys.executable, P('tools/make-icons.py')])

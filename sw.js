@@ -1,5 +1,5 @@
-/* SafeBuilt Doors – service worker (offline app shell)
-   © 2026 SafeBuilt Solutions Ltd (Company No. 16660983). All rights reserved. See LICENSE.
+/* S B Fire Door App – service worker (offline app shell)
+   © S B Fire Door App. All rights reserved. Licensed use only. See LICENSE.
    - Scope: this folder only (registered as ./sw.js with scope ./).
    - HTML: network first (updates show on the next open), cached copy only when offline.
    - Icons / manifest / logo: cache first, refreshed in the background.
@@ -7,7 +7,7 @@
      records/ (published client door records), and anything not in the list below.
    - Survey data lives in localStorage / IndexedDB and is never read or cached here.
    Bump VERSION whenever an app file changes so old caches are removed. */
-const VERSION = 'sb-doors-v3';
+const VERSION = 'sb-doors-v4';
 const SHELL = [
   './', './index.html', './invite.html', './manifest.webmanifest',
   './icons/apple-touch-icon.png', './icons/favicon-32.png', './icons/favicon-16.png', './icons/favicon.ico',

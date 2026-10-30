@@ -1,9 +1,9 @@
 <!doctype html>
 <!--
-  SafeBuilt Doors – public fire door record page (QR)
-  © 2026 SafeBuilt Solutions Ltd (Company No. 16660983). All rights reserved.
+  S B Fire Door App – public fire door record page (QR)
+  © S B Fire Door App. All rights reserved. Licensed use only.
   Proprietary software. Authorised licensed use only. No copying, modification or
-  distribution without the prior written permission of SafeBuilt Solutions Ltd. See LICENSE.
+  distribution without the prior written permission of the copyright holder. See LICENSE.
 -->
 <html lang="en-GB">
 <head>
@@ -15,7 +15,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 <link rel="icon" href="icons/favicon.ico">
 <meta name="theme-color" content="#141414">
-<title>Fire door record – SafeBuilt Solutions Ltd</title>
+<title>Fire door record – S B Fire Door App</title>
 <style>
 :root{--red:#c62828;--green:#2e7d32;--grey:#78808a;--amber:#ef6c00;--ink:#1d2330;--brand:#141414;--sb-yellow:#dcca1c;--sb-pink:#e53376;--bg:#f2f3f6}
 *{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
@@ -57,7 +57,7 @@ details>summary{font-weight:700;font-size:17px;cursor:pointer}
 </style>
 </head>
 <body>
-<header><img class="logo" src="icons/apple-touch-icon.png" alt="SafeBuilt" style="padding:0;object-fit:cover"><div><b>SafeBuilt Solutions Ltd</b><span>Fire door record</span></div></header>
+<header><img class="logo" src="icons/apple-touch-icon.png" alt="S B Fire Door App" style="padding:0;object-fit:cover"><div><b>S B Fire Door App</b><span>Fire door record</span></div></header>
 <main id="m"><p class="load">Loading door record…</p></main>
 <div id="lb" hidden><img alt=""><p id="lbc"></p><div class="nav"><button id="lbp">‹ Prev</button><button id="lbx">✕ Close</button><button id="lbn">Next ›</button></div></div>
 <script>
@@ -65,12 +65,16 @@ details>summary{font-weight:700;font-size:17px;cursor:pointer}
 /* Public, read-only door record. No login, no editing, no survey data needed. */
 /* BRAND - copy of the text/colour fields of BRAND in index.html. Keep the two in sync when white-labelling. */
 const BRAND={
-  name:'SafeBuilt Solutions Ltd',short:'SafeBuilt',
-  phone:'07412 089093',phoneIntl:'+447412089093',email:'office@safebuiltsolutions.co.uk',website:'',
+  /* default: product name only, no company or contact details (contact buttons are hidden when phone/email are blank) */
+  name:'S B Fire Door App',short:'S B Fire Door App',
+  phone:'',phoneIntl:'',email:'',website:'',
   services:'Fire door inspection, repair and maintenance.',
   colors:{black:'#141414',yellow:'#dcca1c',pink:'#e53376',ink:'#1d2330',pass:'#2e7d32',fail:'#c62828'}
 };
 const CO={name:BRAND.name,tel:BRAND.phone,email:BRAND.email};
+/* call / email buttons, only for the contact details that are set */
+const ctBtns=(subj,callTxt)=>(BRAND.phoneIntl?`<a class="btn primary" href="tel:${BRAND.phoneIntl}">📞 ${callTxt||CO.tel}</a>`:'')+(CO.email?`<a class="btn" href="mailto:${CO.email}${subj?'?subject='+subj:''}">✉️ Email</a>`:'');
+const byName=s=>BRAND.phone||BRAND.email?BRAND.name:(s&&s.inspector)||'the surveyor';
 (function(){const c=BRAND.colors,r=document.documentElement.style;[['--brand',c.black],['--sb-yellow',c.yellow],['--sb-pink',c.pink],['--ink',c.ink],['--green',c.pass],['--red',c.fail]].forEach(([k,v])=>r.setProperty(k,v));
   document.title='Fire door record – '+BRAND.name;const h=document.querySelector('header');if(h){h.querySelector('b').textContent=BRAND.name;h.querySelector('img').alt=BRAND.short}
   const t=document.querySelector('meta[name="theme-color"]');if(t)t.setAttribute('content',c.black)})();
@@ -109,17 +113,18 @@ function render(R){const s=R.survey||{},d=R.door||{},st=['pass','fail'].includes
    <div><small>Fire rating</small><b>${esc(d.rating||'—')}</b></div><div><small>Door type</small><b>${esc(typeL)}</b></div></div></section>`;
   h+=`<section class="card"><h2>Key issues</h2><p class="issues">${esc(d.keyIssues||'—')}</p>${d.action||d.priority?`<p class="muted" style="margin:10px 0 0">Recommended action: <b>${esc(d.action||'—')}</b>${d.priority?` · Priority: <b>${esc(d.priority)}</b>`:''}</p>`:''}</section>`;
   h+=`<section class="card"><h2>Photos</h2>${photos.length?`<div class="gal">${photos.map((p,i)=>`<button type="button" data-i="${i}" aria-label="Enlarge photo ${i+1}"><img loading="lazy" src="${purl(p)}" alt="${esc(p.caption||'Door photo '+(i+1))}"></button>`).join('')}</div><p class="muted" style="margin:8px 0 0">Tap a photo to enlarge.</p>`
-     :`<div class="nophoto">${R.source==='snapshot'?'<b>Photos not yet published</b><br><span class="muted">The full record with photos will appear here once '+esc(BRAND.short)+' publishes it.</span>':'<b>No photos for this door</b>'}</div>`}</section>`;
+     :`<div class="nophoto">${R.source==='snapshot'?'<b>Photos not yet published</b><br><span class="muted">The full record with photos will appear here once '+esc(byName(s))+' publishes it.</span>':'<b>No photos for this door</b>'}</div>`}</section>`;
   h+=`<section class="card"><h2>Door details</h2><dl>
    <dt>Door ID</dt><dd>${esc(id||'—')}</dd>${d.tagNo?`<dt>Tag no.</dt><dd>SB ${esc(d.tagNo)}</dd>`:''}<dt>Site</dt><dd>${esc(s.site||'—')}</dd><dt>Address</dt><dd>${esc(s.address||'—')}</dd>
    <dt>Location</dt><dd>${esc(d.location||'—')}</dd>${d.leaf?`<dt>Leaf</dt><dd>${esc(d.leaf)}</dd>`:''}<dt>Survey ref.</dt><dd>${esc(s.ref||'—')}</dd><dt>Inspector</dt><dd>${esc(s.inspector||'—')}</dd></dl></section>`;
   if(Array.isArray(d.checks)&&d.checks.length)h+=`<details class="card"><summary>Inspection checklist</summary><table class="cl">${d.checks.map(c=>`<tr><td>${esc(c.item)}${c.comment?`<br><span class="muted">${esc(c.comment)}</span>`:''}</td><td class="r-${esc(c.result)}">${rLabel(c.result)}</td></tr>`).join('')}</table></details>`;
   const subj=encodeURIComponent('Fire door '+(d.ref||'')+' – '+(s.site||'')+' ('+id+')');
-  h+=`<section class="card"><h2>Inspected by ${esc(BRAND.name)}</h2><p class="muted" style="margin:0">${esc(BRAND.services)}<br>Tel ${CO.tel} · ${CO.email}</p>
-   <div class="btns"><a class="btn primary" href="tel:${BRAND.phoneIntl}">📞 Call</a><a class="btn" href="mailto:${CO.email}?subject=${subj}">✉️ Email</a><span id="appbtn" class="wide" style="display:contents"></span></div></section>`;
+  const tl=[CO.tel&&'Tel '+CO.tel,CO.email].filter(Boolean).join(' · ');
+  h+=`<section class="card"><h2>Inspected by ${esc(byName(s))}</h2><p class="muted" style="margin:0">${esc(BRAND.services)}${tl?'<br>'+esc(tl):''}</p>
+   <div class="btns">${ctBtns(subj,'Call')}<span id="appbtn" class="wide" style="display:contents"></span></div></section>`;
   h+=`<p class="fine">${R.source==='snapshot'?'Summary stored in the QR code at the time of inspection':'Published inspection record'} – this shows the door as found on ${esc(fmtD(s.date))} and does not update by itself. Visual, non-destructive inspection; it does not certify fire performance. If the door is damaged or does not close properly, report it to the building manager.</p>`;
   m.innerHTML=h;
-  /* if this phone holds the survey in the SafeBuilt app, offer to open the full door */
+  /* if this phone holds the survey in the app, offer to open the full door */
   try{const S=JSON.parse(localStorage.getItem('sbs_firedoor_v1')||'null');const ld=S&&Array.isArray(S.doors)&&S.doors.find(x=>x&&x.pid===id);
     if(ld)document.getElementById('appbtn').innerHTML=`<a class="btn wide" href="index.html#/door/${encodeURIComponent(ld.id)}">Open full door in the app</a>`}catch(e){}
   const lb=document.getElementById('lb'),li=lb.querySelector('img'),lc=document.getElementById('lbc');let cur=0;
@@ -130,12 +135,12 @@ function render(R){const s=R.survey||{},d=R.door||{},st=['pass','fail'].includes
   document.addEventListener('keydown',e=>{if(lb.hidden)return;if(e.key==='Escape')lb.hidden=true;if(e.key==='ArrowLeft')show(cur-1);if(e.key==='ArrowRight')show(cur+1)});
   document.title=(d.ref?d.ref+' – ':'')+'Fire door record – '+BRAND.name;
 }
-function renderErr(){m.innerHTML=`<section class="card"><h2>Door record not found</h2><p>This QR code or link could not be read. Please contact ${esc(BRAND.name)} and quote the Door ID printed on the label.</p>
-  <div class="btns"><a class="btn primary" href="tel:${BRAND.phoneIntl}">📞 ${CO.tel}</a><a class="btn" href="mailto:${CO.email}">✉️ Email</a></div></section>`}
+function renderErr(){m.innerHTML=`<section class="card"><h2>Door record not found</h2><p>This QR code or link could not be read. Please contact ${esc(byName())} and quote the Door ID printed on the label.</p>
+  <div class="btns">${ctBtns('')}</div></section>`}
 function renderPending(){m.innerHTML=`<section class="card hero"><p class="kicker">Fire door</p><h1>Record not yet published</h1>
-  <p class="loc">This door has been surveyed by ${esc(BRAND.name)}. Its online record will appear here once it is published.</p>
+  <p class="loc">This door has been surveyed${BRAND.phone||BRAND.email?' by '+esc(BRAND.name):''}. Its online record will appear here once it is published.</p>
   <p class="muted">Door ID: <b>${esc(id)}</b></p>
-  <div class="btns"><a class="btn primary" href="tel:${BRAND.phoneIntl}">📞 ${CO.tel}</a><a class="btn" href="mailto:${CO.email}?subject=${encodeURIComponent('Fire door record '+id)}">✉️ Email</a><span id="appbtn" class="wide" style="display:contents"></span></div></section>`;
+  <div class="btns">${ctBtns(encodeURIComponent('Fire door record '+id))}<span id="appbtn" class="wide" style="display:contents"></span></div></section>`;
   try{const S=JSON.parse(localStorage.getItem('sbs_firedoor_v1')||'null');const ld=S&&Array.isArray(S.doors)&&S.doors.find(x=>x&&x.pid===id);
     if(ld)document.getElementById('appbtn').innerHTML=`<a class="btn wide" href="index.html#/door/${encodeURIComponent(ld.id)}">Open full door in the app</a>`}catch(e){}}
 function renderTagPending(){let S=null;try{S=JSON.parse(localStorage.getItem('sbs_firedoor_v1')||'null')}catch(e){}
@@ -143,7 +148,7 @@ function renderTagPending(){let S=null;try{S=JSON.parse(localStorage.getItem('sb
   m.innerHTML=`<section class="card hero"><p class="kicker">${esc(BRAND.short)} asset tag</p><h1>SB ${esc(tagNoT)}</h1>
   <p class="loc">${ld?'This tag is linked to <b>'+esc(ld.ref||'a door')+'</b>. Its online record will appear here once it is published.':'Tag not yet assigned to a door.'}</p>
   <div class="btns">${ld?`<a class="btn primary wide" href="index.html#/door/${encodeURIComponent(ld.id)}">Open door in the app</a>`:S&&Array.isArray(S.doors)?`<a class="btn primary wide" href="index.html#/tag/${encodeURIComponent(tid)}">Assign this tag to a door</a>`:''}
-  <a class="btn" href="tel:${BRAND.phoneIntl}">📞 ${CO.tel}</a><a class="btn" href="mailto:${CO.email}?subject=${encodeURIComponent('Asset tag SB '+tagNoT)}">✉️ Email</a></div></section>`}
+  ${ctBtns(encodeURIComponent('Asset tag SB '+tagNoT))}</div></section>`}
 (async function(){let rec=null;
   if(okTid&&!id){try{const r=await fetch('records/tags/'+encodeURIComponent(tid)+'.json',{cache:'no-store'});if(r.ok){const j=await r.json();if(j&&typeof j.id==='string'){id=j.id;okId=/^[A-Za-z0-9][A-Za-z0-9-]{4,90}$/.test(id)}}}catch(e){}
     if(!okId)return renderTagPending()}
