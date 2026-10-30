@@ -162,7 +162,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 <script>
 "use strict";
 /* ---------- BRAND: the one place to change company name, contact details, logos and colours (white-label) ----------
-   Read by: app header/title, PDF report (buildPDF), on-screen + HTML report (REPORT_CSS, reportMarkup), gap diagrams (GC),
+   Read by: app header/title, PDF report (buildPDF) incl. its leaseholder letters (leaseLetterPDF), on-screen + HTML report (REPORT_CSS, reportMarkup), gap diagrams (GC),
    QR labels/asset tags (LB, CO, drawLabel, drawTag), client-notes pages, file names.
    door.html (public QR page) keeps a copy of the text/colour fields in its own BRAND block - keep the two in sync. */
 const BRAND={
@@ -719,10 +719,12 @@ async function buildPDF(){
   repSchedPDF(p,X,CW);
   clientNotesPDF(p,s,X,CW);
   p.ensure(60);p.line(X,p.y,X+CW,p.y);p.y+=6;p.para(GUIDANCE,X,CW,8,false,SOFT,10.5);
+  const LL=await leaseLettersPDF(p,logoD); /* leaseholder letters (flat entrance doors), each from a new page; null if none */
   /* every page: branded footer; pages 2+: slim black header with the logo. Drawn here (not in PDFDoc) so labels stay unchanged. */
   p.footer((i,n)=>{
-    if(i>1){p.rect(0,0,p.W,24,BC.black);if(logoD){const lh=15,lw=lh*logoD.w/logoD.h;p.image(logoD,X-2,4.5,lw,lh)}
-      const ht=fitT(BRAND.reportTitle+(s.site?'  ·  '+s.site:''),7.5,CW-110);p.text(p.W-X-tw(ht,7.5),15,ht,7.5,false,WH);p.rect(0,24,p.W,1.5,BC.yellow)}
+    const lp=LL&&LL.info[i]; /* letter pages: own header band on the first page, slim header naming the letter on a second page */
+    if(i>1&&!(lp&&lp.first)){p.rect(0,0,p.W,24,BC.black);if(logoD){const lh=15,lw=lh*logoD.w/logoD.h;p.image(logoD,X-2,4.5,lw,lh)}
+      const ht=fitT(lp?'Leaseholder letter'+(flatNo(lp.d)?'  ·  Flat '+flatNo(lp.d):'  ·  '+(lp.d.ref||''))+' (continued)':BRAND.reportTitle+(s.site?'  ·  '+s.site:''),7.5,CW-110);p.text(p.W-X-tw(ht,7.5),15,ht,7.5,false,WH);p.rect(0,24,p.W,1.5,BC.yellow)}
     const fy=p.H-34;p.rect(0,fy,p.W,2,BC.yellow);let tx=X;
     if(logoF){const lh=11,lw=lh*logoF.w/logoF.h;p.image(logoF,X,fy+(34-lh)/2+1,lw,lh);tx=X+lw+8}
     const pg=`Page ${i} of ${n}`,pw=tw(pg,8,true);p.text(p.W-X-pw,fy+21,pg,8,true,INK);
@@ -731,6 +733,112 @@ async function buildPDF(){
   return p.build();
 }
 
+/* ===== Leaseholder letters: appended to the end of the PDF report, one letter per flat entrance door (type 'Flat entrance',
+   or no type set and 'flat' in the location) that has a PASS or FAIL result. Plain-English wording; contact details from BRAND. ===== */
+const RESP=['Leaseholder','Freeholder','Managing agent','Not known']; /* d.resp - 'Responsible for remedial works' (older doors: not set) */
+const isFlatDoor=d=>d.type==='flat'||(!d.type&&/\bflat\b/i.test(d.location||''));
+const letterDoors=()=>S.doors.filter(d=>isFlatDoor(d)&&(status(d)==='pass'||status(d)==='fail'));
+function flatNo(d){for(const s of [d.location,d.ref]){const m=/\bflat\s*(?:no\.?\s*)?([a-z]?\d+[a-z]?)\b/i.exec(s||'');if(m)return m[1].toUpperCase()}return ''}
+const LL_FOUND={
+  leaf:'The door itself is damaged (for example holes, splits or warping), which weakens it in a fire.',
+  frame:'The door frame is loose or damaged, or the gap between the frame and the wall is not properly sealed.',
+  gaps:'The gaps around the edges of the door are not right, so smoke and fire could get through.',
+  threshold:'The gap under the door is too big, so smoke could get underneath.',
+  intumescent:'The fire strips around the door edge are damaged or missing. They swell up in a fire to seal the gaps.',
+  smoke:'The smoke seals around the door are damaged or missing, so smoke could get through.',
+  hinges:'One or more hinges are loose, worn or damaged, or have missing screws.',
+  selfclose:'The door does not close fully by itself. A fire door must shut on its own to hold back fire and smoke.',
+  latch:'The door does not click shut (latch) when it closes by itself.',
+  closer:'The door closer (the arm that shuts the door) is damaged, leaking or not adjusted properly.',
+  signage:'The fire door sign is missing or hard to read.',
+  glazing:'The glass in the door, or the beads holding it, is not fire-rated or is damaged.',
+  ironmongery:'Some fittings (handle, lock, letter plate or spy hole) are not fire-rated, are loose or are damaged.',
+  holdopen:'The device that holds the door open does not let it go properly when the fire alarm sounds.',
+  cert:'We could not find a fire certificate label on the door, so we cannot confirm it is a certified fire door.'};
+const LL_GAP={hinge:'hinge side',lock:'handle side',head:'top',l1hinge:'hinge side of the main door',l2hinge:'hinge side of the second door',meet:'meeting edge (where the two doors meet)',l1head:'top of the main door',l2head:'top of the second door'};
+const llJoin=a=>a.length<2?a.join(''):a.slice(0,-1).join(', ')+' and '+a[a.length-1];
+const llMM=x=>x.raw==='>15'?'over 15 mm':x.raw+' mm';
+function llFound(d){const out=[],e=gapEval(d).filter(x=>x.r==='fail'),E=GAP_LIMITS.edge;
+  const wide=e.filter(x=>x.t==='edge'&&x.v>E.max),tight=e.filter(x=>x.t==='edge'&&x.v<E.min),th=e.filter(x=>x.t==='th');
+  if(wide.length)out.push(`The gap around the door is too wide at the ${llJoin(wide.map(x=>(LL_GAP[x.k]||x.label.toLowerCase())+' ('+llMM(x)+')'))}. It should be no more than ${E.max} mm, otherwise smoke could get through.`);
+  if(tight.length)out.push(`The gap at the ${llJoin(tight.map(x=>LL_GAP[x.k]||x.label.toLowerCase()))} is very tight (under ${E.min} mm) and the door is not closing properly.`);
+  if(th.length)out.push(`The gap under the door is too big (${llJoin(th.map(llMM))}; it should be no more than ${thLimit(d)} mm), so smoke could get underneath.`);
+  for(const c of failed(d)){if(c[0]==='gaps'&&(wide.length||tight.length))continue;if(c[0]==='threshold'&&th.length)continue;out.push(LL_FOUND[c[0]]||c[1])}
+  if(!out.length){const t=(d.issues||'').trim();out.push(t?'Our surveyor noted: '+t.replace(/\s*\n+\s*/g,'; '):'The door did not meet the standard we check against. Please contact us for the details.')}
+  return out}
+const LL_ACT={Repair:'Repair: some parts of the door need fixing or replacing (for example seals, strips, hinges or the closer). The door itself can stay.',
+  Adjust:'Adjust: the door needs adjusting so it fits the frame and closes properly. This is usually a quick job.',
+  Replace:'Replace: the door cannot be made safe by repair and needs to be replaced with a new fire door set.'};
+const LL_PRI={Urgent:'This is urgent: please arrange the work as soon as possible.','Within 3 months':'Please arrange the work within the next 3 months.',Advisory:'This is advisory: not urgent, but worth doing to keep your door in good order.'};
+const LL_RESP={Leaseholder:'Under most leases the flat front door is the leaseholder\u2019s responsibility, so the work is usually for you to arrange and pay for.',
+  Freeholder:'The freeholder (the building owner) is responsible for this door and will arrange the work. Please allow access when asked.',
+  'Managing agent':'The managing agent will arrange the work for the building owner. Please allow access when asked.'};
+const LL_RESP_OK={Leaseholder:'Under most leases the flat front door is the leaseholder\u2019s responsibility, so looking after it is usually down to you.',
+  Freeholder:'The freeholder (the building owner) is responsible for this door and for any future work on it.',
+  'Managing agent':'The managing agent looks after this door for the building owner.'};
+const LL_TBC='We are checking who is responsible for this door. Under most leases the flat front door is the leaseholder\u2019s responsibility; your lease will say.';
+const LL_WHY='Your front door is part of the building\u2019s fire protection: it holds back fire and smoke so that everyone can use the corridors and stairs to escape. A door that does not close and seal properly puts you and your neighbours at risk.';
+async function leaseLettersPDF(p,logoD){const L=letterDoors();if(!L.length)return null;
+  const npg=()=>{let n=0;p.footer((i,k)=>{n=k});return n}; /* page count (footer() leaves the current page selected) */
+  const base=npg(),info={};
+  for(let i=0;i<L.length;i++){p.page();const st=npg();await leaseLetterPDF(p,L[i],logoD,i+1,L.length);const en=npg();for(let k=st;k<=en;k++)info[k]={d:L[i],first:k===st}}
+  return {base,info}}
+async function leaseLetterPDF(p,d,logoD,k,n){const s=S.survey,X=p.M,CW=p.W-2*p.M,WH=[1,1,1],st=status(d),pass=st==='pass',fno=flatNo(d),FS=9.5,LH=12.5;
+  /* header band, as the report's first page */
+  p.rect(0,0,p.W,78,BC.black);
+  if(logoD){const lh=46,lw=lh*logoD.w/logoD.h;p.image(logoD,X-4,16,lw,lh)}else p.text(X,46,pt(BRAND.name),16,true,WH);
+  const rt='LEASEHOLDER LETTER',tg=pt(BRAND.name+' · '+BRAND.tagline);
+  p.text(p.W-X-tw(rt,14,true),38,rt,14,true,WH);p.text(p.W-X-tw(tg,8.5),51.5,tg,8.5,false,[.85,.85,.85]);
+  const lc=`Letter ${k} of ${n}`;p.text(p.W-X-tw(lc,7.5),64,lc,7.5,false,[.7,.7,.7]);
+  p.rect(0,78,p.W,3,BC.yellow);p.rect(0,82,p.W,1,BC.pink);
+  /* date (right), site + address (left), addressee */
+  p.y=100;const dt=fmtD(today());p.text(X+CW-tw(dt,9.5),p.y+12,dt,9.5,false,SOFT);
+  const TW=CW-110,sl=wrapT(s.site||'',12,TW,true);sl.forEach((l,i)=>p.text(X,p.y+12+i*15,l,12,true,INK));p.y+=12+Math.max(0,sl.length-1)*15;
+  const al=s.address?wrapT(s.address,9,TW):[];al.forEach((l,i)=>p.text(X,p.y+13+i*11,l,9,false,SOFT));p.y+=al.length?13+(al.length-1)*11:0;
+  p.y+=24;const to=fitT('To the leaseholder'+(fno?', Flat '+fno:(d.location?', '+d.location:'')),15,CW,true);p.text(X,p.y,to,15,true,INK);p.y+=10;
+  p.para(`We recently checked the fire door at the entrance to your flat as part of the fire safety inspection at ${s.site||'your building'}. `+(pass?'Good news: it passed. This letter explains what we found and how to keep your door safe.':'This letter explains what we found, what needs doing and how to book the work.'),X,CW,FS,false,INK,LH);
+  const head=t=>{p.y+=7;p.ensure(46);p.text(X,p.y+11,pt(t),11,true,INK);p.rect(X,p.y+15,CW,1.2,BC.pink);p.y+=22};
+  const bullets=(a,x,w)=>{x=x||X;w=w||CW;for(const s_ of a){const ls=wrapT(s_,FS,w-12);p.ensure(ls.length*LH+2);fillRR(p,x+1,p.y+4.3,4,4,2,BC.pink);ls.forEach((l,i)=>p.text(x+11,p.y+FS+i*LH,l,FS,false,INK));p.y+=ls.length*LH+2}};
+  /* inspection: photo left, details + big badge right */
+  head('Your fire door inspection');
+  const PW=150,PH=150,y0=p.y,ph=d.media.find(m=>m.kind==='photo'),t=ph?await thumbFor(ph.id,900):null;
+  if(t){const sc=Math.min(PW/t.w,PH/t.h),iw=t.w*sc,ih=t.h*sc;fillRR(p,X,y0,PW,PH,6,[.95,.95,.94]);p.image(t,X+(PW-iw)/2,y0+(PH-ih)/2,iw,ih)}
+  else{fillRR(p,X,y0,PW,PH,6,[.95,.95,.94]);const m='No photo available';p.text(X+(PW-tw(m,8.5))/2,y0+PH/2+3,m,8.5,false,SOFT)}
+  const RX=X+PW+18,RW=CW-PW-18,KW=82,kv=[['Date inspected',fmtD(inspDate())],['Surveyor',s.inspector||'\u2014'],['Door ref',d.ref||'\u2014'],['Location',d.location||'\u2014'],['Door',[d.rating,d.leaf==='Single'?'Single door':d.leaf?d.leaf+' (two leaves)':''].filter(Boolean).join(' \u00b7 ')||'\u2014']];
+  if(pass)kv.push(['Next check due',fmtD(nextDue(d))]);
+  let ky=y0;for(const [a,b] of kv){const ls=wrapT(b,FS,RW-KW).slice(0,2);p.text(RX,ky+FS,pt(a),8.5,true,SOFT);ls.forEach((l,i)=>p.text(RX+KW,ky+FS+i*LH,l,FS,false,INK));ky+=ls.length*LH+3}
+  const bl=stLabel(st),bs=20,bh=36,bw=tw(pt(bl),bs,true)+40;ky+=6;fillRR(p,RX,ky,bw,bh,bh/2,stCol(st));p.text(RX+20,ky+bh/2+bs*.36,pt(bl),bs,true,WH);
+  const bn=pass?'Your door meets the standard we check against.':'Your door needs work to make it fire safe.';wrapT(bn,FS,RW-bw-12).forEach((l,i)=>p.text(RX+bw+12,ky+bh/2-2+i*LH,l,FS,true,stCol(st)));
+  p.y=Math.max(y0+PH,ky+bh)+4;
+  if(pass){
+    head('What we found');p.para('Your front door passed its fire safety check. It closes and latches by itself, and the seals and fittings we checked are in good order. No work is needed.',X,CW,FS,false,INK,LH);
+    head('Keeping your door safe');
+    bullets(['Keep the door closer working. Do not disconnect or remove it, and never wedge the door open.',
+      'Do not change the door, lock, letter plate or spy hole without checking first, as the wrong fittings can stop it working as a fire door.',
+      `Tell us if the door gets damaged or stops closing properly. Your next check is due by ${fmtD(nextDue(d))}.`])}
+  else{
+    head('What we found');bullets(llFound(d));
+    head('What needs doing');
+    const act=[LL_ACT[d.action]||'We will confirm exactly what work is needed.'];if(LL_PRI[d.priority])act.push(LL_PRI[d.priority]);
+    if(d.action==='Replace')act.push('The new door must be a certified FD30S fire door set (with a certificate or label), and the work needs Building Regulations approval. You may also need a licence from your landlord before the door is changed.');
+    bullets(act)}
+  /* who is responsible | why it matters: side by side */
+  {const G=18,cw=(CW-G)/2,r=RESP.includes(d.resp)&&d.resp!=='Not known'?d.resp:'',rl=wrapT(r?(pass?LL_RESP_OK:LL_RESP)[r]:LL_TBC,FS,cw),wl=wrapT(LL_WHY,FS,cw),h=Math.max(38+rl.length*LH,22+wl.length*LH)+2;
+    p.y+=7;p.ensure(h+4);const y=p.y;
+    [[X,'Who is responsible'],[X+cw+G,'Why it matters']].forEach(([x,tt])=>{p.text(x,y+11,tt,11,true,INK);p.rect(x,y+15,cw,1.2,BC.pink)});
+    const rv=r||'To be confirmed';fillRR(p,X,y+21,pillW(rv,8.5)+4,15,7.5,r?BC.black:BC.na);p.text(X+8,y+21+7.5+3,pt(rv),8.5,true,WH);
+    rl.forEach((l,i)=>p.text(X,y+38+FS+i*LH,l,FS,false,INK));wl.forEach((l,i)=>p.text(X+cw+G,y+22+FS+i*LH,l,FS,false,INK));
+    p.y=y+Math.max(38+rl.length*LH,22+wl.length*LH)+2}
+  /* contact panel from BRAND */
+  {const ttl=pass?'Questions about your door?':'Book your remedial works',ref=(d.ref||'')+(fno?' (Flat '+fno+')':''),
+    L1=wrapT(`${pass?'If you have any questions':'To book the work or ask a question'}, please contact ${BRAND.name}:`,FS,CW-28),
+    C=[BRAND.phone&&['Phone',BRAND.phone],BRAND.email&&['Email',BRAND.email],BRAND.website&&['Web',BRAND.website]].filter(Boolean),
+    L2=wrapT(`Please quote door ref ${ref}${s.site?' at '+s.site:''} when you get in touch.`,FS,CW-28),h=12+14+L1.length*LH+C.length*14+L2.length*LH+12;
+    p.y+=10;p.ensure(h);const y=p.y;p.rect(X,y,CW,h,BC.yellowTint);p.rect(X,y,4,h,BC.yellow);let cy=y+12;
+    p.text(X+14,cy+10,pt(ttl),11.5,true,INK);cy+=18;L1.forEach(l=>{p.text(X+14,cy+FS,l,FS,false,INK);cy+=LH});cy+=2;
+    C.forEach(([a,b])=>{p.text(X+14,cy+10,a,9.5,true,SOFT);p.text(X+60,cy+10,pt(b),10.5,true,INK);cy+=14});cy+=2;
+    L2.forEach(l=>{p.text(X+14,cy+FS,l,FS,false,INK);cy+=LH});p.y=y+h}
+}
 
 /* ---------- QR door labels (Avery L7163) ---------- */
 const CO={name:BRAND.name,tel:BRAND.phone,email:BRAND.email};
@@ -994,7 +1102,7 @@ function repFormHTML(d){const pr=isPair(d),hf=isHalf(d);
 function renderDoor(id){setNav('list');const d=doorById(id),i=S.doors.indexOf(d),n=S.doors.length,prev=S.doors[i-1],next=S.doors[i+1];
   app.innerHTML=`<div class="bar"><a class="btn" href="#/list">‹ Doors</a><span class="muted">Door ${i+1} of ${n}</span><span id="dbadge" class="badge ${status(d)}">${stLabel(status(d))}</span></div>
   <section class="card"><h2>Door details</h2>${field('Door reference','ref',d.ref,'e.g. Door-06')}${field('Location','location',d.location,'e.g. Ground floor communal lobby')}
-   ${sel('Door type','type',TYPES,d.type)}${sel('Fire rating','rating',RATINGS,d.rating)}${sel('Door leaf type','leaf',LEAFS,d.leaf)}</section>
+   ${sel('Door type','type',TYPES,d.type)}${sel('Fire rating','rating',RATINGS,d.rating)}${sel('Door leaf type','leaf',LEAFS,d.leaf)}${sel('Responsible for remedial works','resp',RESP,d.resp||'')}</section>
   <section class="card" id="gapsec">${gapFormHTML(d)}</section>
   <section class="card"><h2>Checklist</h2><p class="hint">Based on Fire Safety (England) Regulations 2022 guidance, BS 8214 and FDIS-style checks. Tap again to clear.</p>
    <div class="row" style="margin:10px 0 0"><button type="button" class="btn sm" data-act="allpass">Set unanswered to Pass</button></div>
