@@ -10,12 +10,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 <link rel="icon" href="icons/favicon.ico">
 <meta name="theme-color" content="#141414">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="SafeBuilt Doors">
+<meta name="mobile-web-app-capable" content="yes">
 <title>SafeBuilt Solutions – Fire Door Inspection</title>
 <style>
 :root{--red:#c62828;--green:#2e7d32;--grey:#8a8f98;--bg:#f2f3f6;--ink:#1d2330;--brand:#141414;--sb-yellow:#dcca1c;--sb-pink:#e53376;--sb-yellow-tint:#fbf8e1;--check:#e0a100}
@@ -1340,6 +1342,10 @@ async function fpPDF(p){const X=p.M,CW=p.W-2*p.M;
   if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
   route();
 })();
+</script>
+<script>
+/* PWA: offline app shell + install support (sw.js caches only same-folder app files; survey data is untouched) */
+if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol))addEventListener('load',()=>{navigator.serviceWorker.register('sw.js',{scope:'./'}).catch(()=>{})});
 </script>
 </body>
 </html>
