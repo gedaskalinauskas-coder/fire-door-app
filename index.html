@@ -1,4 +1,11 @@
 <!doctype html>
+<!--
+  SafeBuilt Doors – Fire Door Inspection app
+  © 2026 SafeBuilt Solutions Ltd (Company No. 16660983). All rights reserved.
+  Proprietary software. Authorised licensed use only. No copying, modification or
+  distribution without the prior written permission of SafeBuilt Solutions Ltd. See LICENSE.
+  (Bundled third-party code, e.g. qrcode-generator, keeps its own licence.)
+-->
 <html lang="en-GB">
 <head>
 <meta charset="utf-8">
@@ -19,7 +26,7 @@ body{margin:0;font:16px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,A
 header.top{position:sticky;top:0;z-index:5;background:var(--brand);border-bottom:3px solid var(--sb-yellow);color:#fff;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px}
 .brand b{display:block;font-size:17px;letter-spacing:.01em}.brand span{font-size:13px;opacity:.9}
 .tag{background:#ffeb3b;color:#000;font-size:11px;font-weight:800;padding:4px 8px;border-radius:4px;white-space:nowrap}
-main{padding:12px 12px calc(96px + env(safe-area-inset-bottom));max-width:820px;margin:0 auto}
+main{padding:12px 12px 8px;max-width:820px;margin:0 auto}
 nav.bottom{position:fixed;bottom:0;left:0;right:0;display:flex;background:#fff;border-top:1px solid #ddd;padding-bottom:env(safe-area-inset-bottom);z-index:5}
 nav.bottom a{flex:1;text-align:center;padding:16px 0;font-weight:700;color:#555;text-decoration:none;min-height:56px}
 nav.bottom a.on{color:var(--brand);box-shadow:inset 0 3px 0 var(--sb-pink)}
@@ -101,8 +108,21 @@ details[open]>summary{margin-bottom:10px}
 #qrpanel{scroll-margin-top:calc(80px + env(safe-area-inset-top))}
 .qrtip{font-size:13px;color:#5d4037;background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:8px 10px;margin:10px 0 0}
 code.did{font-size:13px;background:#f3f3f3;border-radius:4px;padding:2px 5px;word-break:break-all}
+footer.copy{max-width:820px;margin:0 auto;padding:4px 16px calc(84px + env(safe-area-inset-bottom));text-align:center;font-size:11px;line-height:1.4;color:#8a8f98}
+#lock{position:fixed;inset:0;z-index:1000;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;padding:calc(20px + env(safe-area-inset-top)) 20px calc(20px + env(safe-area-inset-bottom));overflow:auto}
+#lock[hidden]{display:none}
+#lock form{width:100%;max-width:360px;text-align:center}
+#lock img{height:56px;width:auto;max-width:80%;margin:0 auto 14px;display:block}
+#lock h1{font-size:19px;margin:0 0 4px}#lock .sub{font-size:14px;opacity:.85;margin:0 0 22px}
+#lock input{display:block;width:100%;font-size:16px;padding:12px;min-height:48px;border-radius:10px;border:2px solid var(--sb-yellow);background:#fff;color:#1d2330;margin:0 0 12px;font-family:inherit;-webkit-appearance:none;appearance:none}
+#lock .btn{width:100%;background:var(--sb-yellow);border-color:var(--sb-yellow);color:#141414;font-weight:800}
+#lock .btn:disabled{opacity:.55}
+#lock .msg{min-height:20px;font-size:14px;margin:12px 0 0;color:#ffd0dd}
+#lock .copy{font-size:11px;opacity:.6;margin:26px 0 0}
+body.locked{overflow:hidden}
 @media print{
-  header.top,nav.bottom,.noprint,#toast{display:none!important}
+  header.top,nav.bottom,.noprint,#toast,#lock{display:none!important}
+  footer.copy{padding:8px 0 0}
   body{background:#fff}
   main{padding:0;max-width:none}
   .report{padding:0!important;box-shadow:none!important}
@@ -113,11 +133,21 @@ code.did{font-size:13px;background:#f3f3f3;border-radius:4px;padding:2px 5px;wor
 </style>
 </head>
 <body>
+<div id="lock" hidden><form id="lockform" autocomplete="off" novalidate>
+  <img id="locklogo" src="icons/logo-wordmark.png" alt="SafeBuilt Solutions Ltd">
+  <h1 id="lockname">SafeBuilt Solutions Ltd</h1><p class="sub" id="locksub">Fire Door Inspection</p>
+  <label for="lockcode" style="position:absolute;left:-9999px">Access code</label>
+  <input id="lockcode" type="password" name="sbs-access-code" placeholder="Access code" autocomplete="current-password" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go">
+  <button class="btn" id="lockbtn" type="submit">Unlock</button>
+  <p class="msg" id="lockmsg" role="alert"></p>
+  <p class="copy" id="lockcopy"></p>
+</form></div>
 <header class="top">
   <div class="brand" style="display:flex;align-items:center;gap:10px"><img src="icons/logo-wordmark.png" alt="SafeBuilt Solutions Ltd" style="height:40px;width:auto"><span style="font-size:13px;opacity:.95;border-left:1px solid rgba(255,255,255,.5);padding-left:10px">Fire Door Inspection</span></div>
   <span id="sampleTag" class="tag" hidden>SAMPLE DATA</span>
 </header>
 <main id="app"><p class="empty">Loading…</p></main>
+<footer class="copy" id="copyfoot"></footer>
 <nav class="bottom"><a href="#/list" data-v="list">🚪 Doors</a><a href="#/summary" data-v="summary">📄 Report</a></nav>
 <div id="toast"></div>
 <div class="busy" id="busy">Preparing file…</div>
@@ -137,6 +167,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
    door.html (public QR page) keeps a copy of the text/colour fields in its own BRAND block - keep the two in sync. */
 const BRAND={
   name:'SafeBuilt Solutions Ltd',                         // full company name
+  companyNo:'16660983',                                   // Companies House number (copyright line)
+  copyrightYear:'2026',                                   // year in the copyright line
   short:'SafeBuilt',                                      // short name (label text fallback, file names)
   appName:'SafeBuilt Doors',                              // home-screen app name
   appTitle:'SafeBuilt Solutions – Fire Door Inspection',  // browser tab title
@@ -155,14 +187,49 @@ const BRAND={
   colors:{
     black:'#141414',yellow:'#dcca1c',pink:'#e53376',ink:'#1d2330',yellowTint:'#fbf8e1', // chrome
     pass:'#2e7d32',fail:'#c62828',na:'#8a8f98',check:'#e0a100',none:'#9aa0a6'          // status (pass/fail meaning only)
-  }
+  },
+  /* access-code lock screen: accessHash = hex SHA-256(accessSalt + code). Set both with:
+     python3 tools/set-access-code.py ENV_VAR_NAME   (reads the code from that environment variable)
+     Leave accessHash empty ('') to switch the lock off. */
+  accessSalt:'37277bfe4a96a8f0bece938718b24a58',
+  accessHash:'56f0806d99f09b52d733e6d42412a776d523e4594e2573a8beaebd8030151b66'
 };
+const copyrightLine=()=>`© ${BRAND.copyrightYear} ${BRAND.name}${BRAND.companyNo?' (Company No. '+BRAND.companyNo+')':''}. All rights reserved.`;
 const hexRGB=h=>{h=String(h).replace('#','');if(h.length===3)h=h.replace(/./g,'$&$&');return [0,2,4].map(i=>parseInt(h.slice(i,i+2),16)/255)};
 const BC=Object.fromEntries(Object.entries(BRAND.colors).map(([k,v])=>[k,hexRGB(v)])); /* BRAND colours as PDF 0-1 RGB */
 function applyBrand(){const c=BRAND.colors,r=document.documentElement.style;
   [['--red',c.fail],['--green',c.pass],['--grey',c.na],['--ink',c.ink],['--brand',c.black],['--sb-yellow',c.yellow],['--sb-pink',c.pink],['--sb-yellow-tint',c.yellowTint],['--check',c.check]].forEach(([k,v])=>r.setProperty(k,v));
   document.title=BRAND.appTitle;const mt=(n,v)=>{const m=document.querySelector('meta[name="'+n+'"]');if(m)m.setAttribute('content',v)};mt('apple-mobile-web-app-title',BRAND.appName);mt('theme-color',c.black);
-  const im=document.querySelector('header.top .brand img');if(im){im.src=BRAND.headerLogo;im.alt=BRAND.name}const sp=document.querySelector('header.top .brand span');if(sp)sp.textContent=BRAND.appSubtitle}
+  const im=document.querySelector('header.top .brand img');if(im){im.src=BRAND.headerLogo;im.alt=BRAND.name}const sp=document.querySelector('header.top .brand span');if(sp)sp.textContent=BRAND.appSubtitle;
+  const cf=document.getElementById('copyfoot');if(cf)cf.textContent=copyrightLine()+' Authorised licensed use only.';
+  const set=(id,k,v)=>{const e=document.getElementById(id);if(e)e[k]=v};
+  set('locklogo','src',BRAND.headerLogo);set('locklogo','alt',BRAND.name);set('lockname','textContent',BRAND.name);set('locksub','textContent',BRAND.appSubtitle);set('lockcopy','textContent',copyrightLine())}
+/* ---------- access-code lock screen (deters casual sharing; survey data is never touched) ---------- */
+const unlockKey='sbs_unlock',unlockFails='sbs_unlock_fails';
+const lockOn=()=>!!BRAND.accessHash;
+function isUnlocked(){if(!lockOn())return true;try{return localStorage.getItem(unlockKey)===BRAND.accessHash}catch(e){return false}}
+async function sha256hex(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return Array.from(new Uint8Array(b),x=>x.toString(16).padStart(2,'0')).join('')}
+function showLock(){return new Promise(resolve=>{
+  const L=document.getElementById('lock'),F=document.getElementById('lockform'),I=document.getElementById('lockcode'),B=document.getElementById('lockbtn'),M=document.getElementById('lockmsg');
+  L.hidden=false;document.body.classList.add('locked');
+  let fails=0;try{fails=parseInt(sessionStorage.getItem(unlockFails),10)||0}catch(e){}
+  /* after 5 wrong tries: every further try waits 5 seconds */
+  const wait=sec=>{B.disabled=true;I.disabled=true;let n=sec;const tick=()=>{if(n<=0){B.disabled=false;I.disabled=false;M.textContent='Try again.';I.focus();return}M.textContent='Too many wrong tries. Wait '+n+' s…';n--;setTimeout(tick,1000)};tick()};
+  if(fails>=5)wait(5);else setTimeout(()=>I.focus(),50);
+  F.onsubmit=async e=>{e.preventDefault();if(B.disabled)return;
+    const v=I.value;if(!v){M.textContent='Enter the access code.';I.focus();return}
+    if(!(window.crypto&&crypto.subtle)){M.textContent='This browser cannot check the code (open the app over https).';return}
+    B.disabled=true;M.textContent='Checking…';let h='';
+    try{h=await sha256hex(BRAND.accessSalt+v)}catch(err){B.disabled=false;M.textContent='Could not check the code.';return}
+    I.value='';
+    if(h===BRAND.accessHash){
+      try{localStorage.setItem(unlockKey,h);sessionStorage.removeItem(unlockFails)}catch(err){}
+      M.textContent='';B.disabled=false;L.hidden=true;document.body.classList.remove('locked');F.onsubmit=null;resolve();return}
+    fails++;try{sessionStorage.setItem(unlockFails,String(fails))}catch(err){}
+    B.disabled=false;
+    if(fails>=5)wait(5);else{M.textContent='Wrong access code. Please try again.';I.focus()}};
+})}
+async function lockApp(){try{localStorage.removeItem(unlockKey)}catch(e){}await showLock();route()}
 /* ---------- constants ---------- */
 const LS='sbs_firedoor_v1';
 const CHECKS=[
@@ -659,7 +726,8 @@ async function buildPDF(){
     const fy=p.H-34;p.rect(0,fy,p.W,2,BC.yellow);let tx=X;
     if(logoF){const lh=11,lw=lh*logoF.w/logoF.h;p.image(logoF,X,fy+(34-lh)/2+1,lw,lh);tx=X+lw+8}
     const pg=`Page ${i} of ${n}`,pw=tw(pg,8,true);p.text(p.W-X-pw,fy+21,pg,8,true,INK);
-    p.text(tx,fy+21,fitT([s.ref,s.site,BRAND.email,BRAND.phone,BRAND.website].filter(Boolean).join(' · '),7.5,p.W-X-pw-12-tx),7.5,false,[.47,.47,.47])});
+    p.text(tx,fy+17,fitT([s.ref,s.site,BRAND.email,BRAND.phone,BRAND.website].filter(Boolean).join(' · '),7.5,p.W-X-pw-12-tx),7.5,false,[.47,.47,.47]);
+    p.text(tx,fy+27,fitT(copyrightLine(),6,p.W-X-pw-12-tx),6,false,[.6,.6,.6])});
   return p.build();
 }
 
@@ -966,7 +1034,7 @@ async function renderSummary(){setNav('summary');
    <button class="btn primary wide" data-act="pdf">⬇ Download report (PDF)</button>
    <button class="btn" data-act="print">🖨 Print / Save as PDF</button><button class="btn" data-act="html">⬇ Report (HTML)</button>
    <button class="btn dark wide" data-act="zipall">⬇ Download all files (ZIP)</button>
-   <button class="btn sm" data-act="json">Export JSON</button><button class="btn sm danger" data-act="reset">Reset to sample data</button></div>
+   <button class="btn sm" data-act="json">Export JSON</button>${lockOn()?'<button class="btn sm" data-act="lockapp" title="Lock this device: the access code is needed to open the app again. Survey data is kept.">🔒 Lock app</button>':''}<button class="btn sm danger" data-act="reset">Reset to sample data</button></div>
    <div id="report"></div>`;
   $('#report').innerHTML=await reportMarkup('app');hydrate($('#report'))}
 /* reached from a scanned blank tag (door.html 'Assign to a door') */
@@ -1015,7 +1083,8 @@ const ACT={
   async labels(){if(!S.doors.length)return toast('Add a door first');busy(true,'Building labels…');try{const st=+($('#qrstart')||{}).value||1;const p=await buildLabels(S.doors,st,($('#qrmode')||{}).value||'before',($('#qrstyle')||{}).value||'std');busy(false);await saveBlob(p,baseName()+'_QR-labels_'+((($('#qrstyle')||{}).value==='tag')?'L7160':'L7163')+'.pdf')}catch(e){busy(false);toast('Labels failed: '+e.message)}},
   async labeldoor(b,d){busy(true,'Building label…');try{const st=+($('#qrstart1')||{}).value||1;const p=await buildLabels([d],st,($('#qrmode1')||{}).value||'before',($('#qrstyle1')||{}).value||'std');busy(false);await saveBlob(p,safe(d.ref||'Door')+'_QR-label_'+((($('#qrstyle1')||{}).value==='tag')?'L7160':'L7163')+'.pdf')}catch(e){busy(false);toast('Label failed: '+e.message)}},
   previewrec(b,d){const u=doorQR(d).url.replace(PUBLIC_URL,'door.html');window.open(u,'_blank')||(location.href=u)},
-  async json(){await saveBlob(new Blob([exportJSON()],{type:'application/json'}),baseName()+'_data.json')}
+  async json(){await saveBlob(new Blob([exportJSON()],{type:'application/json'}),baseName()+'_data.json')},
+  async lockapp(){if(!lockOn())return toast('No access code is set');await lockApp()}
 };
 function exportJSON(){ensureIds();return JSON.stringify({app:BRAND.name.replace(/ Ltd$/,'')+' fire door inspection',exported:new Date().toISOString(),sample:!!S.isSample,survey:S.survey,
   doors:S.doors.map(d=>({...d,doorId:d.pid,tagNo:d.tag||'',tagId:d.tagId||'',recordUrl:recordURL(d),typeLabel:typeLabel(d.type),inspected:inspDate(),nextDue:nextDue(d),keyIssues:keyIssues(d),status:status(d),suggested:suggest(d),gaps:Object.assign({},GAP_BLANK,isPair(d)?Object.fromEntries(PAIR_KEYS.map(k=>[k[0],''])):{},d.gaps),gapLayout:isPair(d)?(isHalf(d)?'leaf-and-a-half':'double'):'single',gapResults:gapEval(d).map(x=>({edge:x.k,label:x.label,mm:x.raw,result:x.r,rule:x.why})),gapSummary:(gapSummary(d)||{}).text||'No gaps measured',checks:CHECKS.map(c=>({key:c[0],item:c[1],result:(d.checks[c[0]]||{}).r||'',comment:(d.checks[c[0]]||{}).c||''})),media:d.media.map(m=>({file:mediaName(d,m),kind:m.kind,type:m.type,original:m.orig||m.caption||'',caption:m.caption||''}))})),floorPlans:fpExport()},null,2)}
@@ -1157,6 +1226,7 @@ async function fpPDF(p){const X=p.M,CW=p.W-2*p.M;
 
 (async function init(){
   applyBrand();const st=document.createElement('style');st.textContent=REPORT_CSS;document.head.appendChild(st);
+  if(!isUnlocked())await showLock();
   try{const raw=localStorage.getItem(LS);if(raw)S=JSON.parse(raw)}catch(e){}
   if(!S||!S.survey){try{await loadSample()}catch(e){S={isSample:false,survey:{date:today()},doors:[]};toast('Storage unavailable: '+e.message)}}
   if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
