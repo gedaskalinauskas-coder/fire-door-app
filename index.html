@@ -190,11 +190,10 @@ const BRAND={
     black:'#141414',yellow:'#dcca1c',pink:'#e53376',ink:'#1d2330',yellowTint:'#fbf8e1', // chrome
     pass:'#2e7d32',fail:'#c62828',na:'#8a8f98',check:'#e0a100',none:'#9aa0a6'          // status (pass/fail meaning only)
   },
-  /* access-code lock screen: accessHash = hex SHA-256(accessSalt + code). Set both with:
-     python3 tools/set-access-code.py ENV_VAR_NAME   (reads the code from that environment variable)
-     Leave accessHash empty ('') to switch the lock off. */
-  accessSalt:'37277bfe4a96a8f0bece938718b24a58',
-  accessHash:'56f0806d99f09b52d733e6d42412a776d523e4594e2573a8beaebd8030151b66'
+  /* access-code lock screen: codes and per-code device limits are checked online by the access service
+     (Cloudflare Worker fda-access; manage codes at accessApi + '/admin'). Leave accessApi empty ('') to switch the lock off.
+     An unlocked phone stays unlocked offline; it is re-locked only if the admin removes it or deactivates its code. */
+  accessApi:'https://fda-access.safebuilt.workers.dev'
 };
 const copyrightLine=()=>`© ${BRAND.copyrightYear} ${BRAND.name}${BRAND.companyNo?' (Company No. '+BRAND.companyNo+')':''}. All rights reserved.`;
 const hexRGB=h=>{h=String(h).replace('#','');if(h.length===3)h=h.replace(/./g,'$&$&');return [0,2,4].map(i=>parseInt(h.slice(i,i+2),16)/255)};
@@ -207,10 +206,16 @@ function applyBrand(){const c=BRAND.colors,r=document.documentElement.style;
   const set=(id,k,v)=>{const e=document.getElementById(id);if(e)e[k]=v};
   set('locklogo','src',BRAND.headerLogo);set('locklogo','alt',BRAND.name);set('lockname','textContent',BRAND.name);set('locksub','textContent',BRAND.appSubtitle);set('lockcopy','textContent',copyrightLine())}
 /* ---------- access-code lock screen (deters casual sharing; survey data is never touched) ---------- */
-const unlockKey='sbs_unlock',unlockFails='sbs_unlock_fails';
-const lockOn=()=>!!BRAND.accessHash;
-function isUnlocked(){if(!lockOn())return true;try{return localStorage.getItem(unlockKey)===BRAND.accessHash}catch(e){return false}}
-async function sha256hex(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return Array.from(new Uint8Array(b),x=>x.toString(16).padStart(2,'0')).join('')}
+const unlockKey='sbs_unlock',unlockFails='sbs_unlock_fails',deviceKey='sbs_device_id';
+const lockOn=()=>!!BRAND.accessApi;
+/* sbs_unlock holds the server device token (v1.…); phones unlocked before the online check keep their old value and stay unlocked */
+function isUnlocked(){if(!lockOn())return true;try{return !!localStorage.getItem(unlockKey)}catch(e){return false}}
+function deviceId(){let d='';try{d=localStorage.getItem(deviceKey)||''}catch(e){}
+  if(!/^[A-Za-z0-9_-]{8,64}$/.test(d)){d=(crypto.randomUUID?crypto.randomUUID():Array.from(crypto.getRandomValues(new Uint8Array(16)),x=>x.toString(16).padStart(2,'0')).join(''));try{localStorage.setItem(deviceKey,d)}catch(e){}}
+  return d}
+async function accessPost(path,data,ms){const ac=new AbortController(),t=setTimeout(()=>ac.abort(),ms||12000);
+  try{const r=await fetch(BRAND.accessApi.replace(/\/+$/,'')+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data),signal:ac.signal,cache:'no-store'});
+    let j={};try{j=await r.json()}catch(e){}return {status:r.status,j}}finally{clearTimeout(t)}}
 function showLock(){return new Promise(resolve=>{
   const L=document.getElementById('lock'),F=document.getElementById('lockform'),I=document.getElementById('lockcode'),B=document.getElementById('lockbtn'),M=document.getElementById('lockmsg');
   L.hidden=false;document.body.classList.add('locked');
@@ -219,19 +224,33 @@ function showLock(){return new Promise(resolve=>{
   const wait=sec=>{B.disabled=true;I.disabled=true;let n=sec;const tick=()=>{if(n<=0){B.disabled=false;I.disabled=false;M.textContent='Try again.';I.focus();return}M.textContent='Too many wrong tries. Wait '+n+' s…';n--;setTimeout(tick,1000)};tick()};
   if(fails>=5)wait(5);else setTimeout(()=>I.focus(),50);
   F.onsubmit=async e=>{e.preventDefault();if(B.disabled)return;
-    const v=I.value;if(!v){M.textContent='Enter the access code.';I.focus();return}
-    if(!(window.crypto&&crypto.subtle)){M.textContent='This browser cannot check the code (open the app over https).';return}
-    B.disabled=true;M.textContent='Checking…';let h='';
-    try{h=await sha256hex(BRAND.accessSalt+v)}catch(err){B.disabled=false;M.textContent='Could not check the code.';return}
-    I.value='';
-    if(h===BRAND.accessHash){
-      try{localStorage.setItem(unlockKey,h);sessionStorage.removeItem(unlockFails)}catch(err){}
+    const v=I.value.trim();if(!v){M.textContent='Enter the access code.';I.focus();return}
+    B.disabled=true;M.textContent='Checking…';let res;
+    try{res=await accessPost('/api/unlock',{code:v,deviceId:deviceId()})}
+    catch(err){B.disabled=false;M.textContent='You need an internet connection to unlock the app the first time.';return}
+    const j=res.j||{};
+    if(res.status===200&&j.ok&&j.token){I.value='';
+      try{localStorage.setItem(unlockKey,j.token);sessionStorage.removeItem(unlockFails)}catch(err){}
       M.textContent='';B.disabled=false;L.hidden=true;document.body.classList.remove('locked');F.onsubmit=null;resolve();return}
-    fails++;try{sessionStorage.setItem(unlockFails,String(fails))}catch(err){}
     B.disabled=false;
+    if(j.reason==='limit'){I.value='';M.textContent='';
+      const t=document.createElement('b');t.textContent='Device limit reached, contact the seller';M.appendChild(t);
+      const c=[BRAND.name,BRAND.phone,BRAND.email].filter(Boolean);if(c.length){M.appendChild(document.createElement('br'));M.appendChild(document.createTextNode(c.join(' · ')))}
+      return}
+    if(res.status===429){M.textContent='Too many tries. Wait a minute and try again.';return}
+    if(res.status!==401){M.textContent=res.status>=500?'The access service is not available. Try again later.':'Could not check the code. Try again.';return}
+    I.value='';fails++;try{sessionStorage.setItem(unlockFails,String(fails))}catch(err){}
     if(fails>=5)wait(5);else{M.textContent='Wrong access code. Please try again.';I.focus()}};
 })}
 async function lockApp(){try{localStorage.removeItem(unlockKey)}catch(e){}await showLock();route()}
+/* silent online check on app open: re-lock only when the service says this device was removed or its code deactivated */
+async function checkAccess(){if(!lockOn()||!navigator.onLine)return;let tok='',dev='';try{tok=localStorage.getItem(unlockKey)||'';dev=localStorage.getItem(deviceKey)||''}catch(e){return}
+  if(!/^v1\./.test(tok)||!dev)return;
+  let res;try{res=await accessPost('/api/check',{deviceId:dev,token:tok},10000)}catch(e){return}
+  const j=res&&res.j||{};
+  if(res.status===200&&j.ok===true&&j.registered===false&&(j.reason==='removed'||j.reason==='deactivated')){
+    try{if(localStorage.getItem(unlockKey)!==tok)return;localStorage.removeItem(unlockKey)}catch(e){return}
+    await showLock();route()}}
 /* ---------- constants ---------- */
 const LS='sbs_firedoor_v1';
 const CHECKS=[
@@ -1336,7 +1355,7 @@ async function fpPDF(p){const X=p.M,CW=p.W-2*p.M;
 
 (async function init(){
   applyBrand();const st=document.createElement('style');st.textContent=REPORT_CSS;document.head.appendChild(st);
-  if(!isUnlocked())await showLock();
+  if(!isUnlocked())await showLock();else setTimeout(checkAccess,1500);
   try{const raw=localStorage.getItem(LS);if(raw)S=JSON.parse(raw)}catch(e){}
   if(!S||!S.survey){try{await loadSample()}catch(e){S={isSample:false,survey:{date:today()},doors:[]};toast('Storage unavailable: '+e.message)}}
   if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
