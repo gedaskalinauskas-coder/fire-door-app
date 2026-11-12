@@ -30,7 +30,7 @@ header.top{position:sticky;top:0;z-index:5;background:var(--brand);border-bottom
 .tag{background:#ffeb3b;color:#000;font-size:11px;font-weight:800;padding:4px 8px;border-radius:4px;white-space:nowrap}
 main{padding:12px 12px 8px;max-width:820px;margin:0 auto}
 nav.bottom{position:fixed;bottom:0;left:0;right:0;display:flex;background:#fff;border-top:1px solid #ddd;padding-bottom:env(safe-area-inset-bottom);z-index:5}
-nav.bottom a{flex:1;text-align:center;padding:16px 0;font-weight:700;color:#555;text-decoration:none;min-height:56px}
+nav.bottom a{flex:1;text-align:center;padding:14px 2px;font-weight:700;font-size:14px;color:#555;text-decoration:none;min-height:56px}
 nav.bottom a.on{color:var(--brand);box-shadow:inset 0 3px 0 var(--sb-pink)}
 .card{background:#fff;border-radius:12px;padding:14px;margin:0 0 12px;box-shadow:0 1px 2px rgba(0,0,0,.08)}
 h2{font-size:18px;margin:0 0 10px}
@@ -85,7 +85,7 @@ textarea.sn{min-height:44px;height:44px;overflow:hidden;resize:none;padding:10px
 .uploads input{position:absolute;left:0;top:0;opacity:0;width:1px;height:1px}
 .bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px}
 .muted{color:#666;font-size:14px}
-#toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:8px;font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:9;max-width:90vw;text-align:center}
+#toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:8px;font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:80;max-width:90vw;text-align:center}
 #toast.show{opacity:1}
 .actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
 .actions .wide{grid-column:1/-1}
@@ -94,7 +94,7 @@ details>summary::-webkit-details-marker{display:none}
 details>summary::after{content:"▾";color:#888}
 details[open]>summary{margin-bottom:10px}
 .empty{text-align:center;color:#666;padding:24px}
-.busy{position:fixed;inset:0;background:rgba(255,255,255,.6);display:none;align-items:center;justify-content:center;z-index:20;font-weight:700}
+.busy{position:fixed;inset:0;background:rgba(255,255,255,.6);display:none;align-items:center;justify-content:center;z-index:70;font-weight:700}
 .busy.show{display:flex}
 #fpwrap{-webkit-tap-highlight-color:transparent;position:relative;height:calc(100vh - 290px);min-height:320px;overflow:hidden;background:#e7e8ec;border-radius:12px;touch-action:none;user-select:none;-webkit-user-select:none}
 #fpin{position:absolute;left:0;top:0;transform-origin:0 0}
@@ -127,6 +127,23 @@ body.locked{overflow:hidden}
 .coprev .dk{background:#141414;color:#fff}.coprev .wt{background:#fff}.coprev img{max-width:100%;max-height:70px;width:auto;height:auto;display:block}.coprev small{font-size:11px;opacity:.7}
 .costat{border-left:5px solid var(--sb-yellow);background:var(--sb-yellow-tint);border-radius:8px;padding:8px 10px;margin:0 0 12px;font-size:14px}
 .coacc{display:flex;align-items:center;gap:10px;margin:0 0 12px;font-size:14px}.coacc input[type=color]{width:56px;height:44px;border:1px solid #c9ccd3;border-radius:8px;padding:2px;background:#fff}
+button.door-row{width:100%;font:inherit;color:inherit;text-align:left;cursor:pointer}
+.door-row.rep{border-left-color:var(--brand)}
+.door-row.cont{border-left-color:var(--sb-yellow);background:var(--sb-yellow-tint)}
+.caveat{font-size:13px;line-height:1.4;color:#5d4037;background:#fff8e1;border:1px solid #ffe082;border-radius:10px;padding:10px 12px;margin:0 0 12px}
+.modal{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;padding:12px;padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+.modalcard{background:#fff;color:var(--ink);border-radius:16px;padding:16px;width:100%;max-width:440px;box-shadow:0 8px 30px rgba(0,0,0,.25)}
+.modalcard h2{font-size:18px;margin:0 0 8px}.modalcard .btn{margin-top:8px}
+.modalcard .urlbox{display:block;word-break:break-all;font:13px/1.35 ui-monospace,Menlo,Consolas,monospace;background:#f2f3f6;border-radius:8px;padding:10px;margin-top:8px}
+@media(min-width:700px){.modal{align-items:center}}
+#pdfview{position:fixed;inset:0;z-index:40;background:#1b1c1f;color:#fff;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+#pdfview .tools{display:flex;gap:6px;flex-wrap:wrap;padding:8px;background:#141414;align-items:center}
+#pdfview .tools .btn{min-height:40px;padding:6px 10px;font-size:14px;background:#fff}
+#pdfview .tools .spacer{flex:1}
+#pdfscroll{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;background:#2a2b2e;touch-action:pan-x pan-y}
+#pdfzoom{transform-origin:0 0;padding:8px 8px 24px}
+#pdfzoom canvas{display:block;width:100%;height:auto;margin:0 auto 8px;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+#pdfzoom iframe{width:100%;min-height:80vh;border:0;background:#fff}
 @media print{
   header.top,nav.bottom,.noprint,#toast,#lock{display:none!important}
   footer.copy{padding:8px 0 0}
@@ -155,7 +172,7 @@ body.locked{overflow:hidden}
 </header>
 <main id="app"><p class="empty">Loading…</p></main>
 <footer class="copy" id="copyfoot"></footer>
-<nav class="bottom"><a href="#/list" data-v="list">🚪 Doors</a><a href="#/summary" data-v="summary">📄 Report</a></nav>
+<nav class="bottom"><a href="#/home" data-v="home">🏠 Home</a><a href="#/list" data-v="list">🚪 Doors</a><a href="#/summary" data-v="summary">📄 Report</a></nav>
 <div id="toast"></div>
 <div class="busy" id="busy">Preparing file…</div>
 <script>
@@ -261,13 +278,18 @@ function deviceId(){let d='';try{d=localStorage.getItem(deviceKey)||''}catch(e){
 async function accessPost(path,data,ms){const ac=new AbortController(),t=setTimeout(()=>ac.abort(),ms||12000);
   try{const r=await fetch(BRAND.accessApi.replace(/\/+$/,'')+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data),signal:ac.signal,cache:'no-store'});
     let j={};try{j=await r.json()}catch(e){}return {status:r.status,j}}finally{clearTimeout(t)}}
-function showLock(){return new Promise(resolve=>{
+function showLock(hint){return new Promise(resolve=>{
   const L=document.getElementById('lock'),F=document.getElementById('lockform'),I=document.getElementById('lockcode'),B=document.getElementById('lockbtn'),M=document.getElementById('lockmsg');
   L.hidden=false;document.body.classList.add('locked');
   let fails=0;try{fails=parseInt(sessionStorage.getItem(unlockFails),10)||0}catch(e){}
   /* after 5 wrong tries: every further try waits 5 seconds */
   const wait=sec=>{B.disabled=true;I.disabled=true;let n=sec;const tick=()=>{if(n<=0){B.disabled=false;I.disabled=false;M.textContent='Try again.';I.focus();return}M.textContent='Too many wrong tries. Wait '+n+' s…';n--;setTimeout(tick,1000)};tick()};
-  if(fails>=5)wait(5);else setTimeout(()=>I.focus(),50);
+  const hints={offline:'You have an invitation. Connect to the internet, then open the app again to set up your own access.',
+    unsupported:'This invitation needs an update to the access service. You can still enter an access code if you have one of your own.',
+    bad:'This invitation is not valid or has already been used.',
+    error:'The invitation could not be checked. You can enter an access code if you have one of your own.',
+    skipped:'This phone already has surveys or company details. The invitation was not applied, and nothing on this phone was changed.'};
+  if(fails>=5)wait(5);else{if(hints[hint])M.textContent=hints[hint];setTimeout(()=>I.focus(),50)}
   F.onsubmit=async e=>{e.preventDefault();if(B.disabled)return;
     const v=I.value.trim();if(!v){M.textContent='Enter the access code.';I.focus();return}
     B.disabled=true;M.textContent='Checking…';let res;
@@ -306,7 +328,54 @@ async function checkAccess(){if(!lockOn()||!navigator.onLine)return;let tok='',d
   if(res.status===200&&j.ok===true&&j.registered===false&&(j.reason==='removed'||j.reason==='deactivated')){
     try{if(localStorage.getItem(unlockKey)!==tok)return;localStorage.removeItem(unlockKey)}catch(e){return}
     await showLock();route()}}
+/* ---------- invitations: a new access code for the other person, never a copy of this phone ---------- */
+const INVITE_RE=/^[A-Za-z0-9_-]{12,200}$/;
+const PENDING_INVITE='sbs_pending_invite';
+function readPendingInvite(){try{const o=JSON.parse(localStorage.getItem(PENDING_INVITE)||'null');if(o&&INVITE_RE.test(o.token||''))return o}catch(e){}return null}
+function stripInviteQuery(){try{const u=new URL(location.href);if(!u.searchParams.has('invite'))return;u.searchParams.delete('invite');history.replaceState(null,'',u.pathname+u.search+u.hash)}catch(e){}}
+function clearPendingInvite(){try{localStorage.removeItem(PENDING_INVITE)}catch(e){}stripInviteQuery()}
+function captureInviteParam(){try{const q=new URLSearchParams(location.search).get('invite');if(q&&INVITE_RE.test(q))localStorage.setItem(PENDING_INVITE,JSON.stringify({token:q,at:Date.now()}))}catch(e){}}
+function deviceHasOwnWork(metas){if(PROFILE&&String(PROFILE.name||'').trim())return true;
+  return (metas||[]).some(m=>m&&(m.status==='completed'||(!m.isSample&&((m.doors||0)>0||String(m.site||m.address||m.ref||'').trim()))))}
+async function maybeRedeemInvite(){captureInviteParam();const rec=readPendingInvite();if(!rec)return 'none';
+  let metas=[];try{metas=await libAll('meta')}catch(e){}
+  if(isUnlocked()||deviceHasOwnWork(metas)){clearPendingInvite();return 'skipped'}
+  if(!lockOn()){clearPendingInvite();return 'none'}
+  if(!navigator.onLine)return 'offline';
+  let res;try{res=await accessPost('/api/invite/redeem',{invite:rec.token,deviceId:deviceId()})}catch(e){return 'offline'}
+  const j=res.j||{};
+  if(res.status===200&&j.ok&&typeof j.token==='string'&&j.token){
+    if(isUnlocked()||deviceHasOwnWork(metas)){clearPendingInvite();return 'skipped'}
+    try{localStorage.setItem(unlockKey,j.token)}catch(e){}
+    clearPendingInvite();return 'ok'}
+  if(j.reason==='invite_not_found'||j.reason==='used'||j.reason==='expired'){clearPendingInvite();return 'bad'}
+  if(res.status===404||res.status===405||res.status===501||j.reason==='not_found'||j.reason==='unsupported')return 'unsupported';
+  return 'error'}
+function invitePageLink(token){const u=new URL('invite.html',location.href);if(token)u.searchParams.set('invite',token);return u.href}
+async function shareInviteLink(token){const url=invitePageLink(token);
+  const text='You are invited to use '+BRAND.appName+'. This link sets up your own copy. Surveys and company details stay on each phone and are not shared.';
+  if(navigator.share){try{await navigator.share({title:'Invitation to '+BRAND.appName,text,url});return}catch(e){if(e&&e.name==='AbortError')return}}
+  let copied=false;try{await navigator.clipboard.writeText(url);copied=true}catch(e){}
+  const choice=await askChoice('Invitation link',`<p class="hint" style="margin:0">${copied?'Link copied. You can paste it into a message.':'Copy this link and send it to them.'}</p><span class="urlbox">${esc(url)}</span>`,[{id:'copy',label:'Copy link',primary:true},{id:'close',label:'Close'}]);
+  if(choice==='copy'){try{await navigator.clipboard.writeText(url);toast('Link copied')}catch(e){toast('Select the link and copy it')}}}
+async function createInvite(){
+  if(!lockOn()){toast('Access codes are turned off. Each phone already keeps its own surveys and company details.');await shareInviteLink('');return}
+  if(!isUnlocked()){toast('Unlock the app before sending an invitation.');return}
+  let tok='';try{tok=localStorage.getItem(unlockKey)||''}catch(e){}
+  if(!navigator.onLine){toast('You need an internet connection to create an invitation.');return}
+  busy(true,'Creating invitation…');let res;
+  try{res=await accessPost('/api/invite',{deviceId:deviceId(),token:tok})}
+  catch(e){busy(false);toast('Could not reach the access service. Try again when you are online.');return}
+  busy(false);const j=res.j||{};
+  if(res.status===200&&j.ok&&typeof j.invite==='string'&&INVITE_RE.test(j.invite)){await shareInviteLink(j.invite);return}
+  if(res.status===404||res.status===405||res.status===501||j.reason==='not_found'||j.reason==='unsupported'){
+    await askChoice('Invitation not available yet','<p class="hint" style="margin:0">Each invitation has to be a new access code from the access service, separate from yours. That update is not in place yet, so no link was created and nothing of yours was shared.</p>',[{id:'ok',label:'OK',primary:true}]);
+    return}
+  if(res.status===401||j.reason==='unauthorised'||j.reason==='bad_token'||j.reason==='invalid'){toast('This phone’s access could not be confirmed. Lock the app, unlock it with your access code, then try again.');return}
+  toast('Could not create an invitation. Try again.')}
 /* ---------- constants ---------- */
+/* Legacy single-survey key. On startup it is copied into the per-survey library and then removed.
+   New saves go to IndexedDB sbs_reports. If that write fails, the open survey is copied back here so it is not lost. */
 const LS='sbs_firedoor_v1';
 const CHECKS=[
  ['leaf','Door leaf condition','No significant damage, holes, splits, delamination or warping; no unauthorised alterations.'],
@@ -451,7 +520,42 @@ const typeLabel=t=>(TYPES.find(x=>x[0]===t)||['',t||'—'])[1];
 const stLabel=s=>s==='pass'?'PASS':s==='fail'?'FAIL':'NOT INSPECTED';
 const rLabel=r=>r==='pass'?'Pass':r==='fail'?'Fail':r==='na'?'N/A':'–';
 let S=null;
-function save(){try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){toast('Could not save: '+e.message)}}
+/* ---------- local report library (on this phone only) ----------
+   One record per survey id in IndexedDB 'sbs_reports':
+     meta   – small row for the home screen (status, site, counts, dates)
+     survey – full inspection (no photos; those stay in sbs_firedoor_media, keyed by their own ids)
+     pdf    – the PDF blob saved when the survey is completed
+   sessionStorage sbs_open_survey is only the id of the survey open in this session. */
+const OPEN_KEY='sbs_open_survey';
+let libp;
+function libDB(){return libp||(libp=new Promise((res,rej)=>{const r=indexedDB.open('sbs_reports',1);
+  r.onupgradeneeded=()=>{const d=r.result;['meta','survey','pdf'].forEach(n=>{if(!d.objectStoreNames.contains(n))d.createObjectStore(n,{keyPath:'id'})})};
+  r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}))}
+async function libDo(store,mode,fn){const d=await libDB();return new Promise((res,rej)=>{const tx=d.transaction(store,mode);const r=fn(tx.objectStore(store));
+  tx.oncomplete=()=>res(r&&r.result);tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error)})}
+const libPut=(store,val)=>libDo(store,'readwrite',s=>s.put(val));
+const libGet=(store,id)=>libDo(store,'readonly',s=>s.get(id));
+const libDel=(store,id)=>libDo(store,'readwrite',s=>s.delete(id));
+const libAll=(store)=>libDo(store,'readonly',s=>s.getAll());
+function openId(){try{return sessionStorage.getItem(OPEN_KEY)||''}catch(e){return ''}}
+function setOpenId(id){try{if(id)sessionStorage.setItem(OPEN_KEY,id);else sessionStorage.removeItem(OPEN_KEY)}catch(e){}}
+function closeSurvey(){S=null;setOpenId('')}
+function emptySurvey(id,created){const now=new Date().toISOString();return {id:id||uid(),status:'draft',created:created||now,updated:now,isSample:false,
+  survey:{site:'',address:'',client:'',inspector:(typeof EB!=='undefined'&&EB.inspector)||'',date:today(),ref:''},doors:[]}}
+function metaFrom(s){const c=counts(s),sv=s.survey||{};return {id:s.id,status:s.status==='completed'?'completed':'draft',created:s.created||'',updated:s.updated||'',
+  completedAt:s.completedAt||'',site:sv.site||'',address:sv.address||'',ref:sv.ref||'',date:sv.date||'',
+  doors:c.total,pass:c.pass,fail:c.fail,none:c.none,isSample:!!s.isSample}}
+function touchSurvey(s){s.updated=new Date().toISOString();if(!s.created)s.created=s.updated;if(s.status!=='completed')s.status='draft'}
+async function writeSurvey(snap){try{await libPut('survey',snap);await libPut('meta',metaFrom(snap));try{localStorage.removeItem(LS)}catch(e){}}
+  catch(e){try{localStorage.setItem(LS,JSON.stringify(snap))}catch(e2){}throw e}}
+let saveChain=Promise.resolve();
+function save(){if(!S||!S.id)return;touchSurvey(S);const snap=JSON.parse(JSON.stringify(S));
+  saveChain=saveChain.then(()=>writeSurvey(snap)).catch(e=>{toast('Could not save: '+(e&&e.message||e))})}
+async function saveNow(){if(!S||!S.id)return;save();await saveChain}
+function mediaIdsOf(s){const ids=[];if(!s)return ids;(s.doors||[]).forEach(d=>(d.media||[]).forEach(m=>{if(m&&m.id)ids.push(m.id)}));(s.plans||[]).forEach(p=>{if(p&&p.mid)ids.push(p.mid)});return ids}
+async function clearSurveyMedia(s){for(const id of mediaIdsOf(s)){try{await delMedia(id)}catch(e){}
+  if(URLS[id]){try{URL.revokeObjectURL(URLS[id])}catch(e){}delete URLS[id]}
+  Object.keys(TH).forEach(k=>{if(k===id||k.startsWith(id+':'))delete TH[k]})}}
 let tt;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2600)}
 function busy(on,msg){const b=$('#busy');b.textContent=msg||'Preparing file…';b.classList.toggle('show',!!on)}
 const doorById=id=>S.doors.find(d=>d.id===id);
@@ -473,6 +577,7 @@ async function idb(mode,fn){const d=await db();return new Promise((res,rej)=>{co
 const putMedia=rec=>idb('readwrite',s=>s.put(rec));
 const getMedia=id=>idb('readonly',s=>s.get(id));
 const delMedia=id=>idb('readwrite',s=>s.delete(id));
+/* Wipes every photo in sbs_firedoor_media, including other surveys. Do not call this from New survey, blank or reset. */
 const clearMedia=()=>idb('readwrite',s=>s.clear());
 const URLS={};
 async function mediaBlob(id){const r=await getMedia(id);return r?new Blob([r.data],{type:r.type}):null}
@@ -1039,7 +1144,7 @@ const PRINT_TIP='Print at 100% / Actual size, not Fit to page';
 const qrTipHTML=`<p class="qrtip"><b>Print tip:</b> ${PRINT_TIP}. Print a test on plain paper first and hold it behind a label sheet to check it lines up.</p>`;
 
 /* ---------- report markup (in-app, standalone HTML, ZIP) ---------- */
-function counts(){const c={total:S.doors.length,pass:0,fail:0,none:0};S.doors.forEach(d=>{const s=status(d);s==='pass'?c.pass++:s==='fail'?c.fail++:c.none++});return c}
+function counts(src){const doors=((src||S).doors)||[];const c={total:doors.length,pass:0,fail:0,none:0};doors.forEach(d=>{const s=status(d);s==='pass'?c.pass++:s==='fail'?c.fail++:c.none++});return c}
 function repHTML(d){const n=repV(d,'notes');
   return `<div class="rp"><div class="rph"><b>Replacement measurements (mm)</b><span class="st rpl">REPLACE</span></div><div class="rpg">${repFields(d).map(([k,l])=>`<div><small>${esc(l)}</small><b>${esc(repV(d,k)||'—')}</b></div>`).join('')}</div>${n?`<p class="rpn"><b>Notes:</b> ${esc(n).replace(/\n/g,'<br>')}</p>`:''}${repAny(d)?'':'<p class="rpn">Not measured yet – measure on site before ordering.</p>'}</div>`}
 function repSchedHTML(){const L=repDoors();if(!L.length)return '';
@@ -1100,9 +1205,10 @@ async function sampleImg(ref,title,kind){
 }
 function mkChecks(over,na){const o={};CHECKS.forEach(c=>o[c[0]]={r:(na||[]).includes(c[0])?'na':'pass',c:''});for(const k in over)o[k]=over[k];return o}
 async function loadSample(){
-  await clearMedia().catch(()=>{});Object.keys(URLS).forEach(k=>{URL.revokeObjectURL(URLS[k]);delete URLS[k]});Object.keys(TH).forEach(k=>delete TH[k]);
+  const prev=S;if(prev){await clearSurveyMedia(prev);try{await libDel('pdf',prev.id)}catch(e){}}
+  const id=(prev&&prev.id)||uid(),created=(prev&&prev.created)||new Date().toISOString();
   const D=(ref,location,type,rating,leaf,checks,x)=>Object.assign({id:uid(),ref,location,type,rating,leaf,checks,overall:'',manual:false,issues:'',action:'',priority:'',notes:'',media:[]},x||{});
-  S={isSample:true,survey:{site:'Marlowe Court (SAMPLE)',address:'1–48 Example Road, Stratford, London E15 0XX',client:'Example Housing Association (sample)',inspector:EB.inspector,date:today(),ref:'SB-FD-2026-0001',height:'11to18',storeys:'6',btype:'Residential block (flats)'},doors:[
+  S={id,status:'draft',created,updated:new Date().toISOString(),isSample:true,survey:{site:'Marlowe Court (SAMPLE)',address:'1–48 Example Road, Stratford, London E15 0XX',client:'Example Housing Association (sample)',inspector:EB.inspector,date:today(),ref:'SB-FD-2026-0001',height:'11to18',storeys:'6',btype:'Residential block (flats)'},doors:[
     D('Door-01','Ground floor communal entrance lobby','communal','FD30S','Double',mkChecks({gaps:{r:'fail',c:'Head gap 6 mm at meeting stiles (sides 3 mm).'},smoke:{r:'fail',c:'Smoke seal missing on meeting stile of active leaf (~1.2 m).'},glazing:{r:'pass',c:'Vision panels marked Pyroguard, beads secure.'}},['holdopen']),
       {issues:'6 mm head gap at meeting stiles exceeds 2–4 mm guidance; smoke seal missing on meeting stile.',action:'Adjust',priority:'Within 3 months',notes:'Re-hang/adjust leaves to reduce head gap, then fit matching intumescent/smoke seal to meeting stile.'}),
     D('Door-02','First floor communal lobby','communal','FD30S','Single',mkChecks({gaps:{r:'pass',c:'3 mm all round.'},threshold:{r:'pass',c:'3 mm.'}},['glazing','holdopen']),{notes:'Door in good condition. Re-inspect at next quarterly check.'}),
@@ -1124,8 +1230,9 @@ function sel(lbl,k,opts,v){return `<label class="f">${lbl}<select data-d="${k}">
 function seg(attr,opts,val,cls){return `<div class="seg" ${attr}>${opts.map(([v,t])=>`<button type="button" data-v="${esc(v)}" class="${val===v?'on '+(cls||v):''}">${t}</button>`).join('')}</div>`}
 function paintSeg(el,val,cls){el.querySelectorAll('button').forEach(b=>b.className=b.dataset.v===val?'on '+(cls||b.dataset.v):'')}
 
+function doneBanner(){return S&&S.status==='completed'?`<section class="card banner"><b>This survey is in Reports.</b> <span class="muted">Change anything you need, then complete it again to update the saved PDF.</span></section>`:''}
 function renderList(){setNav('list');const s=S.survey,c=counts();
-  app.innerHTML=`${S.isSample?`<section class="card banner"><b>Sample data loaded.</b> <span class="muted">This is an example 5-door survey to show how the app works. Edit it, or start a blank survey.</span><div class="row" style="margin-top:10px"><button class="btn sm" data-act="blank">Start blank survey</button></div></section>`:''}
+  app.innerHTML=`${doneBanner()}${S.isSample?`<section class="card banner"><b>Sample data loaded.</b> <span class="muted">This is an example 5-door survey to show how the app works. Edit it, or start a blank survey.</span><div class="row" style="margin-top:10px"><button class="btn sm" data-act="blank">Start blank survey</button></div></section>`:''}
   <details class="card" id="survey" ${S.doors.length?'':'open'}><summary>Survey details <span class="muted">${esc(s.ref||'')}</span></summary>
    ${field('Site / building name','site',s.site,'e.g. Marlowe Court','s')}${field('Address','address',s.address,'Street, town, postcode','s')}${field('Client','client',s.client,'','s')}
    ${field('Inspector','inspector',s.inspector,'','s')}${field('Survey date','date',s.date,'','s','date')}${field('Survey reference','ref',s.ref,'e.g. SB-FD-2026-0001','s')}
@@ -1221,8 +1328,10 @@ function renderMedia(d){const el=$('#media');if(!el)return;
   el.innerHTML=d.media.length?d.media.map(m=>`<div class="mi">${m.kind==='video'?`<video data-mid="${m.id}" controls playsinline muted preload="metadata"></video>`:`<img data-mid="${m.id}" alt="">`}<div class="mname">${esc(mediaName(d,m))}</div><div class="mbtns"><button type="button" class="btn sm" data-act="dlmedia" data-id="${m.id}">⬇ Download</button><button type="button" class="btn sm danger" data-act="delmedia" data-id="${m.id}" aria-label="Delete">🗑</button></div></div>`).join(''):'<p class="muted" style="grid-column:1/-1">No photos or videos yet.</p>';
   hydrate(el)}
 async function renderSummary(){setNav('summary');
-  app.innerHTML=`<div class="actions noprint">
-   <button class="btn primary wide" data-act="pdf">⬇ Download report (PDF)</button>
+  app.innerHTML=`${doneBanner()}<div class="actions noprint">
+   <button class="btn primary wide" data-act="complete">Complete survey</button>
+   <p class="hint wide" style="margin:0">Saves the PDF in Reports on this phone, then lets you share or save a copy. Completing again replaces that PDF.</p>
+   <button class="btn wide" data-act="pdf">⬇ Download report (PDF)</button>
    <button class="btn" data-act="print">🖨 Print / Save as PDF</button><button class="btn" data-act="html">⬇ Report (HTML)</button>
    <button class="btn dark wide" data-act="zipall">⬇ Download all files (ZIP)</button>
    <a class="btn wide" href="#/company">🏢 My company <small class="muted" style="font-weight:600">${EB.custom?esc(EB.name):'logo &amp; details on your reports'}</small></a>
@@ -1234,8 +1343,100 @@ function renderTagPick(tid){setNav('list');const no=tid.slice(2,8),cur=S.doors.f
   app.innerHTML=`<div class="bar"><a class="btn" href="#/list">‹ Doors</a></div><section class="card"><h2>Asset tag SB ${esc(no)}</h2>
    ${cur?`<p>Already linked to <a href="#/door/${cur.id}"><b>${esc(cur.ref)}</b></a>.</p>`:'<p class="hint">Choose the door this tag is fixed to:</p>'}
    <ul class="doors">${S.doors.map(d=>`<li><button type="button" class="btn block" style="justify-content:space-between" data-act="picktag" data-door="${d.id}" data-tid="${tid}"><span><b>${esc(d.ref||'(no ref)')}</b> <small class="muted">${esc(d.location||'')}</small></span><small>${d.tag?'SB '+esc(d.tag):''}</small></button></li>`).join('')||'<li class="empty">No doors yet.</li>'}</ul></section>`}
-function route(){if(!S)return;const h=location.hash.replace(/^#\/?/,'').split('/');
-  if(h[0]==='tag'&&TID_RE.test(h[1]||''))renderTagPick(h[1]);else if(h[0]==='door'&&doorById(h[1])){renderDoor(h[1]);fpDoorHook(doorById(h[1]))}else if(h[0]==='plans')renderPlans();else if(h[0]==='plan')renderPlan(h[1],h[2]);else if(h[0]==='summary')renderSummary();else if(h[0]==='company')renderCompany();else renderList();window.scrollTo(0,0)}
+function titleOf(m){const s=(m.site||'').trim();if(s)return s;const a=(m.address||'').trim();if(a)return a;return m.isSample?'Sample survey':'Untitled survey'}
+function progText(m){const n=m.doors||0;if(!n)return 'No doors yet';return ((m.pass||0)+(m.fail||0))+' of '+n+' door'+(n===1?'':'s')}
+function resultText(m){return (m.pass||0)+' pass, '+(m.fail||0)+' fail'}
+function askChoice(title,bodyHtml,buttons){return new Promise(resolve=>{const el=document.createElement('div');el.className='modal';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');
+  el.innerHTML=`<div class="modalcard"><h2>${esc(title)}</h2><div>${bodyHtml}</div>${buttons.map(b=>`<button type="button" class="btn ${b.primary?'primary ':''}block" data-c="${esc(b.id)}">${esc(b.label)}</button>`).join('')}</div>`;
+  document.body.appendChild(el);el.addEventListener('click',e=>{const b=e.target.closest('[data-c]');if(!b||!el.parentNode)return;el.remove();resolve(b.dataset.c)})})}
+async function go(hash){if(location.hash===hash)return route();location.hash=hash}
+async function openSurvey(id,hash){const rec=await libGet('survey',id);if(!rec||!rec.survey){toast('That survey is not on this phone');return go('#/home')}
+  S=rec;if(!Array.isArray(S.doors))S.doors=[];setOpenId(S.id);return go(hash||'#/list')}
+async function draftInProgress(){const metas=(await libAll('meta'))||[];const drafts=metas.filter(m=>m&&m.status!=='completed');if(!drafts.length)return null;
+  const oid=openId();return drafts.find(m=>m.id===oid)||drafts.sort((a,b)=>String(b.updated).localeCompare(String(a.updated)))[0]}
+async function startNewSurvey(){const cur=await draftInProgress();
+  if(cur){const choice=await askChoice('A survey is already in progress',`<p style="margin:0 0 8px"><b>${esc(titleOf(cur))}</b><br><span class="muted">${esc(progText(cur))}</span></p><p class="hint" style="margin:0">Continue that survey, or start a new one and keep this job as in progress?</p>`,
+    [{id:'continue',label:'Continue current survey',primary:true},{id:'new',label:'Start a new survey'},{id:'cancel',label:'Cancel'}]);
+    if(choice!=='new'){if(choice==='continue')await openSurvey(cur.id,'#/list');return}}
+  S=emptySurvey();setOpenId(S.id);await saveNow();await go('#/list');toast('New survey started')}
+async function renderHome(){setNav('home');const n=routeN;const metas=((await libAll('meta'))||[]).filter(m=>m&&m.id);if(n!==routeN)return;
+  const drafts=metas.filter(m=>m.status!=='completed').sort((a,b)=>String(b.updated).localeCompare(String(a.updated)));
+  const done=metas.filter(m=>m.status==='completed').sort((a,b)=>String(b.completedAt||b.updated).localeCompare(String(a.completedAt||a.updated)));
+  const cont=drafts.map(m=>`<li><button type="button" class="door-row cont" data-act="continuesurvey" data-id="${esc(m.id)}"><div><b>${esc(titleOf(m))}</b><small>${esc(m.isSample?'Sample survey · ':'')}${esc(progText(m))}</small>${m.ref?`<small>Ref ${esc(m.ref)}</small>`:''}</div><span class="badge">Continue</span></button></li>`).join('');
+  const rows=done.map(m=>`<li><button type="button" class="door-row rep" data-act="openreport" data-id="${esc(m.id)}"><div><b>${esc(titleOf(m))}</b><small>${esc(fmtD(m.date))}</small>${m.ref?`<small>Ref ${esc(m.ref)}</small>`:''}<small>${m.doors||0} door${m.doors===1?'':'s'} · ${esc(resultText(m))}</small></div></button></li>`).join('');
+  app.innerHTML=`<button type="button" class="btn primary block" data-act="newsurvey" style="margin-bottom:12px">＋ New survey</button>
+   <p class="caveat">Reports are stored only on this phone. Clearing the app or this site’s data deletes them, so share or save a copy of any report you need to keep.</p>
+   ${drafts.length?`<h2 style="font-size:15px;margin:2px 2px 8px">Continue</h2><ul class="doors">${cont}</ul>`:''}
+   <h2 style="font-size:15px;margin:2px 2px 8px">Reports</h2>
+   ${rows?`<ul class="doors">${rows}</ul>`:'<p class="empty">No reports yet. Start a new survey to create one.</p>'}
+   <section class="card"><h2>Invite someone</h2>
+    <p class="hint">Send an invitation to join. They get their own access and a blank copy of the app: none of your surveys, logo or company details are included. They add their own under My company.</p>
+    <button type="button" class="btn block" data-act="invite">Invite someone to join</button></section>
+   <a class="btn block" href="#/company" style="margin-bottom:12px">🏢 My company</a>`;
+  window.scrollTo(0,0)}
+let PDFVIEW=null,pdfBlobUrl='',pdfZoom=1;
+function dropPdfView(){PDFVIEW=null;pdfZoom=1;if(pdfBlobUrl){URL.revokeObjectURL(pdfBlobUrl);pdfBlobUrl=''}}
+function applyPdfZoom(){const z=$('#pdfzoom');if(z)z.style.width=(pdfZoom*100)+'%'}
+function pdfZoomBy(f){pdfZoom=Math.min(4,Math.max(1,pdfZoom*f));applyPdfZoom()}
+function bindPdfZoom(){const el=$('#pdfscroll');if(!el)return;let dist0=0,z0=1;
+  el.addEventListener('touchstart',e=>{if(e.touches.length===2){dist0=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);z0=pdfZoom}},{passive:true});
+  el.addEventListener('touchmove',e=>{if(e.touches.length===2&&dist0){e.preventDefault();const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);pdfZoom=Math.min(4,Math.max(1,z0*d/dist0));applyPdfZoom()}},{passive:false});
+  el.addEventListener('wheel',e=>{if(!e.ctrlKey&&!e.metaKey)return;e.preventDefault();pdfZoomBy(e.deltaY<0?1.1:1/1.1)},{passive:false})}
+async function renderPdfView(id){setNav('home');const n=routeN;const rec=await libGet('pdf',id);const meta=await libGet('meta',id);if(n!==routeN)return;
+  if(!rec||!rec.data){app.innerHTML=`<div class="bar"><a class="btn" href="#/home">‹ Reports</a></div><section class="card"><h2>No saved PDF</h2><p class="hint">This survey has no stored report on this phone. Open the survey and complete it to save the PDF.</p>
+    <button type="button" class="btn primary block" data-act="opensurvey">Open survey</button></section>`;PDFVIEW={id,blob:null,name:'',meta:meta||{}};window.scrollTo(0,0);return}
+  const blob=new Blob([rec.data],{type:'application/pdf'});PDFVIEW={id,blob,name:rec.name||'fire-door-report.pdf',meta:meta||{}};pdfZoom=1;
+  app.innerHTML=`<div id="pdfview"><div class="tools">
+    <a class="btn" href="#/home">‹ Reports</a><span class="spacer"></span>
+    <button type="button" class="btn" data-act="pdfzout" aria-label="Zoom out">−</button>
+    <button type="button" class="btn" data-act="pdfzin" aria-label="Zoom in">+</button>
+    <button type="button" class="btn" data-act="pdfshare">Share</button>
+    <button type="button" class="btn" data-act="pdfemail">Email</button>
+    <button type="button" class="btn" data-act="pdfsave">Save</button>
+    <button type="button" class="btn" data-act="opensurvey">Open survey</button></div>
+    <p class="caveat" style="margin:0;border-radius:0">This is the saved PDF from this phone. Pinch to zoom. Clearing the app or this site’s data deletes it, so share or save a copy if you need to keep it.</p>
+    <div id="pdfscroll"><div id="pdfzoom"></div></div></div>`;
+  const stage=$('#pdfzoom');const buf=await blob.arrayBuffer();
+  try{const lib=await ensurePdfJs();const doc=await lib.getDocument({data:buf.slice(0)}).promise;const cssW=Math.max(200,($('#pdfscroll').clientWidth||360)-16);
+    for(let i=1;i<=doc.numPages;i++){if(n!==routeN)return;const page=await doc.getPage(i);const base=page.getViewport({scale:1});
+      const scale=(cssW/base.width)*Math.min(2,window.devicePixelRatio||1);const vp=page.getViewport({scale});
+      const c=document.createElement('canvas');c.width=Math.floor(vp.width);c.height=Math.floor(vp.height);c.setAttribute('aria-label','Report page '+i+' of '+doc.numPages);
+      await page.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;stage.appendChild(c)}}
+  catch(e){pdfBlobUrl=URL.createObjectURL(blob);stage.innerHTML=`<iframe title="Saved report" src="${pdfBlobUrl}"></iframe>`}
+  bindPdfZoom()}
+function downloadBlob(blob,name){const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;a.rel='noopener';a.style.display='none';document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),60000);toast('Downloading '+name)}
+async function shareFile(blob,name,extra){if(!(navigator.canShare&&window.File))return false;try{const f=new File([blob],name,{type:blob.type||'application/pdf'});
+  if(!navigator.canShare({files:[f]}))return false;await navigator.share(Object.assign({files:[f],title:name},extra||{}));return true}catch(e){if(e&&e.name==='AbortError')return true;return false}}
+async function shareSavedPdf(mode){if(!PDFVIEW||!PDFVIEW.blob){toast('Report file missing on this phone');return}const name=PDFVIEW.name||'fire-door-report.pdf',blob=PDFVIEW.blob;
+  const site=PDFVIEW.meta&&(PDFVIEW.meta.site||PDFVIEW.meta.address)||'';const subject='Fire door report'+(site?' – '+site:'');
+  if(mode==='save'){downloadBlob(blob,name);return}
+  const text=mode==='email'?subject+'. The PDF is attached – send it from your email app.':'';
+  const shared=await shareFile(blob,name,{title:subject,text});if(shared)return;
+  if(mode==='email'){location.href='mailto:?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent('The fire door report is saved in the app. If the PDF is not attached, use Save in the report viewer, then attach the file.');
+    toast('Your email app cannot take the PDF directly. Save it, then attach the file.');return}
+  downloadBlob(blob,name)}
+async function completeSurvey(){if(!S||!S.id){toast('Open a survey first');return}
+  busy(true,'Building PDF…');const prev=S.status,prevAt=S.completedAt;
+  try{const blob=await buildPDF();const name=baseName()+'_report.pdf';const buf=await blob.arrayBuffer();
+    await libPut('pdf',{id:S.id,name,type:'application/pdf',savedAt:new Date().toISOString(),data:buf.slice(0)});
+    S.status='completed';S.completedAt=new Date().toISOString();await saveNow();busy(false);
+    const file=new Blob([buf],{type:'application/pdf'});const shared=await shareFile(file,name,{title:name});if(!shared)downloadBlob(file,name);
+    closeSurvey();toast('Report saved on this phone');await go('#/home')}
+  catch(e){if(S){S.status=prev;if(prevAt)S.completedAt=prevAt;else delete S.completedAt}busy(false);toast('PDF failed: '+(e&&e.message||e)+' – use Print / Save as PDF')}}
+let routeN=0;
+async function route(){const n=++routeN;dropPdfView();const h=location.hash.replace(/^#\/?/,'').split('/');const page=h[0]||'home';
+  if(page==='home'){await renderHome();return}
+  if(page==='report'){if(!h[1])return go('#/home');await renderPdfView(decodeURIComponent(h[1]));return}
+  if(page==='company'){renderCompany();window.scrollTo(0,0);return}
+  if(!S){toast('Open a survey from Home, or start a new one');if(location.hash!=='#/home')location.hash='#/home';else await renderHome();return}
+  if(page==='tag'&&TID_RE.test(h[1]||''))renderTagPick(h[1]);
+  else if(page==='door'&&doorById(h[1])){renderDoor(h[1]);fpDoorHook(doorById(h[1]))}
+  else if(page==='plans')renderPlans();
+  else if(page==='plan')renderPlan(h[1],h[2]);
+  else if(page==='summary')await renderSummary();
+  else renderList();
+  if(n===routeN)window.scrollTo(0,0)}
 
 /* ---------- actions ---------- */
 async function addFiles(d,files){busy(true,'Saving…');let n=0;
@@ -1257,8 +1458,13 @@ const ACT={
   picktag(b){const d=doorById(b.dataset.door),tid=b.dataset.tid;if(!d)return;if(d.tag&&!confirm('Replace tag SB '+d.tag+' on '+d.ref+'?'))return;
     try{const no=assignTag(d,tid);toast('Tag SB '+no+' linked to '+(d.ref||'door'));location.hash='#/door/'+d.id}catch(e){toast(e.message)}},
   async add(){const n=S.doors.length+1;const d={id:uid(),ref:'Door-'+pad(n),location:'',type:'',rating:'',leaf:'Single',checks:{},overall:'',manual:false,issues:'',action:'',priority:'',notes:'',media:[]};S.doors.push(d);doorId(d);save();location.hash='#/door/'+d.id},
-  async blank(){if(!confirm('Start a new blank survey? This deletes the sample doors and photos on this device.'))return;await clearMedia();S={isSample:false,survey:{site:'',address:'',client:'',inspector:EB.inspector,date:today(),ref:''},doors:[]};save();route();toast('Blank survey started')},
-  async reset(){if(!confirm('Reset to sample data? All current doors, photos and videos on this device will be deleted.'))return;busy(true,'Loading sample…');await loadSample();busy(false);location.hash='#/list';route();toast('Sample data restored')},
+  async blank(){if(!S||!S.isSample){await startNewSurvey();return}
+    if(!confirm('Start a new blank survey? This deletes the sample doors and photos on this device. Saved reports are kept.'))return;
+    await clearSurveyMedia(S);try{await libDel('pdf',S.id)}catch(e){}
+    const id=S.id,created=S.created;S=emptySurvey(id,created);setOpenId(S.id);save();await route();toast('Blank survey started')},
+  async reset(){if(!S)return toast('Open a survey first');
+    if(!confirm('Reset this survey to sample data? Doors, photos and videos in this survey will be deleted. Other surveys and saved reports on this phone are kept.'))return;
+    busy(true,'Loading sample…');try{await loadSample();setOpenId(S.id);busy(false);await go('#/list');toast('Sample data restored')}catch(e){busy(false);toast('Could not load sample: '+(e&&e.message||e))}},
   allpass(b,d){CHECKS.forEach(c=>{const o=ck(d,c[0]);if(!o.r)o.r='pass'});save();renderDoor(d.id)},
   fillissues(b,d){const t=failed(d).map(c=>{const o=d.checks[c[0]];return c[1]+(o.c?': '+o.c:'')}).join('\n');d.issues=t;$('#issues').value=t;save();if(!t)toast('No failed items')},
   unoverride(b,d){d.manual=false;d.overall='';save();refreshOverall(d)},
@@ -1276,7 +1482,18 @@ const ACT={
   async labeldoor(b,d){busy(true,'Building label…');try{const st=+($('#qrstart1')||{}).value||1;const p=await buildLabels([d],st,($('#qrmode1')||{}).value||'before',($('#qrstyle1')||{}).value||'std');busy(false);await saveBlob(p,safe(d.ref||'Door')+'_QR-label_'+((($('#qrstyle1')||{}).value==='tag')?'L7160':'L7163')+'.pdf')}catch(e){busy(false);toast('Label failed: '+e.message)}},
   previewrec(b,d){const u=doorQR(d).url.replace(PUBLIC_URL,'door.html');window.open(u,'_blank')||(location.href=u)},
   async json(){await saveBlob(new Blob([exportJSON()],{type:'application/json'}),baseName()+'_data.json')},
-  async lockapp(){if(!lockOn())return toast('No access code is set');await lockApp()}
+  async lockapp(){if(!lockOn())return toast('No access code is set');await lockApp()},
+  async complete(){await completeSurvey()},
+  async newsurvey(){await startNewSurvey()},
+  continuesurvey(b){return openSurvey(b.dataset.id,'#/list')},
+  openreport(b){return go('#/report/'+encodeURIComponent(b.dataset.id))},
+  async opensurvey(){const id=PDFVIEW&&PDFVIEW.id;if(!id)return;await openSurvey(id,'#/list')},
+  async pdfshare(){await shareSavedPdf('share')},
+  async pdfemail(){await shareSavedPdf('email')},
+  async pdfsave(){await shareSavedPdf('save')},
+  pdfzin(){pdfZoomBy(1.25)},
+  pdfzout(){pdfZoomBy(1/1.25)},
+  async invite(){await createInvite()}
 };
 function exportJSON(){ensureIds();return JSON.stringify({app:BRAND.name.replace(/ Ltd$/,'')+' fire door inspection',exported:new Date().toISOString(),sample:!!S.isSample,survey:S.survey,
   doors:S.doors.map(d=>({...d,doorId:d.pid,tagNo:d.tag||'',tagId:d.tagId||'',recordUrl:recordURL(d),typeLabel:typeLabel(d.type),inspected:inspDate(),nextDue:nextDue(d),keyIssues:keyIssues(d),status:status(d),suggested:suggest(d),gaps:Object.assign({},GAP_BLANK,isPair(d)?Object.fromEntries(PAIR_KEYS.map(k=>[k[0],''])):{},d.gaps),gapLayout:isPair(d)?(isHalf(d)?'leaf-and-a-half':'double'):'single',gapResults:gapEval(d).map(x=>({edge:x.k,label:x.label,mm:x.raw,result:x.r,rule:x.why})),gapSummary:(gapSummary(d)||{}).text||'No gaps measured',checks:CHECKS.map(c=>({key:c[0],item:c[1],result:(d.checks[c[0]]||{}).r||'',comment:(d.checks[c[0]]||{}).c||''})),media:d.media.map(m=>({file:mediaName(d,m),kind:m.kind,type:m.type,original:m.orig||m.caption||'',caption:m.caption||''}))})),floorPlans:fpExport()},null,2)}
@@ -1308,11 +1525,12 @@ let CF=null; /* draft profile while the screen is open */
 const coF=[['name','Company name','e.g. Test Fire Ltd','text','organization'],['tagline','Strapline (optional)','e.g. Fire door surveys, Essex','text','off'],
   ['address','Address','Street, town, postcode','area','street-address'],['phone','Phone','e.g. 01234 567890','tel','tel'],['email','Email','e.g. office@yourcompany.co.uk','email','email'],
   ['website','Website (optional)','e.g. www.yourcompany.co.uk','url','url'],['companyNo','Company number (optional)','e.g. 12345678','text','off']];
-function renderCompany(){setNav('summary');if(!CF)CF=Object.assign({},PROFILE||{});const P=CF,on=!!EB.custom;
+function renderCompany(){setNav(S?'summary':'home');if(!CF)CF=Object.assign({},PROFILE||{});const P=CF,on=!!EB.custom;
   const inp=([k,l,ph,t,ac])=>`<label class="f">${esc(l)}${t==='area'?`<textarea id="co_${k}" rows="2" placeholder="${esc(ph)}" autocomplete="${ac}">${esc(P[k]||'')}</textarea>`:
     `<input type="text" id="co_${k}" value="${esc(P[k]||'')}" placeholder="${esc(ph)}" autocomplete="${ac}"${t==='tel'?' inputmode="tel"':t==='email'?' inputmode="email" autocapitalize="off" spellcheck="false"':t==='url'?' inputmode="url" autocapitalize="off" spellcheck="false"':''}>`}</label>`;
   const acc=isHex(P.accent);
-  app.innerHTML=`<div class="bar"><a class="btn" href="#/summary">‹ Report</a><b>My company</b><span></span></div>
+  const back=S?'#/summary':'#/home',backLabel=S?'‹ Report':'‹ Home';
+  app.innerHTML=`<div class="bar"><a class="btn" href="${back}">${backLabel}</a><b>My company</b><span></span></div>
   <p class="costat">${on?`Reports on this phone use <b>${esc(EB.name)}</b>.`:'No company set: reports on this phone show only the app name (<b>'+esc(BRAND.appName)+'</b>), with no company or contact details. Set your company here.'} Your details go on the report, PDF, leaseholder letters and QR labels. Saved on this phone only.</p>
   <section class="card"><h2>Company details</h2>${coF.map(inp).join('')}</section>
   <section class="card"><h2>Logo</h2>
@@ -1327,7 +1545,8 @@ function renderCompany(){setNav('summary');if(!CF)CF=Object.assign({},PROFILE||{
    <p class="hint">Used for the coloured lines and highlights on the report and labels. Leave unticked to keep the default colours. Pass / fail colours do not change.</p></section>
   <button type="button" class="btn primary block" data-act="cosave" style="margin-bottom:10px">💾 Save</button>
   <button type="button" class="btn danger block" data-act="coreset">Reset to default (no company)</button>
-  <p class="hint" style="margin:12px 2px">These settings are kept on this phone only and are not synced to other devices. Survey data is not affected.</p>`;
+  <button type="button" class="btn block" data-act="invite" style="margin-top:10px">Invite someone to join</button>
+  <p class="hint" style="margin:12px 2px">These settings are kept on this phone only and are not synced. An invitation sets up a blank copy for someone else: it does not share your logo, company details, access or surveys. Survey data is not affected by saving this screen.</p>`;
   const bg=$('#co_logoBg');if(bg)bg.value=P.logoBg||'auto'}
 /* read the form into the draft */
 function coRead(){coF.forEach(([k])=>{const e=$('#co_'+k);if(e)CF[k]=e.value.trim()});const on=$('#co_accOn'),a=$('#co_accent');CF.accent=on&&on.checked&&a&&isHex(a.value)?a.value.toLowerCase():'';const bg=$('#co_logoBg');if(bg)CF.logoBg=bg.value}
@@ -1375,9 +1594,15 @@ const planById=id=>plans().find(p=>p.id===id);
 function pinsFor(d){const o=[];plans().forEach(p=>(p.pins||[]).forEach(q=>{if(q.door===d.id)o.push(p)}));return o}
 function stCls(s){return s==='pass'?'pass':s==='fail'?'fail':'none'}
 let PDFJS=null;
+let pdfJsP=null;
+function ensurePdfJs(){if(window.pdfjsLib)return Promise.resolve(window.pdfjsLib);if(pdfJsP)return pdfJsP;
+  pdfJsP=new Promise((res,rej)=>{const s=document.createElement('script');s.src='vendor/pdfjs/pdf.min.js';
+    s.onload=()=>{const lib=window.pdfjsLib;if(!lib){pdfJsP=null;rej(new Error('PDF viewer failed to load'));return}
+      lib.GlobalWorkerOptions.workerSrc=new URL('vendor/pdfjs/pdf.worker.min.js',location.href).href;res(lib)};
+    s.onerror=()=>{pdfJsP=null;rej(new Error('PDF viewer failed to load'))};document.head.appendChild(s)});
+  return pdfJsP}
 async function pdfFirstPage(file){
-  if(!PDFJS){await new Promise((res,rej)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js';s.onload=res;s.onerror=()=>rej(new Error('Could not load PDF reader (offline?) – use a photo/PNG instead'));document.head.appendChild(s)});
-    PDFJS=window.pdfjsLib;PDFJS.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js'}
+  if(!PDFJS){try{PDFJS=await ensurePdfJs()}catch(e){throw new Error('Could not load PDF reader – use a photo/PNG instead')}}
   const doc=await PDFJS.getDocument({data:await file.arrayBuffer()}).promise,pg=await doc.getPage(1);
   const v0=pg.getViewport({scale:1}),k=Math.min(4,2400/Math.max(v0.width,v0.height)),v=pg.getViewport({scale:k});
   const c=document.createElement('canvas');c.width=Math.round(v.width);c.height=Math.round(v.height);const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);
@@ -1482,13 +1707,33 @@ async function fpPDF(p){const X=p.M,CW=p.W-2*p.M;
     p.y=iy+ih+12;
     pl.pins.forEach((q,i)=>{const d=doorById(q.door);if(!d)return;const st=status(d);p.ensure(13);p.rect(X,p.y+2,8,8,stCol(st));p.text(X+12,p.y+9.5,pt(`${i+1}. ${d.ref||''} – ${d.location||''}`).slice(0,90),8.5,false);pdfPill(p,X+CW-pillW(stLabel(st),6.5),p.y+1.5,stLabel(st),stCol(st),6.5,10);p.y+=12})}}
 
+async function findSurvey(pred){const all=(await libAll('survey'))||[];return all.find(s=>s&&pred(s))||null}
+async function ensureSurveyForRoute(){const h=location.hash.replace(/^#\/?/,'').split('/');const id=openId();
+  if(id&&!(S&&S.id===id)){try{const rec=await libGet('survey',id);if(rec&&rec.survey)S=rec}catch(e){}}
+  if(h[0]==='door'&&h[1]&&!(S&&(S.doors||[]).some(d=>d.id===h[1]))){const found=await findSurvey(s=>(s.doors||[]).some(d=>d.id===h[1]));if(found){S=found;setOpenId(found.id)}}
+  if(h[0]==='tag'&&h[1]&&!(S&&(S.doors||[]).some(d=>d.tagId===h[1]))){const found=await findSurvey(s=>(s.doors||[]).some(d=>d.tagId===h[1]));if(found){S=found;setOpenId(found.id)}}}
+async function migrateLegacy(){let raw=null;try{raw=localStorage.getItem(LS)}catch(e){}if(!raw)return;
+  let old=null;try{old=JSON.parse(raw)}catch(e){}
+  if(!old||!old.survey||typeof old.survey!=='object'){try{localStorage.removeItem(LS)}catch(e){}return}
+  const now=new Date().toISOString();if(!old.id)old.id=uid();if(old.status!=='completed')old.status='draft';
+  if(!old.created)old.created=now;if(!old.updated)old.updated=now;if(!Array.isArray(old.doors))old.doors=[];
+  try{await writeSurvey(old)}catch(e){S=old;setOpenId(old.id);toast('Could not move the existing survey into the library. It is still on this phone.')}}
+async function ensureFirstSurvey(){if(S&&S.survey){setOpenId(S.id);return}
+  let metas=[];try{metas=await libAll('meta')}catch(e){}
+  if(metas&&metas.length)return;
+  try{await loadSample();setOpenId(S.id)}catch(e){if(!S||!S.survey)S=emptySurvey();toast('Storage unavailable: '+(e&&e.message||e));save()}}
 (async function init(){
   applyBrand();try{PROFILE=await coGet()}catch(e){}refreshBrand();
-  if(!isUnlocked())await showLock();else setTimeout(checkAccess,1500);
-  try{const raw=localStorage.getItem(LS);if(raw)S=JSON.parse(raw)}catch(e){}
-  if(!S||!S.survey){try{await loadSample()}catch(e){S={isSample:false,survey:{date:today()},doors:[]};toast('Storage unavailable: '+e.message)}}
+  try{await migrateLegacy()}catch(e){}
+  let inv='none';try{inv=await maybeRedeemInvite()}catch(e){}
+  if(!isUnlocked())await showLock(inv);else{setTimeout(checkAccess,1500);
+    if(inv==='skipped')toast('This phone already has its own access, surveys or company details. The invitation was not applied, and nothing on this phone was changed.')}
+  try{await ensureFirstSurvey()}catch(e){}
+  try{await ensureSurveyForRoute()}catch(e){}
   if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
-  route();
+  if(inv==='ok')toast('Your own access is set up. Add your company under My company. Reports you create stay on this phone.');
+  if(!location.hash||location.hash==='#/'||location.hash==='#')location.replace('#/home');
+  else await route();
 })();
 </script>
 <script>

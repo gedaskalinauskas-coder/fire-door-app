@@ -93,6 +93,29 @@ let id=str(q.get('id')).trim();
 const tid=str(q.get('t')).trim().toLowerCase(),okTid=/^sb\d{6}-[a-z0-9]{6}$/.test(tid),tagNoT=okTid?tid.slice(2,8):'';
 let okId=/^[A-Za-z0-9][A-Za-z0-9-]{4,90}$/.test(id);
 const m=document.getElementById('m');
+async function localDoor(pred){
+  try{const S=JSON.parse(localStorage.getItem('sbs_firedoor_v1')||'null');const ld=S&&Array.isArray(S.doors)&&S.doors.find(pred);if(ld)return ld}catch(e){}
+  try{
+    if(!indexedDB.databases)return null;
+    const names=await indexedDB.databases();
+    if(!names.some(d=>d&&d.name==='sbs_reports'))return null;
+    const db=await new Promise((res,rej)=>{const r=indexedDB.open('sbs_reports');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
+    if(!db.objectStoreNames.contains('survey')){db.close();return null}
+    const all=await new Promise((res,rej)=>{const tx=db.transaction('survey','readonly');const q=tx.objectStore('survey').getAll();q.onsuccess=()=>res(q.result||[]);q.onerror=()=>rej(q.error)});
+    db.close();
+    for(const S of all||[]){const ld=S&&Array.isArray(S.doors)&&S.doors.find(pred);if(ld)return ld}
+  }catch(e){}
+  return null}
+async function phoneHasSurvey(){
+  try{const S=JSON.parse(localStorage.getItem('sbs_firedoor_v1')||'null');if(S&&Array.isArray(S.doors))return true}catch(e){}
+  try{
+    if(!indexedDB.databases)return false;
+    const names=await indexedDB.databases();
+    if(!names.some(d=>d&&d.name==='sbs_reports'))return false;
+    const db=await new Promise((res,rej)=>{const r=indexedDB.open('sbs_reports');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
+    let n=0;
+    if(db.objectStoreNames.contains('meta')){const all=await new Promise((res,rej)=>{const tx=db.transaction('meta','readonly');const q=tx.objectStore('meta').getAll();q.onsuccess=()=>res(q.result||[]);q.onerror=()=>rej(q.error)});n=(all||[]).length}
+    db.close();return n>0}catch(e){return false}}
 
 function snapshot(){try{const s=q.get('d');if(!s)return null;let b=s.replace(/-/g,'+').replace(/_/g,'/');while(b.length%4)b+='=';
   const bin=atob(b),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);
@@ -125,8 +148,7 @@ function render(R){const s=R.survey||{},d=R.door||{},st=['pass','fail'].includes
   h+=`<p class="fine">${R.source==='snapshot'?'Summary stored in the QR code at the time of inspection':'Published inspection record'} – this shows the door as found on ${esc(fmtD(s.date))} and does not update by itself. Visual, non-destructive inspection; it does not certify fire performance. If the door is damaged or does not close properly, report it to the building manager.</p>`;
   m.innerHTML=h;
   /* if this phone holds the survey in the app, offer to open the full door */
-  try{const S=JSON.parse(localStorage.getItem('sbs_firedoor_v1')||'null');const ld=S&&Array.isArray(S.doors)&&S.doors.find(x=>x&&x.pid===id);
-    if(ld)document.getElementById('appbtn').innerHTML=`<a class="btn wide" href="index.html#/door/${encodeURIComponent(ld.id)}">Open full door in the app</a>`}catch(e){}
+  localDoor(x=>x&&x.pid===id).then(ld=>{const el=document.getElementById('appbtn');if(el&&ld)el.innerHTML=`<a class="btn wide" href="index.html#/door/${encodeURIComponent(ld.id)}">Open full door in the app</a>`});
   const lb=document.getElementById('lb'),li=lb.querySelector('img'),lc=document.getElementById('lbc');let cur=0;
   const show=i=>{cur=(i+photos.length)%photos.length;li.src=purl(photos[cur]);lc.textContent=(photos[cur].caption?photos[cur].caption+' · ':'')+'Photo '+(cur+1)+' of '+photos.length;lb.hidden=false};
   m.querySelectorAll('.gal button').forEach(b=>b.onclick=()=>show(+b.dataset.i));
@@ -141,13 +163,11 @@ function renderPending(){m.innerHTML=`<section class="card hero"><p class="kicke
   <p class="loc">This door has been surveyed${BRAND.phone||BRAND.email?' by '+esc(BRAND.name):''}. Its online record will appear here once it is published.</p>
   <p class="muted">Door ID: <b>${esc(id)}</b></p>
   <div class="btns">${ctBtns(encodeURIComponent('Fire door record '+id))}<span id="appbtn" class="wide" style="display:contents"></span></div></section>`;
-  try{const S=JSON.parse(localStorage.getItem('sbs_firedoor_v1')||'null');const ld=S&&Array.isArray(S.doors)&&S.doors.find(x=>x&&x.pid===id);
-    if(ld)document.getElementById('appbtn').innerHTML=`<a class="btn wide" href="index.html#/door/${encodeURIComponent(ld.id)}">Open full door in the app</a>`}catch(e){}}
-function renderTagPending(){let S=null;try{S=JSON.parse(localStorage.getItem('sbs_firedoor_v1')||'null')}catch(e){}
-  const ld=S&&Array.isArray(S.doors)&&S.doors.find(x=>x&&x.tagId===tid);
+  localDoor(x=>x&&x.pid===id).then(ld=>{const el=document.getElementById('appbtn');if(el&&ld)el.innerHTML=`<a class="btn wide" href="index.html#/door/${encodeURIComponent(ld.id)}">Open full door in the app</a>`})}
+async function renderTagPending(){const ld=await localDoor(x=>x&&x.tagId===tid);const known=await phoneHasSurvey();
   m.innerHTML=`<section class="card hero"><p class="kicker">${esc(BRAND.short)} asset tag</p><h1>SB ${esc(tagNoT)}</h1>
   <p class="loc">${ld?'This tag is linked to <b>'+esc(ld.ref||'a door')+'</b>. Its online record will appear here once it is published.':'Tag not yet assigned to a door.'}</p>
-  <div class="btns">${ld?`<a class="btn primary wide" href="index.html#/door/${encodeURIComponent(ld.id)}">Open door in the app</a>`:S&&Array.isArray(S.doors)?`<a class="btn primary wide" href="index.html#/tag/${encodeURIComponent(tid)}">Assign this tag to a door</a>`:''}
+  <div class="btns">${ld?`<a class="btn primary wide" href="index.html#/door/${encodeURIComponent(ld.id)}">Open door in the app</a>`:known?`<a class="btn primary wide" href="index.html#/tag/${encodeURIComponent(tid)}">Assign this tag to a door</a>`:''}
   ${ctBtns(encodeURIComponent('Asset tag SB '+tagNoT))}</div></section>`}
 (async function(){let rec=null;
   if(okTid&&!id){try{const r=await fetch('records/tags/'+encodeURIComponent(tid)+'.json',{cache:'no-store'});if(r.ok){const j=await r.json();if(j&&typeof j.id==='string'){id=j.id;okId=/^[A-Za-z0-9][A-Za-z0-9-]{4,90}$/.test(id)}}}catch(e){}
