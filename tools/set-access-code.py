@@ -9,6 +9,10 @@ or have single devices removed.
 Manage codes (create, device limit, deactivate, delete, remove devices) at:
     <BRAND.accessApi>/admin   (log in with the admin key)
 
+Invitations (a new code for someone else, not a share of an existing code)
+need the worker routes in docs/access-invite.md. The app does not put an
+access code in the invite link.
+
 No code, salt or hash is stored in this public repository any more.
 To switch the lock off, set BRAND.accessApi to '' in index.html.
 """
