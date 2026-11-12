@@ -195,6 +195,8 @@ const BRAND={
      so reports show the surveyor's own details once they set them in My company. */
   name:'S B Fire Door App',                               // default name (app header fallback, default report header, lock screen)
   companyNo:'',                                           // Companies House number - blank by default (set per phone in My company)
+  vatNo:'',                                               // VAT number - blank by default (set per phone in My company)
+  icoNo:'',                                               // ICO registration - blank by default (set per phone in My company)
   copyrightYear:'2026',                                   // year (kept for reference; the copyright line has no year)
   short:'S B Fire Door App',                              // short name (label text fallback, file names)
   appName:'S B Fire Door App',                            // app name (manifest name, invite page, copyright line)
@@ -247,10 +249,13 @@ function effBrand(p){if(!p||!String(p.name||'').trim())return BRAND;
   if(isHex(p.accent)){c.yellow=p.accent.toLowerCase();c.pink=c.yellow;c.yellowTint=mixHex(c.yellow,'#ffffff',.88)}
   return Object.assign({},BRAND,{custom:true,name,short:name.replace(/[\s,]+(ltd\.?|limited|llp|plc)$/i,'')||name,tagline:oneLine(p.tagline),
     address:oneLine(p.address),phone:oneLine(p.phone),email:oneLine(p.email),website:oneLine(p.website),companyNo:oneLine(p.companyNo),
+    vatNo:oneLine(p.vatNo),icoNo:oneLine(p.icoNo),
     inspector:name,logo:p.logoD||'',logoFlat:p.logoF||'',headerLogo:p.logoD||'',colors:c})}
 const nameTag=()=>EB.tagline?EB.name+' · '+EB.tagline:EB.name;
-/* PDF footer small print: app copyright by default; a custom company gets its own copyright line + a small app credit (LICENSE unchanged) */
-const reportCredit=()=>EB.custom?'© '+EB.name+(EB.companyNo?' (Company No. '+EB.companyNo+')':'')+'. All rights reserved. · Report produced with '+BRAND.appName:copyrightLine();
+/* company number, VAT and ICO for a custom profile; each part is left off when blank (older profiles have no VAT or ICO) */
+const regBits=()=>[EB.companyNo&&('Company No. '+EB.companyNo),EB.vatNo&&('VAT '+EB.vatNo),EB.icoNo&&('ICO '+EB.icoNo)].filter(Boolean);
+/* PDF footer small print: app copyright by default; a custom company gets its own copyright line (with company number, VAT and ICO when set) + a small app credit (LICENSE unchanged) */
+const reportCredit=()=>EB.custom?'© '+EB.name+(regBits().length?' ('+regBits().join(' · ')+')':'')+'. All rights reserved. · Report produced with '+BRAND.appName:copyrightLine();
 /* PDF footer company line (custom profile only): name · address · email · phone · website, all from the My company profile */
 const footerCompany=()=>EB.custom?[EB.name,EB.address,EB.email,EB.phone,EB.website].filter(Boolean).join(' · '):'';
 /* fit a logo into a box (keeps the old size whenever it already fits) */
@@ -1017,7 +1022,7 @@ async function leaseLetterPDF(p,d,logoD,k,n){const s=S.survey,X=p.M,CW=p.W-2*p.M
   /* contact panel from EB (BRAND or the 'My company' profile) */
   {const ttl=pass?'Questions about your door?':'Book your remedial works',ref=(d.ref||'')+(fno?' (Flat '+fno+')':''),
     L1=wrapT(`${pass?'If you have any questions':'To book the work or ask a question'}, please contact ${EB.custom?EB.name:'the surveyor'}:`,FS,CW-28),
-    C=[EB.phone&&['Phone',EB.phone],EB.email&&['Email',EB.email],EB.website&&['Web',EB.website],EB.address&&['Address',fitT(EB.address,10.5,CW-74,true)]].filter(Boolean),
+    C=[EB.phone&&['Phone',EB.phone],EB.email&&['Email',EB.email],EB.website&&['Web',EB.website],EB.address&&['Address',fitT(EB.address,10.5,CW-74,true)],EB.vatNo&&['VAT',EB.vatNo],EB.icoNo&&['ICO',EB.icoNo]].filter(Boolean),
     L2=wrapT(`Please quote door ref ${ref}${s.site?' at '+s.site:''} when you get in touch.`,FS,CW-28),h=12+14+L1.length*LH+C.length*14+L2.length*LH+12;
     p.y+=10;p.ensure(h);const y=p.y;p.rect(X,y,CW,h,BC.yellowTint);p.rect(X,y,4,h,BC.yellow);let cy=y+12;
     p.text(X+14,cy+10,pt(ttl),11.5,true,INK);cy+=18;L1.forEach(l=>{p.text(X+14,cy+FS,l,FS,false,INK);cy+=LH});cy+=2;
@@ -1127,8 +1132,11 @@ function drawLabel(p,ox,oy,d,logo,mode){const pre=mode!=='after';const m=v=>v*MM
   else{const il='Inspected '+fmtD(inspDate()),iw=tw(il,6.8);p.text(tx,y,pt(il),6.8,false,LB.ink);
   const nd=fitT('Next due '+fmtD(nextDue(d)),7.4,TW-iw-m(3),true);p.text(tr-tw(nd,7.4,true),y,nd,7.4,true,LB.pink)}
   const fy=oy+m(G.h-2.4);p.line(tx,fy-m(3.3),tr,fy-m(3.3),[.82,.82,.82],.4);
-  const ft=pt('Scan for door record'+(CO.tel?' \x95 '+CO.tel:''));p.text(tx,fy,ft,6.6,true,LB.ink);
-  const av=TW-tw(ft,6.6,true)-m(2.5);if(av>m(8)){const ids=fitT('ID '+Q.id,4.2,av);p.text(tr-tw(ids,4.2),fy,ids,4.2,false,[.55,.55,.55])}
+  const regs=[EB.vatNo&&('VAT '+EB.vatNo),EB.icoNo&&('ICO '+EB.icoNo)].filter(Boolean).join(' \x95 ');
+  const full='Scan for door record'+(CO.tel?' \x95 '+CO.tel:'')+(regs?' \x95 '+regs:'');
+  let fs=6.6;while(regs&&fs>4.4&&tw(pt(full),fs,true)>TW)fs-=.1; /* keep phone, VAT and ICO on one line */
+  const ft=fitT(full,fs,TW);p.text(tx,fy,ft,fs,true,LB.ink);
+  const av=TW-tw(ft,fs,true)-m(2.5);if(av>m(8)){const ids=fitT('ID '+Q.id,4.2,av);p.text(tr-tw(ids,4.2),fy,ids,4.2,false,[.55,.55,.55])}
 }
 async function buildLabels(doors,start,mode,style){const p=PDFDoc(),G=SHEET(style);if(style==='tag')doors.forEach(d=>{if(!d.blank)tagNo(d)});let slot=Math.max(0,Math.min(G.per-1,(start||1)-1));
   ensureIds();const logo=EB.custom?(EB.logoFlat?await logoJPG(EB.logoFlat,'#ffffff',1,.95):null):await logoJPG(LOGO_FLAT_SRC,'#ffffff');
@@ -1153,7 +1161,8 @@ function repSchedHTML(){const L=repDoors();if(!L.length)return '';
     if(n)h+=`<tr class="rnote"><td></td><td colspan="8"><b>Notes:</b> ${esc(n).replace(/\n/g,'<br>')}</td></tr>`}
   return h+'</tbody></table></div>'}
 async function reportMarkup(mode){
-  const s=S.survey,c=counts();let h=`<div class="report"><div class="rh" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">${EB.logo?`<img src="${EB.logo}" alt="${esc(EB.name)}" style="height:54px;width:auto${EB.custom?';max-width:60%;object-fit:contain':''}">`:''}<div style="flex:1;min-width:200px"><h1>${esc(EB.reportTitle)}</h1><p>${esc(nameTag())}</p>${EB.custom&&[EB.address,EB.phone,EB.email,EB.website].some(Boolean)?`<p style="font-size:12px;opacity:.8">${esc([EB.address,EB.phone,EB.email,EB.website].filter(Boolean).join(' · '))}${EB.companyNo?' · Company No. '+esc(EB.companyNo):''}</p>`:''}</div></div>`;
+  const s=S.survey,c=counts(),contact=[EB.address,EB.phone,EB.email,EB.website].filter(Boolean).concat(regBits()).join(' · ');
+  let h=`<div class="report"><div class="rh" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">${EB.logo?`<img src="${EB.logo}" alt="${esc(EB.name)}" style="height:54px;width:auto${EB.custom?';max-width:60%;object-fit:contain':''}">`:''}<div style="flex:1;min-width:200px"><h1>${esc(EB.reportTitle)}</h1><p>${esc(nameTag())}</p>${EB.custom&&contact?`<p style="font-size:12px;opacity:.8">${esc(contact)}</p>`:''}</div></div>`;
   
   h+=`<table class="kv">${surveyKV(s).map(([k,v])=>`<tr><th>${k}</th><td>${esc(v||'—')}</td></tr>`).join('')}</table>`;
   h+=`<div class="rc"><div><b>${c.total}</b>Total</div><div class="p"><b>${c.pass}</b>Pass</div><div class="x"><b>${c.fail}</b>Fail</div><div><b>${c.none}</b>Not inspected</div></div>`;
@@ -1524,7 +1533,8 @@ window.addEventListener('hashchange',route);
 let CF=null; /* draft profile while the screen is open */
 const coF=[['name','Company name','e.g. Test Fire Ltd','text','organization'],['tagline','Strapline (optional)','e.g. Fire door surveys, Essex','text','off'],
   ['address','Address','Street, town, postcode','area','street-address'],['phone','Phone','e.g. 01234 567890','tel','tel'],['email','Email','e.g. office@yourcompany.co.uk','email','email'],
-  ['website','Website (optional)','e.g. www.yourcompany.co.uk','url','url'],['companyNo','Company number (optional)','e.g. 12345678','text','off']];
+  ['website','Website (optional)','e.g. www.yourcompany.co.uk','url','url'],['companyNo','Company number (optional)','e.g. 12345678','text','off'],
+  ['vatNo','VAT number (optional)','e.g. GB123456789','text','off'],['icoNo','ICO registration (optional)','e.g. ZA123456','text','off']];
 function renderCompany(){setNav(S?'summary':'home');if(!CF)CF=Object.assign({},PROFILE||{});const P=CF,on=!!EB.custom;
   const inp=([k,l,ph,t,ac])=>`<label class="f">${esc(l)}${t==='area'?`<textarea id="co_${k}" rows="2" placeholder="${esc(ph)}" autocomplete="${ac}">${esc(P[k]||'')}</textarea>`:
     `<input type="text" id="co_${k}" value="${esc(P[k]||'')}" placeholder="${esc(ph)}" autocomplete="${ac}"${t==='tel'?' inputmode="tel"':t==='email'?' inputmode="email" autocapitalize="off" spellcheck="false"':t==='url'?' inputmode="url" autocapitalize="off" spellcheck="false"':''}>`}</label>`;
@@ -1581,7 +1591,7 @@ Object.assign(ACT,{
   colgdel(){coRead();['logoSrc','logoD','logoF','logoAlpha','logoLight'].forEach(k=>delete CF[k]);renderCompany();toast('Logo removed – tap Save to keep this')},
   async cosave(){coRead();if(!CF.name){toast('Enter your company name');const e=$('#co_name');if(e)e.focus();return}
     if(CF.email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(CF.email)){toast('Check the email address');return}
-    const p={v:1,saved:new Date().toISOString()};['name','tagline','address','phone','email','website','companyNo','accent','logoBg','logoSrc','logoD','logoF','logoAlpha','logoLight'].forEach(k=>{if(CF[k]!==undefined&&CF[k]!=='')p[k]=CF[k]});
+    const p={v:1,saved:new Date().toISOString()};['name','tagline','address','phone','email','website','companyNo','vatNo','icoNo','accent','logoBg','logoSrc','logoD','logoF','logoAlpha','logoLight'].forEach(k=>{if(CF[k]!==undefined&&CF[k]!=='')p[k]=CF[k]});
     try{await coPut(p)}catch(e){toast('Could not save on this phone: '+(e.message||e.name));return}
     PROFILE=p;CF=null;refreshBrand();renderCompany();window.scrollTo(0,0);toast('Saved – reports now use '+EB.name)},
   async coreset(){if(!confirm('Reset to the default (no company details)? Your company details and logo will be removed from this phone. Survey data is kept.'))return;
